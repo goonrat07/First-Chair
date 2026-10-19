@@ -254,13 +254,14 @@ files. Use Z-up, 1 unit = 1 m, and put the origin at ground contact. Sources
 - **Layout:**
 
 ```
-FirstChair/                    Unity 6 URP project
-  Packages/com.firstchair.sim/ the riding sim, an asmdef with noEngineReferences
+Assets/, ProjectSettings/      Unity 6.3 LTS URP project at the repo root
+                               (Claude Code Game Studios expects it there)
+Packages/com.firstchair.sim/   the riding sim, an asmdef with noEngineReferences
 sim/                           .csproj files that compile the same sim sources,
   FirstChair.Sim.Tests/          plus the determinism and physics tests
 tools/blender/                 asset scripts, the vendored skill pack, tree-kit
 art/source/                    .blend sources (LFS)
-docs/                          research, design, tuning notes
+design/, docs/, production/    design brief, research, studio workflow files
 ```
 
 ## 10. Proposed first milestones (base skiing system)
@@ -289,7 +290,7 @@ milestone 6.
 
 ## 11. Decisions for you
 
-1. **Engine:** Unity as recommended, or Unreal for a more photoreal look?
+1. **Engine:** decided: Unity 6.3 LTS with URP (October 19, 2026).
 2. **Camera:** GMA2 plays from a high camera that pulls back. The old spec
    used a chase cam behind the rider. The choice changes how much detail
    models need up close.

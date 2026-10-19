@@ -1,0 +1,83 @@
+# CCGS project configuration — single source of truth for project settings.
+# See .claude/docs/effects-map.md for full schema.
+
+schema_version: 1
+
+framework:
+  version: 1.2.0
+  last_upgraded: 2026-10-19
+
+project:
+  name: "First Chair"
+  genre: "Skiing sports sandbox"
+  version: "0.1.0"
+  stage: Concept
+  kind: game
+
+# NOTE: this template ships with no `modes:` block, and the six knobs below must
+# never be added to one.
+#
+# `/start` DOES add `modes.rigor` and `modes.automation` here — that is its job,
+# and a `modes:` block containing those two is the expected state of a configured
+# project, not a mistake.
+#
+# What must stay absent is the six knobs `modes.rigor` FRONTS:
+# `modes.review_mode`, `modes.workflow`, `docs.density`, `qa.level`,
+# `modes.story_granularity` and `team.size`. Seeding any of them in this file
+# pins that value and shadows the rigor expansion, so the rigor `/start` infers
+# and saves would stop changing anything. `/start` states the same rule for the
+# settings it writes.
+#
+# Per-developer preferences belong in `project.local.yaml` (gitignored), not
+# here. `/settings --local <key>=<value>` writes there; `/settings <key>=<value>`
+# edits this file. See `.claude/docs/config-resolution.md` for the full
+# precedence order.
+
+modes:
+  rigor: minimal
+  automation: guided
+
+platform:
+  multiplayer: false         # online is a later phase; single player first
+  online: false
+  targets: [PC]
+  primary_input: "Keyboard/Mouse"
+  gamepad_support: "Full"
+  touch_support: "None"
+
+engine:
+  name: "Unity"
+  version: "6.3"
+  language: "C#"
+  rendering: "URP"
+  physics: "PhysX"           # engine physics only; riding runs in the custom deterministic sim
+  # TODO: confirm on your PC (re-run /setup-engine after creating the Unity project)
+  path: "C:/Program Files/Unity/Hub/Editor/6000.3.26f1/Editor/Unity.exe"
+
+specialists:
+  code: "unity-specialist"
+  shader: "unity-shader-specialist"
+  ui: "unity-ui-specialist"
+  # unity-dots-specialist and unity-addressables-specialist are left out on
+  # purpose: First Chair uses no ECS, and Addressables are not in use yet.
+  additional: []
+
+naming:
+  classes: PascalCase
+  variables: camelCase
+  constants: SCREAMING_SNAKE   # UNVERIFIED — not sourceable from
+                               # docs/engine-reference/unity/; confirm before relying on it
+  signals: on_event_name       # C# events, named OnEventName
+  files: PascalCase
+  scenes: PascalCase
+
+testing:
+  framework: unity-test-framework
+
+commands:
+  # TODO: confirm the editor path on your PC (re-run /setup-engine after creating the Unity project).
+  # The riding sim's tests run separately with the .NET SDK: `dotnet test sim/` (see CLAUDE.md).
+  build: '"C:/Program Files/Unity/Hub/Editor/6000.3.26f1/Editor/Unity.exe" -batchmode -quit -projectPath . -buildTarget StandaloneWindows64 -buildWindows64Player Builds/Win64/FirstChair.exe'
+  test: '"C:/Program Files/Unity/Hub/Editor/6000.3.26f1/Editor/Unity.exe" -batchmode -runTests -projectPath . -testPlatform EditMode -testResults test-results/editmode.xml'
+  run: "Builds/Win64/FirstChair.exe -screen-width 1280 -screen-height 720 -screen-fullscreen 0"
+  smoke: '"C:/Program Files/Unity/Hub/Editor/6000.3.26f1/Editor/Unity.exe" -batchmode -quit -projectPath . -logFile -'
