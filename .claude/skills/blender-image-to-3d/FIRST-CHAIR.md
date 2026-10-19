@@ -65,9 +65,11 @@ detail than GMA2's camera shows. Pass the LOD0 figure to `validate.py --budget-t
 
 ## Running in a cloud session
 
-- Blender: download the Linux build of 5.2 LTS and set `BLENDER_BIN`.
-- Workbench renders, including `world_gate.py`, need EGL. A fresh container has none, so install
-  Mesa's software renderer first: `apt-get install -y --no-install-recommends libegl1 libegl-mesa0
+- The `cloud-setup.sh` SessionStart hook installs everything below and sets `BLENDER_BIN`. The
+  rest of this list is what it does, for when it fails or you are on another machine.
+- Blender: the Linux build of 5.2 LTS from download.blender.org.
+- Workbench renders, including `world_gate.py`, need EGL, which a fresh container lacks. Mesa's
+  software renderer provides it: `apt-get install -y --no-install-recommends libegl1 libegl-mesa0
   libgl1-mesa-dri libgbm1`. After that, Workbench works headless; the `EGL_BAD_MATCH` lines it
   prints are harmless.
 - `compose_review.py` needs Pillow: `python3 -m pip install pillow`.

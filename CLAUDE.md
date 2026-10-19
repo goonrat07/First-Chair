@@ -22,11 +22,12 @@ riding works and feels right. Skis first, snowboard later.
 - **Assets:** built in Blender by script, headless. Rules:
   `.claude/rules/blender-assets.md`.
 - **Research and rationale:** `docs/research/engine-and-pipeline.md`.
-- **Where work happens:** cloud sessions start from a fresh container with no
-  Unity Editor. Install the .NET SDK (`dotnet-install.sh`) and Blender 5.2 LTS
-  (the Linux build from download.blender.org) when a task needs them, run
-  `dotnet test sim/` and Blender scripts there, and report any Unity-side change
-  as **not verified in the editor**. On the user's
+- **Where work happens:** cloud sessions have no Unity Editor. The
+  `cloud-setup.sh` SessionStart hook installs Blender 5.2 LTS (`$BLENDER_BIN`),
+  Mesa EGL, Pillow and the .NET 10 SDK, so `dotnet test sim/` and the Blender
+  skill scripts run there. If its start-up line says it failed, read
+  `/tmp/first-chair-cloud-setup.log` before working around it. Report any
+  Unity-side change made in the cloud as **not verified in the editor**. On the user's
   PC, Unity's official Claude Code plugin and the Blender Lab MCP give live editor
   access.
 

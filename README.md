@@ -25,7 +25,7 @@ skiing system, starting with the riding sim and turning on a test slope.
    - Unity Hub, then Unity **6.3 LTS** (the newest `6000.3.x`) with Windows
      Build Support.
    - Blender **5.2 LTS**.
-   - The .NET 8 SDK, for the sim tests.
+   - The .NET 10 SDK, for the sim tests.
    - Python 3, which the studio hooks need.
    - jq (optional; the hooks use it if it's there).
    - Claude Code.
@@ -52,6 +52,12 @@ skiing system, starting with the riding sim and turning on a test slope.
      `/plugin install unity@unity-agent-plugin`.
    - Optional: the [Blender Lab MCP](https://www.blender.org/lab/mcp-server/)
      for live Blender sessions.
+
+## Cloud sessions
+
+Claude Code cloud sessions run `.claude/hooks/cloud-setup.sh` at start. It installs Blender 5.2
+LTS, the libraries Blender needs to render without a GPU, Pillow and the .NET 10 SDK, so asset
+builds and sim tests work there. It runs only in the cloud; on your PC it does nothing.
 
 ## How work runs
 
