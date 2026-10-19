@@ -113,6 +113,11 @@ sysinfo.txt
 *.blend1
 *.blend2
 
+# === First Chair: asset review renders ===
+# Per-phase renders rebuild from each asset's build scripts; only review/final/ is kept.
+art/source/*/review/*
+!art/source/*/review/final/
+
 # === Engine: Unreal ===
 Binaries/
 DerivedDataCache/

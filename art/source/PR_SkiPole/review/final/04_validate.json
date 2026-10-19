@@ -1,0 +1,49 @@
+{
+  "blend": "/home/user/First-Chair/art/source/PR_SkiPole/PR_SkiPole_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 192
+    },
+    "fail": [],
+    "warn": []
+  },
+  "objects": [
+    {
+      "name": "PR_SkiPole_LOD0",
+      "type": "MESH",
+      "warn": [],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 192,
+        "verts_evaluated": 98,
+        "verts": 98,
+        "faces": 192,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "islands": 1,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "M_Pole_Shaft",
+          "M_Pole_Plastic",
+          "M_Pole_Tip"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "SOCKET_grip",
+      "type": "SOCKET",
+      "warn": [],
+      "fail": [],
+      "info": {
+        "parent": "PR_SkiPole_LOD0",
+        "parent_bone": null,
+        "props": {
+          "owner": "phase:06_sockets",
+          "role": "hand",
+          "note": "grip centre; shaft runs down -Z"
+        }
+      }
+    }
+  ]
+}

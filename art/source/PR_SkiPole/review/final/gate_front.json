@@ -1,0 +1,21 @@
+{
+  "view": "front",
+  "az": 0.0,
+  "matte": "/home/user/First-Chair/art/source/PR_SkiPole/ref/front_matte.png",
+  "m_per_px": 0.001,
+  "iou": 0.9824,
+  "ref_only_pct": 0.89,
+  "render_only_pct": 0.89,
+  "band_width_diff": [
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    -0.0008,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+  ]
+}

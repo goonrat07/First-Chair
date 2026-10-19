@@ -1,0 +1,96 @@
+{
+  "asset": "PR_Ski",
+  "generated": "2026-10-19T23:32:10",
+  "blender": "5.2.2 LTS",
+  "source": "/home/user/First-Chair/art/source/PR_Ski/PR_Ski_master.blend",
+  "target_engine": "unity",
+  "units": {
+    "system": "METRIC",
+    "scale_length": 1.0,
+    "authoring_up": "Z",
+    "authoring_forward": "-Y",
+    "export_up": "Y",
+    "export_forward": "+Z",
+    "fbx_bake_space_transform": true,
+    "note": "Z up becomes Y up; a subject facing -Y in Blender faces +Z in the exported scene (glTF and FBX alike, measured for FBX on Blender 5.2.2)"
+  },
+  "target_height_m": 0.085,
+  "bounds_m": {
+    "min": [
+      -0.0665,
+      -0.964,
+      0.0
+    ],
+    "max": [
+      0.0665,
+      0.804,
+      0.085
+    ],
+    "size": [
+      0.133,
+      1.768,
+      0.085
+    ]
+  },
+  "files": {
+    "all": "/home/user/First-Chair/Assets/Art/Equipment/PR_Ski/PR_Ski.fbx"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "objects": [
+        "PR_Ski_LOD0"
+      ],
+      "tris": 212
+    }
+  ],
+  "materials": [
+    "M_Ski_Base",
+    "M_Ski_Binding",
+    "M_Ski_Topsheet"
+  ],
+  "textures": [],
+  "texture_contract": {
+    "basecolor": "sRGB",
+    "normal": "Non-Color, tangent space, OpenGL +Y",
+    "roughness": "Non-Color",
+    "metallic": "Non-Color",
+    "ao": "Non-Color",
+    "packed_channels": "none by default; document any ORM packing here"
+  },
+  "skeleton": [],
+  "sockets": [
+    {
+      "name": "SOCKET_boot",
+      "parent": "PR_Ski_LOD0",
+      "parent_bone": null,
+      "world_location": [
+        0.0,
+        0.0,
+        0.045
+      ],
+      "world_rotation_deg": [
+        0.0,
+        -0.0,
+        -180.0
+      ],
+      "axes": "local +Y forward of the attachment, +Z up",
+      "props": {
+        "owner": "phase:06_sockets",
+        "role": "boot",
+        "note": "boot centre; +Y toward the ski tip"
+      }
+    }
+  ],
+  "colliders": [],
+  "animation_contract": "animation-contract.json",
+  "inferred_from_no_reference": [
+    "camber left flat",
+    "tail shape rounded",
+    "binding shape as blocks",
+    "boot sole height 0.045 m",
+    "no brakes",
+    "placeholder colours"
+  ],
+  "dependencies": []
+}

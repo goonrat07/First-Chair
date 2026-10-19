@@ -14,12 +14,13 @@ skill pack rather than improvising. The research behind these choices is in
 
 - Blender 5.2 LTS, run headless: `blender --background --python <script> -- <args>`.
   This works in cloud sessions as well as on the PC.
-- Scripts live in `tools/blender/`. Sources (`.blend`) live in `art/source/`
-  and exports go to `Assets/Art/`. Both are in Git LFS.
-- Skill pack: blender-game-skills (`majidmanzarpour/blender-game-skills`). It is
-  **not vendored yet**. Before first use, read its scripts, pin a commit and
-  vendor it into `tools/blender/skills/`. Until then, follow its conventions
-  below by hand and say so in the asset's notes.
+- Each asset's working folder (brief, build scripts, master `.blend`, review
+  renders) lives in `art/source/<ASSET>/`, and its exports go to
+  `Assets/Art/<Category>/<ASSET>/`. Binaries are in Git LFS. Shared pipeline
+  scripts that aren't part of one asset live in `tools/blender/`.
+- Skill pack: `.claude/skills/blender-image-to-3d/`, vendored from
+  blender-game-skills at `f0ef293` and adapted for Unity. Use it for every
+  modelled asset, and read its `FIRST-CHAIR.md` first.
 - Trees, forests and terrain are outside that pack. They get First Chair's own
   skills in the same gated format: measured checks at each phase, tri budgets
   per LOD, and a round-trip import check.

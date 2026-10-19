@@ -132,9 +132,11 @@ for:
 - **Big structures** like lift towers and the gondola need their own camera
   framing at the export gate. The default framing is tuned for characters.
 
-The pack is small and has a single commit. Before installing, read its scripts
-end to end, pin a commit, and vendor it into `tools/blender/skills/` so
-upstream changes can't break the pipeline.
+The pack is small and has a single commit, so it was read end to end, pinned at
+`f0ef293` and vendored into `.claude/skills/blender-image-to-3d/` (October 19,
+2026). Upstream changes can't break the pipeline. First Chair's changes, a
+Unity-correct FBX export and GMA2-scale budgets, are listed in its
+`FIRST-CHAIR.md`.
 
 ### Live Blender on the PC (MCP)
 
@@ -275,7 +277,8 @@ feel.
    tuck, brake, pole. Input recording and replay. *Test:* a replay matches
    live play every step, and a scripted carve holds its line.
 3. **See it.** Unity Terrain from the same heightmap, a placeholder skier from
-   a Blender script, a chase camera, keyboard and gamepad input. *Play test.*
+   a Blender script, a GMA2-style follow camera, keyboard and gamepad input.
+   *Play test.*
 4. **Snow and air.** Snow types, hold-to-load jumps, spins, flips and grabs,
    landings, crashes, reset. *Test:* landing grades from scripted inputs.
 5. **Trees and rails.** Near misses and Flow, branch clips, trunk crashes,
@@ -291,9 +294,9 @@ milestone 6.
 ## 11. Decisions for you
 
 1. **Engine:** decided: Unity 6.3 LTS with URP (October 19, 2026).
-2. **Camera:** GMA2 plays from a high camera that pulls back. The old spec
-   used a chase cam behind the rider. The choice changes how much detail
-   models need up close.
+2. **Camera:** decided: a high, pulled-back follow camera like GMA2's first. A
+   Steep-style chase cam may come later. Cameras only draw, so replays can be
+   re-filmed from either.
 3. **Skill pack:** adopt blender-game-skills, plus our own tree-kit and
    terrain skills in the same format?
 

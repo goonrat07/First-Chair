@@ -1,0 +1,30 @@
+{
+  "source": "typical published all-mountain ski dimensions; no specific product",
+  "length_m": 1.77,
+  "widths_m": [
+    0.133,
+    0.092,
+    0.118
+  ],
+  "boot_centre_from_tip_m": 0.965,
+  "side": {
+    "file": "side_matte.png",
+    "az": 90,
+    "m_per_px": 0.0008333333333333334,
+    "axis_col": 1198.0,
+    "ground_row": 142.0,
+    "image_px": [
+      2204,
+      182
+    ],
+    "subject_height_m": 0.085
+  },
+  "top": {
+    "file": "top_matte.png",
+    "m_per_px": 0.0008333333333333334,
+    "image_px": [
+      239,
+      2204
+    ]
+  }
+}

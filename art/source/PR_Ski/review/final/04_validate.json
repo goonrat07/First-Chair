@@ -1,0 +1,49 @@
+{
+  "blend": "/home/user/First-Chair/art/source/PR_Ski/PR_Ski_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 212
+    },
+    "fail": [],
+    "warn": []
+  },
+  "objects": [
+    {
+      "name": "PR_Ski_LOD0",
+      "type": "MESH",
+      "warn": [],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 212,
+        "verts_evaluated": 112,
+        "verts": 112,
+        "faces": 212,
+        "boundary_edges": 0,
+        "nonmanifold_edges": 0,
+        "islands": 3,
+        "uv_loops_outside_0_1": 0,
+        "materials": [
+          "M_Ski_Topsheet",
+          "M_Ski_Base",
+          "M_Ski_Binding"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "SOCKET_boot",
+      "type": "SOCKET",
+      "warn": [],
+      "fail": [],
+      "info": {
+        "parent": "PR_Ski_LOD0",
+        "parent_bone": null,
+        "props": {
+          "owner": "phase:06_sockets",
+          "role": "boot",
+          "note": "boot centre; +Y toward the ski tip"
+        }
+      }
+    }
+  ]
+}

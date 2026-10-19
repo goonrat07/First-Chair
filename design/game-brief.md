@@ -22,7 +22,7 @@ after this MVP. What the user says in session overrides both. -->
 - Air: hold-to-load jumps, spins, flips and grabs, landings graded clean, solid or sketchy, crashes, and tap-to-reset.
 - Trees: near misses fill Flow, branch clips cost speed, trunk hits crash.
 - Rails and boxes with grinds, and single-trick scoring and naming.
-- One test slope (groomer, powder bowl, kicker line, short glade) on a heightmap shared by the sim and Unity Terrain, with a chase camera and keyboard plus gamepad input.
+- One test slope (groomer, powder bowl, kicker line, short glade) on a heightmap shared by the sim and Unity Terrain, with a high, pulled-back follow camera like GMA2's (a Steep-style chase cam can come later) and keyboard plus gamepad input.
 - First real art toward the target look: skier, skis, poles, trees, snow trails and lighting.
 
 ## Out of scope — not building this

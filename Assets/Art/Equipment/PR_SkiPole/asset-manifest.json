@@ -1,0 +1,93 @@
+{
+  "asset": "PR_SkiPole",
+  "generated": "2026-10-19T23:34:14",
+  "blender": "5.2.2 LTS",
+  "source": "/home/user/First-Chair/art/source/PR_SkiPole/PR_SkiPole_master.blend",
+  "target_engine": "unity",
+  "units": {
+    "system": "METRIC",
+    "scale_length": 1.0,
+    "authoring_up": "Z",
+    "authoring_forward": "-Y",
+    "export_up": "Y",
+    "export_forward": "+Z",
+    "fbx_bake_space_transform": true,
+    "note": "Z up becomes Y up; a subject facing -Y in Blender faces +Z in the exported scene (glTF and FBX alike, measured for FBX on Blender 5.2.2)"
+  },
+  "target_height_m": 1.2,
+  "bounds_m": {
+    "min": [
+      -0.0325,
+      -0.0325,
+      0.0
+    ],
+    "max": [
+      0.0325,
+      0.0325,
+      1.2
+    ],
+    "size": [
+      0.065,
+      0.065,
+      1.2
+    ]
+  },
+  "files": {
+    "all": "/home/user/First-Chair/Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "objects": [
+        "PR_SkiPole_LOD0"
+      ],
+      "tris": 192
+    }
+  ],
+  "materials": [
+    "M_Pole_Plastic",
+    "M_Pole_Shaft",
+    "M_Pole_Tip"
+  ],
+  "textures": [],
+  "texture_contract": {
+    "basecolor": "sRGB",
+    "normal": "Non-Color, tangent space, OpenGL +Y",
+    "roughness": "Non-Color",
+    "metallic": "Non-Color",
+    "ao": "Non-Color",
+    "packed_channels": "none by default; document any ORM packing here"
+  },
+  "skeleton": [],
+  "sockets": [
+    {
+      "name": "SOCKET_grip",
+      "parent": "PR_SkiPole_LOD0",
+      "parent_bone": null,
+      "world_location": [
+        0.0,
+        0.0,
+        1.1
+      ],
+      "world_rotation_deg": [
+        0.0,
+        -0.0,
+        0.0
+      ],
+      "axes": "local +Y forward of the attachment, +Z up",
+      "props": {
+        "owner": "phase:06_sockets",
+        "role": "hand",
+        "note": "grip centre; shaft runs down -Z"
+      }
+    }
+  ],
+  "colliders": [],
+  "animation_contract": "animation-contract.json",
+  "inferred_from_no_reference": [
+    "strap omitted",
+    "grip shape generic",
+    "placeholder colours"
+  ],
+  "dependencies": []
+}

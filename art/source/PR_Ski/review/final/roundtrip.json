@@ -1,0 +1,53 @@
+{
+  "file": "/home/user/First-Chair/Assets/Art/Equipment/PR_Ski/PR_Ski.fbx",
+  "errors": [],
+  "meshes": [
+    {
+      "name": "PR_Ski_LOD0",
+      "tris": 212,
+      "verts": 112,
+      "uv": true,
+      "materials": [
+        "M_Ski_Topsheet",
+        "M_Ski_Base",
+        "M_Ski_Binding"
+      ],
+      "skinned": false,
+      "shape_keys": 0
+    }
+  ],
+  "armatures": [],
+  "clips": [],
+  "materials": [
+    "M_Ski_Base",
+    "M_Ski_Binding",
+    "M_Ski_Topsheet"
+  ],
+  "images": [],
+  "empties": [
+    {
+      "name": "SOCKET_boot",
+      "parent": "PR_Ski_LOD0",
+      "parent_bone": null
+    }
+  ],
+  "bounds_m": {
+    "min": [
+      -0.0665,
+      -0.964,
+      -0.0
+    ],
+    "max": [
+      0.0665,
+      0.804,
+      0.085
+    ],
+    "size": [
+      0.133,
+      1.768,
+      0.085
+    ]
+  },
+  "height_m": 0.085,
+  "render": "/home/user/First-Chair/art/source/PR_Ski/review/09_roundtrip/roundtrip_clay_threequarter.png"
+}
