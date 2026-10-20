@@ -59,10 +59,25 @@
 
 ## Files
 
-- `Packages/com.firstchair.sim/Runtime/` (rider snow contact, carving and skidding, tuck, brake, pole, snow types, tuning)
+- `Packages/com.firstchair.sim/Runtime/Fix64.cs`
+- `Packages/com.firstchair.sim/Runtime/Heightmap.cs`
+- `Packages/com.firstchair.sim/Runtime/Recording.cs`
+- `Packages/com.firstchair.sim/Runtime/Replayer.cs`
+- `Packages/com.firstchair.sim/Runtime/RiderState.cs`
+- `Packages/com.firstchair.sim/Runtime/SimInput.cs`
+- `Packages/com.firstchair.sim/Runtime/Simulation.cs`
+- `Packages/com.firstchair.sim/Runtime/SnowMap.cs`
+- `Packages/com.firstchair.sim/Runtime/Tuning.cs`
+- `Packages/com.firstchair.sim/Runtime/Vec3.cs`
+- `sim/FirstChair.Sim.Tests/DeterminismTests.cs`
+- `sim/FirstChair.Sim.Tests/Fix64TrigTests.cs`
+- `sim/FirstChair.Sim.Tests/GravitySlideTests.cs`
+- `sim/FirstChair.Sim.Tests/RecordingTests.cs`
+- `sim/FirstChair.Sim.Tests/ScriptedRide.cs`
+- `sim/FirstChair.Sim.Tests/SimRandomTests.cs`
+- `sim/FirstChair.Sim.Tests/SnowMapTests.cs`
 - `sim/FirstChair.Sim.Tests/SnowRidingTests.cs`
-
----
+- `sim/FirstChair.Sim.Tests/TestTerrain.cs`
 
 ## QA Test Cases
 
