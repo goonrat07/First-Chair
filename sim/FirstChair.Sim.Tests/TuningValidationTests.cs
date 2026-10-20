@@ -32,7 +32,7 @@ namespace FirstChair.Sim.Tests
         [TestCase("Sketchy below Solid")]
         [TestCase("GrabSteeringThreshold zero")]
         [TestCase("GrabSteeringThreshold above one")]
-        [TestCase("FlowTrickBonus above 1000")]
+        [TestCase("FlowTrickBonus above 10")]
         public void NewRun_TuningARideCannotRunOn_ThrowsArgumentException(string badValue)
         {
             // Arrange
@@ -52,7 +52,7 @@ namespace FirstChair.Sim.Tests
                 case "Sketchy below Solid": tuning.SketchyLandingAngle = tuning.SolidLandingAngle - Fix64.FromRaw(1); break;
                 case "GrabSteeringThreshold zero": tuning.GrabSteeringThreshold = Fix64.Zero; break;
                 case "GrabSteeringThreshold above one": tuning.GrabSteeringThreshold = Fix64.One + Fix64.FromRaw(1); break;
-                case "FlowTrickBonus above 1000": tuning.FlowTrickBonus = Fix64.FromInt(1000) + Fix64.FromRaw(1); break;
+                case "FlowTrickBonus above 10": tuning.FlowTrickBonus = Fix64.FromInt(10) + Fix64.FromRaw(1); break;
                 default: throw new ArgumentOutOfRangeException(nameof(badValue), badValue, "no such case");
             }
 

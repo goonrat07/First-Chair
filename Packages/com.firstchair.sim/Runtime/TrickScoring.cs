@@ -44,15 +44,26 @@ namespace FirstChair.Sim
         /// <summary>Degrees per half turn of spin, for spin names ("Left 540").</summary>
         private const int DegreesPerHalfTurn = 180;
 
+        /// <summary>
+        /// The most half turns or flips a jump counts. With the scored-time cap and the limits in Simulation.Validate,
+        /// it keeps every score under about 8.8e8, inside the Q32.32 range.
+        /// </summary>
+        public const int MaxCount = 100;
+
+        /// <summary>The most air time or grind time that scores, seconds (see <see cref="MaxCount"/>).</summary>
+        public const int MaxScoredSeconds = 600;
+
         private static readonly Fix64 Half = Fix64.FromRatio(1, 2);
+        private static readonly Fix64 ScoredSecondsCap = Fix64.FromInt(MaxScoredSeconds);
+        private static readonly Fix64 PointsCap = Fix64.FromInt(int.MaxValue - 1);
 
-        /// <summary>Half turns of spin, rounded to the nearest whole count, ignoring direction.</summary>
+        /// <summary>Half turns of spin, rounded to the nearest whole count, ignoring direction; at most <see cref="MaxCount"/>.</summary>
         /// <param name="spin">Total spin, radians (<see cref="AirSummary.Spin"/>).</param>
-        public static int HalfTurns(Fix64 spin) => ((Fix64.Abs(spin) + Fix64.HalfPi) / Fix64.Pi).FloorToInt();
+        public static int HalfTurns(Fix64 spin) => Capped(((Fix64.Abs(spin) + Fix64.HalfPi) / Fix64.Pi).FloorToInt());
 
-        /// <summary>Full flips, rounded to the nearest whole count, ignoring direction.</summary>
+        /// <summary>Full flips, rounded to the nearest whole count, ignoring direction; at most <see cref="MaxCount"/>.</summary>
         /// <param name="flip">Total flip, radians (<see cref="AirSummary.Flip"/>).</param>
-        public static int Flips(Fix64 flip) => ((Fix64.Abs(flip) + Fix64.Pi) / Fix64.TwoPi).FloorToInt();
+        public static int Flips(Fix64 flip) => Capped(((Fix64.Abs(flip) + Fix64.Pi) / Fix64.TwoPi).FloorToInt());
 
         /// <summary>True when the flight's grab was held at least <see cref="Tuning.GrabMinTime"/>.</summary>
         /// <param name="air">The flight.</param>
@@ -88,8 +99,8 @@ namespace FirstChair.Sim
             Fix64 raw = tuning.TrickPointsPerHalfTurn * Fix64.FromInt(HalfTurns(air.Spin))
                 + tuning.TrickPointsPerFlip * Fix64.FromInt(Flips(air.Flip))
                 + GrabBonus(air, tuning)
-                + tuning.TrickPointsPerAirSecond * air.AirSeconds;
-            return raw * GradeFactor(grade, tuning) * tuning.TrickMultiplier(air.Flow);
+                + tuning.TrickPointsPerAirSecond * Fix64.Min(air.AirSeconds, ScoredSecondsCap);
+            return raw * GradeFactor(grade, tuning) * tuning.TrickMultiplier(Fix64.Clamp(air.Flow, Fix64.Zero, Fix64.One));
         }
 
         /// <summary>A finished grind's points before rounding (see the class remarks).</summary>
@@ -97,7 +108,7 @@ namespace FirstChair.Sim
         /// <param name="tuning">The tuning.</param>
         public static Fix64 GrindValue(GrindSummary grind, Tuning tuning)
         {
-            Fix64 value = tuning.GrindPointsPerSecond * grind.Seconds * grind.Balance;
+            Fix64 value = tuning.GrindPointsPerSecond * Fix64.Min(grind.Seconds, ScoredSecondsCap) * grind.Balance;
             return grind.Fell ? value * tuning.GrindFallFactor : value;
         }
 
@@ -121,8 +132,12 @@ namespace FirstChair.Sim
                 value = value * tuning.TrickRepeatFactor;
             }
 
-            return (value + Half).FloorToInt();
+            // Clamped so rounding can never wrap: no score is negative or past int range.
+            return (Fix64.Clamp(value, Fix64.Zero, PointsCap) + Half).FloorToInt();
         }
+
+        /// <summary>A count clamped to [0, <see cref="MaxCount"/>]; a wrapped negative count reads as the maximum.</summary>
+        private static int Capped(int count) => count < 0 || count > MaxCount ? MaxCount : count;
 
         /// <summary>The trick's name (see the class remarks), for example "Switch Backflip Right 360 Mute".</summary>
         /// <param name="air">The flight.</param>

@@ -153,14 +153,17 @@ namespace FirstChair.Sim
         /// <summary>The longest a tuning duration may be, seconds: its step count must fit an int.</summary>
         private static readonly Fix64 MaxTuningSeconds = Fix64.FromInt(int.MaxValue / StepsPerSecond);
 
-        /// <summary>The largest Flow trick bonus: far above any sane value, and far below where the multiplier wraps.</summary>
-        private static readonly Fix64 MaxFlowTrickBonus = Fix64.FromInt(1000);
+        /// <summary>The largest Flow trick bonus (see <see cref="TrickScoring"/> for the bound on a score).</summary>
+        private static readonly Fix64 MaxFlowTrickBonus = Fix64.FromInt(10);
 
-        /// <summary>The largest points coefficient (per half turn, flip, second, grab): far below where a score wraps.</summary>
-        private static readonly Fix64 MaxPointsCoefficient = Fix64.FromInt(1_000_000);
+        /// <summary>
+        /// The largest points coefficient (per half turn, flip, second, grab, grind second). With the factor and bonus
+        /// limits and <see cref="TrickScoring"/>'s count and time caps, a score stays under about 8.8e8, inside Q32.32.
+        /// </summary>
+        private static readonly Fix64 MaxPointsCoefficient = Fix64.FromInt(10_000);
 
-        /// <summary>The largest landing-quality factor: far above any sane value.</summary>
-        private static readonly Fix64 MaxTrickFactor = Fix64.FromInt(1000);
+        /// <summary>The largest landing-quality factor (see <see cref="MaxPointsCoefficient"/>).</summary>
+        private static readonly Fix64 MaxTrickFactor = Fix64.FromInt(10);
 
         /// <summary>Events one step can raise without trees; each tree adds at most a near miss and a branch hit.</summary>
         private const int BaseEventCapacity = 8;
@@ -1233,18 +1236,18 @@ namespace FirstChair.Sim
             Require(IsFraction(tuning.BranchSpeedLoss), "BranchSpeedLoss must be in [0, 1]");
             Require(IsFraction(tuning.BranchFlowCost), "BranchFlowCost must be in [0, 1]");
             Require(IsFraction(tuning.FlowDragCut), "FlowDragCut must be in [0, 1]");
-            Require(tuning.FlowTrickBonus >= Fix64.Zero && tuning.FlowTrickBonus <= MaxFlowTrickBonus, "FlowTrickBonus must be in [0, 1000]");
+            Require(tuning.FlowTrickBonus >= Fix64.Zero && tuning.FlowTrickBonus <= MaxFlowTrickBonus, "FlowTrickBonus must be in [0, 10]");
 
-            Require(IsWithin(tuning.TrickPointsPerHalfTurn, MaxPointsCoefficient), "TrickPointsPerHalfTurn must be in [0, 1000000]");
-            Require(IsWithin(tuning.TrickPointsPerFlip, MaxPointsCoefficient), "TrickPointsPerFlip must be in [0, 1000000]");
-            Require(IsWithin(tuning.TrickPointsPerAirSecond, MaxPointsCoefficient), "TrickPointsPerAirSecond must be in [0, 1000000]");
-            Require(IsWithin(tuning.GrabBasePoints, MaxPointsCoefficient), "GrabBasePoints must be in [0, 1000000]");
-            Require(IsWithin(tuning.GrabPointsPerSecond, MaxPointsCoefficient), "GrabPointsPerSecond must be in [0, 1000000]");
-            Require(IsWithin(tuning.GrabPointsCap, MaxPointsCoefficient), "GrabPointsCap must be in [0, 1000000]");
+            Require(IsWithin(tuning.TrickPointsPerHalfTurn, MaxPointsCoefficient), "TrickPointsPerHalfTurn must be in [0, 10000]");
+            Require(IsWithin(tuning.TrickPointsPerFlip, MaxPointsCoefficient), "TrickPointsPerFlip must be in [0, 10000]");
+            Require(IsWithin(tuning.TrickPointsPerAirSecond, MaxPointsCoefficient), "TrickPointsPerAirSecond must be in [0, 10000]");
+            Require(IsWithin(tuning.GrabBasePoints, MaxPointsCoefficient), "GrabBasePoints must be in [0, 10000]");
+            Require(IsWithin(tuning.GrabPointsPerSecond, MaxPointsCoefficient), "GrabPointsPerSecond must be in [0, 10000]");
+            Require(IsWithin(tuning.GrabPointsCap, MaxPointsCoefficient), "GrabPointsCap must be in [0, 10000]");
             Require(tuning.GrabMinTime >= Fix64.Zero && tuning.GrabMinTime < MaxTuningSeconds, "GrabMinTime must be zero or more and fit an int of steps");
-            Require(IsWithin(tuning.CleanTrickFactor, MaxTrickFactor), "CleanTrickFactor must be in [0, 1000]");
-            Require(IsWithin(tuning.SolidTrickFactor, MaxTrickFactor), "SolidTrickFactor must be in [0, 1000]");
-            Require(IsWithin(tuning.SketchyTrickFactor, MaxTrickFactor), "SketchyTrickFactor must be in [0, 1000]");
+            Require(IsWithin(tuning.CleanTrickFactor, MaxTrickFactor), "CleanTrickFactor must be in [0, 10]");
+            Require(IsWithin(tuning.SolidTrickFactor, MaxTrickFactor), "SolidTrickFactor must be in [0, 10]");
+            Require(IsWithin(tuning.SketchyTrickFactor, MaxTrickFactor), "SketchyTrickFactor must be in [0, 10]");
             Require(IsFraction(tuning.TrickRepeatFactor), "TrickRepeatFactor must be in [0, 1]");
 
             Fix64 maxRate = Fix64.FromInt(MaxGrindRate);
@@ -1256,7 +1259,7 @@ namespace FirstChair.Sim
             Require(IsWithin(tuning.GrindBalanceRate, maxRate), "GrindBalanceRate must be in [0, 1000]");
             Require(IsWithin(tuning.GrindWobble, maxRate), "GrindWobble must be in [0, 1000]");
             Require(IsWithin(tuning.GrindEntryLean, maxRate), "GrindEntryLean must be in [0, 1000]");
-            Require(IsWithin(tuning.GrindPointsPerSecond, MaxPointsCoefficient), "GrindPointsPerSecond must be in [0, 1000000]");
+            Require(IsWithin(tuning.GrindPointsPerSecond, MaxPointsCoefficient), "GrindPointsPerSecond must be in [0, 10000]");
             Require(IsFraction(tuning.GrindFallFactor), "GrindFallFactor must be in [0, 1]");
         }
 

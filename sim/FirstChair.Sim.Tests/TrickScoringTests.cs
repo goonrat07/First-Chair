@@ -256,6 +256,58 @@ namespace FirstChair.Sim.Tests
             Assert.That(score.Tricks[1].Name, Is.EqualTo("Switch Straight Air"));
         }
 
+        [Test]
+        public void LargestValidTuning_ExtremeFlight_ScoresTheCappedValueWithoutWrapping()
+        {
+            // Arrange: every scoring limit a run accepts, and a 1000-half-turn, 1000-flip, hour-long flight at full Flow.
+            Tuning tuning = Tuning.Default;
+            Fix64 coefficient = Fix64.FromInt(MaxCoefficient);
+            tuning.TrickPointsPerHalfTurn = coefficient;
+            tuning.TrickPointsPerFlip = coefficient;
+            tuning.TrickPointsPerAirSecond = coefficient;
+            tuning.GrabBasePoints = coefficient;
+            tuning.GrabPointsPerSecond = coefficient;
+            tuning.GrabPointsCap = coefficient;
+            tuning.CleanTrickFactor = Fix64.FromInt(MaxFactor);
+            tuning.FlowTrickBonus = Fix64.FromInt(MaxFactor);
+            Heightmap flat = TestTerrain.Flat();
+            Assert.That(
+                () => new Simulation(new RunSetup(Sport.Skis, 0, 1UL, Fix64.FromInt(64), Fix64.FromInt(64)), flat, TestTerrain.Uniform(flat, SnowType.Groomed), tuning),
+                Throws.Nothing,
+                "the tuning must be one a run accepts");
+            AirSummary air = Air(3600 * Simulation.StepsPerSecond, 1000, 1000, GrabKind.Japan, Simulation.StepsPerSecond, flow: Fix64.One);
+
+            // Act
+            int points = Score(LandingGrade.Clean, air, tuning);
+
+            // Assert: counts and time at their caps, grab at its cap, times the factor and 1 + bonus.
+            int raw = MaxCoefficient * ((2 * TrickScoring.MaxCount) + TrickScoring.MaxScoredSeconds) + MaxCoefficient;
+            Assert.That(points, Is.EqualTo(raw * MaxFactor * (1 + MaxFactor)));
+        }
+
+        [TestCase(long.MaxValue, int.MaxValue - 1)]
+        [TestCase(-4294967296L, 0)]
+        public void Points_ValueOutsideIntRange_ClampsInsteadOfWrapping(long raw, int expected)
+        {
+            // Act
+            int points = TrickScoring.Points(Fix64.FromRaw(raw), 0, Tuning.Default);
+
+            // Assert
+            Assert.That(points, Is.EqualTo(expected));
+        }
+
+        [Test]
+        public void HalfTurnsAndFlips_HugeOrWrappedAngles_CountAtMostMaxCount()
+        {
+            // Act and Assert
+            Assert.That(TrickScoring.HalfTurns(Fix64.FromRaw(long.MinValue)), Is.EqualTo(TrickScoring.MaxCount));
+            Assert.That(TrickScoring.HalfTurns(Fix64.FromInt(1_000_000)), Is.EqualTo(TrickScoring.MaxCount));
+            Assert.That(TrickScoring.Flips(Fix64.FromRaw(long.MinValue)), Is.EqualTo(TrickScoring.MaxCount));
+        }
+
+        private const int MaxCoefficient = 10_000;
+        private const int MaxFactor = 10;
+
         private static AirSummary Air(
             int airTicks, int halfTurns = 0, int flips = 0, GrabKind grab = GrabKind.None, int grabTicks = 0, bool switchTakeoff = false, Fix64 flow = default) =>
             new AirSummary(
