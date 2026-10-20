@@ -174,8 +174,8 @@ def build(scene, args):
         for part, (yz, size, r), role in (("BootFoot", BOOT_FOOT, "boot"), ("BootShaft", BOOT_SHAFT, "boot"),
                                           ("BootBand", BOOT_BAND, "boot_band")):
             rbox("CH_Skier_%s_%s_block" % (part, sfx), (bx, yz[0], yz[1]), size, r, role)
-        socket("socket_ski_%s" % sfx, (bx, BOOT_FOOT[0][0], 0.0))          # under the sole, boot centre
-        socket("socket_hand_%s" % sfx, M - n_out * 0.02)                    # palm centre, inside the mitten
+        socket("SOCKET_ski_%s" % sfx, (bx, BOOT_FOOT[0][0], 0.0))          # under the sole, boot centre
+        socket("SOCKET_hand_%s" % sfx, M - n_out * 0.02)                    # palm centre, inside the mitten
     T.log("blockout built")
     measure(args)
 

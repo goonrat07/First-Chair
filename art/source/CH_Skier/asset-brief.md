@@ -85,9 +85,9 @@ ARTICULATION humanoid deformation skeleton (references/rigging-animation.md) bou
              shoulder (0.18, 0.02, 1.36)   elbow (0.402, 0.02, 1.174)   wrist (0.601, 0.02, 1.006)
              hip (0.10, 0.03, 0.88)        knee (0.12, 0.0, 0.50)       ankle (0.13, 0.02, 0.11)
            Sockets (empties in SOCKETS, placed in the blockout; +Y = the figure's forward, +Z up):
-             socket_ski_L, socket_ski_R    under the sole at the boot centre, (+/-0.13, -0.03, 0.0).
+             SOCKET_ski_L, SOCKET_ski_R    under the sole at the boot centre, (+/-0.13, -0.03, 0.0).
                                            PR_Ski's SOCKET_boot (0.045 above the ski base) aligns here.
-             socket_hand_L, socket_hand_R  palm centre inside the mitten, (+/-0.669, 0.02, 0.924) in the rest
+             SOCKET_hand_L, SOCKET_hand_R  palm centre inside the mitten, (+/-0.669, 0.02, 0.924) in the rest
                                            pose; PR_SkiPole's grip aligns here. Final axes in Phase 6.
            Animation: pose driven from sim state (lean from edge angle, crouch from tuck and pop load), plus
            authored clips for tuck, grabs and crashes (story 007).
@@ -133,9 +133,8 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
   - Keeping them in the same FBX on the same skeleton means no extra head or foot sockets. The four named
     sockets cover what attaches at runtime: skis and poles.
   - If runtime gear swaps are wanted later, the same objects can become socketed props.
-- **Sockets use the user's names** (`socket_ski_L/R`, `socket_hand_L/R`). The skill's naming is
-  `SOCKET_<name>`, and `scripts/validate.py` only checks empties whose names start with `SOCKET_`. Decide
-  by Phase 6: keep these names and accept that validate.py skips them, or rename to `SOCKET_ski_L` and so on.
+- **Sockets are named `SOCKET_ski_L/R` and `SOCKET_hand_L/R`** (the user's choice, 2026-10-20), matching
+  PR_Ski and PR_SkiPole, so `scripts/validate.py` checks them.
 - **The reference is a measuring stick, not a design.** The blockout and the reference come from the same
   table. A high IoU therefore proves scale, placement and proportions match the table; it does not prove
   the table is the right look. That is the user's review.
