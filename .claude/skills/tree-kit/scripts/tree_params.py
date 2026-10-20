@@ -6,7 +6,7 @@ into the Phase 1 silhouette mattes, and tree_gate.py measures the built mesh aga
 Pure Python (no bpy, no Pillow), so it runs inside and outside Blender.
 
 Units and axes: metres, Z up, trunk on the Z axis, origin at the trunk base on the ground.
-A part is a loft: rings of (x, y, z) points joined ring to ring, optionally closed by an apex,
+A part is a loft: rings of (x, y, z) points joined ring to ring, optionally closed by an apex (and an apex0 before the first ring),
 with one material role per ring edge ("bark", "needle", "snow").
 Kinds: "conifer" (tiered, drooping branch planes and a spike crown). Add a kind by writing a
 builder that returns parts and registering it in KINDS; the other scripts do not change.
@@ -93,18 +93,30 @@ def branch_part(shape, name, z0, az, length, roll, top_role):
     def centre(s):
         return r0 + s * (length - r0), z0 + b["root_rise_m"] - droop * s ** b["droop_power"]
 
+    # section "trapezoid" (default, 12 tris): green rim below a narrower snow top.
+    # section "tent" (9 tris, for lower LODs): a snow ridge over a green underside, no rim.
+    tent = b.get("section", "trapezoid") == "tent"
+    # stations "mid_only" (lower LODs): the root becomes a point at the trunk; with "tent" that is 6 tris.
+    mid_only = b.get("stations", "root_mid") == "mid_only"
+    stations = ((b["mid_frac"], w_mid),) if mid_only else ((0.0, w_root), (b["mid_frac"], w_mid))
     rings = []
-    for s, w in ((0.0, w_root), (b["mid_frac"], w_mid)):
+    for s, w in stations:
         r, zc = centre(s)
         hw = w / 2
+        sec = (((-hw, -0.35 * th), (0.0, 0.65 * th), (hw, -0.35 * th)) if tent else
+               ((-hw, -0.35 * th), (-hw * sf, 0.65 * th), (hw * sf, 0.65 * th), (hw, -0.35 * th)))
         ring = []
-        for u, v in ((-hw, -0.35 * th), (-hw * sf, 0.65 * th), (hw * sf, 0.65 * th), (hw, -0.35 * th)):
+        for u, v in sec:
             u2, v2 = u * cr - v * sr, u * sr + v * cr
             ring.append((dx * r + lx * u2, dy * r + ly * u2, zc + v2))
         rings.append(ring)
     r, zc = centre(1.0)
-    return {"name": name, "kind": "branch", "rings": rings, "apex": (dx * r, dy * r, zc),
-            "roles": ["needle", top_role, "needle", "needle"]}
+    roles = [top_role, top_role, "needle"] if tent else ["needle", top_role, "needle", "needle"]
+    part = {"name": name, "kind": "branch", "rings": rings, "apex": (dx * r, dy * r, zc), "roles": roles}
+    if mid_only:
+        rr, zr = centre(0.0)
+        part["apex0"] = (dx * rr, dy * rr, zr)
+    return part
 
 
 def keep_index(k, keep):
@@ -162,14 +174,14 @@ def layout(params, level=0, variant=None):
 
 def part_points(part):
     pts = [p for ring in part["rings"] for p in ring]
-    return pts + ([part["apex"]] if part["apex"] else [])
+    return pts + ([part["apex"]] if part["apex"] else []) + ([part["apex0"]] if part.get("apex0") else [])
 
 
 def tri_count(parts):
     n = 0
     for p in parts:
         m = len(p["rings"][0])
-        n += (len(p["rings"]) - 1) * 2 * m + (m if p["apex"] else 0)
+        n += (len(p["rings"]) - 1) * 2 * m + (m if p["apex"] else 0) + (m if p.get("apex0") else 0)
     return n
 
 

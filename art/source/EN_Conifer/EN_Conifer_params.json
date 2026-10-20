@@ -3,60 +3,55 @@
   "kind": "conifer",
   "seed": 7,
   "variant": "snowy_spruce",
-  "notes": "Read by .claude/skills/tree-kit/scripts. Metres, Z up, origin at the trunk base. Shape values are design choices from art/reference/style-notes-gma2.md 'Trees' (slender trunk, sparse drooping tiers of narrow planes, narrow spike crown); colours are provisional until the user's look review.",
+  "notes": "Read by .claude/skills/tree-kit/scripts. Metres, Z up, origin at the trunk base. Shape values are design choices from art/reference/style-notes-gma2.md 'Trees' (slender trunk, sparse drooping tiers of narrow planes, narrow spike crown); colours are provisional until the user's look review. v2 after the user's look review (2026-10-20): fuller and snowier (16 tiers, 8 to 4 branches, wider flatter overlapping planes, bigger snow caps, darker needle green), still slim with sky between tiers.",
   "shape": {
     "height_m": 12.0,
     "trunk": {"base_radius_m": 0.16, "top_radius_m": 0.03, "top_frac": 0.93, "sides": 6},
-    "crown": {"base_frac": 0.17, "top_tier_frac": 0.86, "radius_max_m": 1.9, "taper_power": 1.0,
-              "base_radius_frac": 0.85, "base_swell": 0.12},
-    "tiers": {"count": 10, "spacing_power": 1.15, "branches": 6, "branches_top": 3,
-              "az_jitter_deg": 14, "length_jitter": 0.12, "z_jitter_frac": 0.12},
-    "branch": {"root_rise_m": 0.15, "droop_frac": 0.40, "droop_power": 1.6, "mid_frac": 0.45,
-               "root_width_m": 0.18, "mid_width_frac": 0.32, "max_mid_width_m": 0.7, "thickness_m": 0.10,
-               "snow_width_frac": 0.70, "roll_jitter_deg": 12},
+    "crown": {"base_frac": 0.17, "top_tier_frac": 0.87, "radius_max_m": 1.9, "taper_power": 1.0, "base_radius_frac": 0.85, "base_swell": 0.12},
+    "tiers": {"count": 16, "spacing_power": 1.1, "branches": 8, "branches_top": 4, "az_jitter_deg": 10, "length_jitter": 0.12, "z_jitter_frac": 0.15},
+    "branch": {"root_rise_m": 0.1, "droop_frac": 0.3, "droop_power": 1.8, "mid_frac": 0.5, "root_width_m": 0.18, "mid_width_frac": 0.46, "max_mid_width_m": 1.0, "thickness_m": 0.12, "snow_width_frac": 0.88, "roll_jitter_deg": 6},
     "spike": {"base_radius_m": 0.15, "sides": 5}
   },
   "lods": [
     {"level": 0, "budget_tris": [300, 1500], "overrides": {}},
-    {"level": 1, "budget_tris": [100, 400],
-     "select": {"max_branches_per_tier": 3, "tier_stride": 1},
-     "overrides": {"branch.mid_width_frac": 0.36, "trunk.sides": 4, "spike.sides": 4}},
-    {"level": 2, "kind": "billboard", "budget_tris": [2, 4], "status": "planned",
-     "notes": "Flat far version (story-007). Not built yet; see asset-brief.md LODS."}
+    {"level": 1, "budget_tris": [100, 400], "select": {"max_branches_per_tier": 4, "tier_stride": 1}, "overrides": {"branch.section": "tent", "branch.stations": "mid_only", "branch.mid_width_frac": 0.55, "trunk.sides": 4, "spike.sides": 4}},
+    {"level": 2, "kind": "billboard", "budget_tris": [2, 4], "status": "planned", "notes": "Flat far version (story-007). Not built yet; see asset-brief.md LODS."}
   ],
   "variants": {
-    "snowy_spruce": {
-      "status": "built",
-      "snow_cover": 0.95,
-      "colours_linear": {"bark": [0.09, 0.07, 0.06], "needle": [0.022, 0.06, 0.035], "snow": [0.80, 0.87, 0.96]},
-      "roughness": {"bark": 0.9, "needle": 0.85, "snow": 0.7}
-    },
-    "olive_bare": {
-      "status": "planned",
-      "snow_cover": 0.0,
-      "colours_linear": {"bark": [0.09, 0.07, 0.06], "needle": [0.12, 0.13, 0.03], "snow": null},
-      "shape_overrides": {"branch.droop_frac": 0.25, "tiers.branches": 5},
-      "notes": "Placeholder colour and shape; art direction picks the values at its look review."
-    },
-    "rust_larch": {
-      "status": "planned",
-      "snow_cover": 0.15,
-      "colours_linear": {"bark": [0.10, 0.07, 0.05], "needle": [0.32, 0.10, 0.03], "snow": [0.80, 0.87, 0.96]},
-      "shape_overrides": {"branch.droop_frac": 0.2, "crown.radius_max_m": 2.2},
-      "notes": "Placeholder colour and shape; art direction picks the values at its look review."
-    }
+    "snowy_spruce": {"status": "built", "snow_cover": 0.98, "colours_linear": {"bark": [0.09, 0.07, 0.06], "needle": [0.01, 0.03, 0.018], "snow": [0.8, 0.87, 0.96]}, "roughness": {"bark": 0.9, "needle": 0.85, "snow": 0.7}},
+    "olive_bare": {"status": "planned", "snow_cover": 0.0, "colours_linear": {"bark": [0.09, 0.07, 0.06], "needle": [0.12, 0.13, 0.03], "snow": null}, "shape_overrides": {"branch.droop_frac": 0.25, "tiers.branches": 5}, "notes": "Placeholder colour and shape; art direction picks the values at its look review."},
+    "rust_larch": {"status": "planned", "snow_cover": 0.15, "colours_linear": {"bark": [0.1, 0.07, 0.05], "needle": [0.32, 0.1, 0.03], "snow": [0.8, 0.87, 0.96]}, "shape_overrides": {"branch.droop_frac": 0.2, "crown.radius_max_m": 2.2}, "notes": "Placeholder colour and shape; art direction picks the values at its look review."}
   },
-  "gates": {"iou_min": 0.90, "lod_iou_min": 0.70, "proportion_tol_frac": 0.02, "origin_tol_m": 0.005},
+  "gates": {
+    "iou_min": 0.9,
+    "lod_iou_min": 0.7,
+    "proportion_tol_frac": 0.02,
+    "origin_tol_m": 0.005
+  },
   "camera": {
-    "game": {"az": 30, "el": 45, "lens": 35, "dist_m": 18.0, "skier_target_z_m": 0.875,
-             "source": "REF_game_camera in art/source/CH_Skier/CH_Skier_master.blend at (6.364, -11.023, 13.603), 35 mm: 18.0 m from (0, 0, 0.875) at az 30, el 45. Still the FIRST-CHAIR.md estimate; the Unity camera is not built."}
+    "game": {"az": 30, "el": 45, "lens": 35, "dist_m": 18.0, "skier_target_z_m": 0.875, "source": "REF_game_camera in art/source/CH_Skier/CH_Skier_master.blend at (6.364, -11.023, 13.603), 35 mm: 18.0 m from (0, 0, 0.875) at az 30, el 45. Still the FIRST-CHAIR.md estimate; the Unity camera is not built."}
   },
   "look": {
     "notes": "Review stage only (style-notes 'Overall look': strong low sun, blue shadows, near-white lit snow). Game lighting is built in Unity.",
-    "sun_az": -50, "sun_el": 16, "sun_strength": 10.0, "sun_colour": [1.0, 0.88, 0.68],
-    "sky_light": [0.20, 0.30, 0.55], "sky_view": [0.72, 0.82, 0.95], "ground": [0.90, 0.91, 0.93],
+    "sun_az": -50,
+    "sun_el": 16,
+    "sun_strength": 10.0,
+    "sun_colour": [1.0, 0.88, 0.68],
+    "sky_light": [0.2, 0.3, 0.55],
+    "sky_view": [0.72, 0.82, 0.95],
+    "ground": [0.9, 0.91, 0.93],
     "skier_proxy_xy": [1.6, -1.4]
   },
-  "cluster": {"count": 6, "seed": 11, "scale": [0.75, 1.15], "min_spacing_m": 3.2, "radius_m": 7.5},
-  "profile": {"m_per_px": 0.01, "margin_m": 0.3}
+  "cluster": {
+    "count": 6,
+    "seed": 11,
+    "scale": [0.667, 1.167],
+    "min_spacing_m": 3.5,
+    "radius_m": 8.0,
+    "notes": "scale 0.667 to 1.167 of the 12 m base = 8 to 14 m tall (user review 2026-10-20)"
+  },
+  "profile": {
+    "m_per_px": 0.01,
+    "margin_m": 0.3
+  }
 }

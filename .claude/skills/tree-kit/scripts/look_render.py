@@ -11,10 +11,10 @@ blender --background --python .claude/skills/tree-kit/scripts/look_render.py -- 
 Shots (--shots, comma list, default all):
   threequarter   az 35, el 12, 50 mm, fitted to the tree
   front, top     orthographic, fitted
-  game           the game camera from params camera.game (az, el, lens, distance), aimed at the tree's
-                 mid-height so the whole tree is judged at game distance; a 1.75 m skier proxy stands by
-                 the trunk for scale. render_info.json also reports what the follow camera sees when it
-                 aims at a skier standing at the trunk (how much of the tree stays in frame).
+  game           the follow camera from params camera.game (az, el, lens, distance) aimed at a 1.75 m
+                 skier proxy standing by the trunk (look.skier_proxy_xy), as the player sees it; tall
+                 trees are cut by the frame top (accepted at the 2026-10-20 review). render_info.json
+                 also reports the tree's on-screen box with the camera aimed at the tree's mid-height.
   cluster_game   params cluster.count linked duplicates (shared mesh, as Unity instances them) with seeded
                  random scale and rotation, game camera angle, distance fitted to the cluster
   cluster_low    the same cluster from a low eye-level angle
@@ -224,8 +224,9 @@ def main(a):
         rec = {}
         if spec.get("game"):
             dirv = RR.view_direction(g["az"], g["el"])
-            aim(cam, Vector((0, 0, H / 2)), dirv, g["dist_m"], g["lens"])
-            rec["aim"] = "tree mid-height (%.2f m), %.1f m along the game camera direction" % (H / 2, g["dist_m"])
+            skier = Vector((proxy.location.x, proxy.location.y, g["skier_target_z_m"]))
+            aim(cam, skier, dirv, g["dist_m"], g["lens"])
+            rec["aim"] = "follow camera on the skier proxy at (%.2f, %.2f, %.3f), %.1f m" % (skier.x, skier.y, skier.z, g["dist_m"])
         elif spec.get("cluster") and "az" not in spec:
             dirv = RR.view_direction(g["az"], g["el"])
             rec["dist_m"] = round(RR.fit_camera(cam, corners, center, dirv, W, Hh, g["lens"], 1.08), 2)
@@ -239,11 +240,11 @@ def main(a):
         bpy.context.view_layer.update()
         rec["tree_box"] = px_box(scene, cam, subject)
         if shot == "game":
-            # What the follow camera sees when it aims at a skier (mid-height) standing at the trunk.
-            aim(cam, Vector((0, 0, g["skier_target_z_m"])), dirv, g["dist_m"], g["lens"])
-            bpy.context.view_layer.update()
-            rec["follow_cam_on_skier_at_trunk"] = px_box(scene, cam, tree)
+            # For the record: the same camera aimed at the tree's mid-height (whole tree, if it fits at all).
             aim(cam, Vector((0, 0, H / 2)), dirv, g["dist_m"], g["lens"])
+            bpy.context.view_layer.update()
+            rec["aimed_at_tree_mid_height"] = px_box(scene, cam, tree)
+            aim(cam, skier, dirv, g["dist_m"], g["lens"])
             bpy.context.view_layer.update()
         if spec.get("cluster"):
             rec["instances"] = [{"xy": [round(x, 2), round(y, 2)], "scale": round(c.scale[0], 3),

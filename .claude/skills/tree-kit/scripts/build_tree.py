@@ -81,11 +81,16 @@ def mesh_from_parts(name, parts, mats_by_role):
     for part in parts:
         rings = [[add(p) for p in ring] for ring in part["rings"]]
         apex = add(part["apex"]) if part["apex"] else None
+        apex0 = add(part["apex0"]) if part.get("apex0") else None
         m = len(part["rings"][0])
         segs = []
         for a, b in zip(rings, rings[1:]):
             for k in range(m):
                 segs.append(([a[k], a[(k + 1) % m], b[(k + 1) % m], b[k]], part["roles"][k], a + b))
+        if apex0 is not None:
+            first = rings[0]
+            for k in range(m):
+                segs.append(([first[k], first[(k + 1) % m], apex0], part["roles"][k], first + [apex0]))
         if apex is not None:
             last = rings[-1]
             for k in range(m):

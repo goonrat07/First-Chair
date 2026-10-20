@@ -50,6 +50,8 @@ def hull(pts):
 def pieces(parts):
     for part in parts:
         rings = part["rings"]
+        if part.get("apex0"):
+            yield [part["apex0"]] + rings[0]
         for a, b in zip(rings, rings[1:]):
             yield a + b
         if part["apex"]:

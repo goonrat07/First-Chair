@@ -104,8 +104,11 @@ the trunk is visible, and `render_info.json` reports the tree's on-screen size a
 ## Phase 5: LODs and billboard
 
 A lower LOD is a subset of LOD0: placement always comes from LOD0, and `select` keeps tiers
-(`tier_stride`) and at most `max_branches_per_tier` evenly spread branches. Overrides only widen the
-planes and drop trunk sides, so nothing jumps at the switch. **Gate:** budget and proportions as in
+(`tier_stride`) and at most `max_branches_per_tier` evenly spread branches. Overrides only change
+geometry, never placement, so nothing jumps at the switch: wider planes, fewer trunk sides, and
+cheaper branches. `branch.section: "tent"` (a snow ridge, 9 tris) and `branch.stations: "mid_only"`
+(a point at the trunk) together make a 6-tri branch. Keep every tier and thin the branches before you
+drop tiers. **Gate:** budget and proportions as in
 Phase 3, and front and top IoU against the LOD0 profile at or above `gates.lod_iou_min`.
 
 The billboard (last LOD, about 2 to 4 tris) is a separate step and its script is not written yet. It
@@ -126,9 +129,13 @@ materials) is reported **not verified in the editor** until someone checks it th
 
 - A LOD regenerated with fewer tiers put its tiers at new heights. Its front IoU against LOD0 was
   0.47, and it would pop visibly. Lower LODs now subset LOD0's placement.
+- Dropping every second tier also fails: front IoU was 0.51 on the 16-tier v2. Keeping all tiers with
+  6-tri branches (4 per tier, 396 tris) scored front 0.75 and top 0.86.
+- v1 (10 tiers, 3 to 6 branches) read as a fishbone. v2 (16 tiers, 8 to 4 wide planes, 1,169 tris) is
+  what the user asked for. Sparse still has to mean layered.
 - At the estimated game camera (18 m, el 45, 35 mm), a 12 m tree projects taller than a 1080 px frame
-  wherever it is aimed, so near trees are always cut by the frame top. Check `render_info.json` before
-  choosing tree heights.
+  wherever it is aimed. The user accepts near trees cut by the frame top (8 to 14 m trees), so the
+  game render uses the true follow camera on a skier proxy.
 - Review lighting: a sun at 16 degrees needs about 10 W/m2 for lit snow to read near-white under the
   blue sky fill. At 6 it reads lavender-grey.
 - Cycles look renders on 4 CPU cores take about 5.5 minutes for the six shots at 48 samples. Use
