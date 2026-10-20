@@ -1,7 +1,7 @@
 # Story 002: Skiing on snow: carve, skid, tuck, brake, pole, snow types
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
@@ -98,3 +98,16 @@
 
 - Depends on: `production/epics/first-chair/story-001-sim-core-replay.md`
 - Unlocks: `production/epics/first-chair/story-003-test-slope-unity-view.md`, `production/epics/first-chair/story-004-air-landings-crashes.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-20
+**Criteria**: 9/9 passing (none deferred). Each is covered by a test that ran, in `SnowRidingTests`, `SnowMapTests`, `TuningTests` and `DeterminismTests`. 201 tests pass, and `sim-tests` CI is green. The key tests were seen failing on deliberate breaks.
+**Deviations**: ADVISORY:
+- The riding numbers are placeholders until a playtest; the tests pin behaviour, not values (story Implementation Notes).
+- `Fix64.WrapAngle` can return up to 3 raw steps past pi. It is deterministic, and changing it would change ride bits.
+- Not verified in Unity. Run the golden trace in the Editor and in an IL2CPP build.
+- From the engine review: bad `Tuning` (a non-positive `MaxEdgeAngle`, or a negative drag at rest) is now guarded (`41e4a12`).
+**Test Evidence**: waived at qa.level minimal; unit tests in `sim/FirstChair.Sim.Tests/` exist anyway, as `.claude/rules/sim-code.md` requires
+**Reviewed by**: self, no independent review (solo mode; a unity-specialist engine review ran during `/dev-story`)
