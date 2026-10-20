@@ -106,6 +106,7 @@ sysinfo.txt
 # Unity generates *.csproj/*.sln at the root (ignored above). The sim's own
 # .NET projects under sim/ are hand-written and must be tracked.
 !sim/**/*.csproj
+!tools/ride-preview/*.csproj
 !sim/**/*.sln
 !sim/**/*.slnx
 

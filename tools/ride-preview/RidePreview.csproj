@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    ride-preview: runs the riding sim on the committed test slope with scripted inputs and writes the rides as JSON
+    for the web viewer (see README.md). A tool, not game code: it is not in sim/FirstChair.Sim.sln, so `dotnet test sim/`
+    never builds it, and it may use double and System.Math because nothing here feeds back into the sim.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <RootNamespace>FirstChair.Tools.RidePreview</RootNamespace>
+    <AssemblyName>ride-preview</AssemblyName>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../../sim/FirstChair.Sim/FirstChair.Sim.csproj" />
+  </ItemGroup>
+
+</Project>
