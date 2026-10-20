@@ -4,7 +4,7 @@ Started: 2026-10-20T11:05:45Z · Until: none · Branch: claude/beautiful-gates-8
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
-| 1 | story-001-sim-core-replay | story-done | queued | |
+| 1 | story-001-sim-core-replay | story-done | done | bb0e1c0 |
 | 2 | story-002-skiing-on-snow | dev-story | queued | |
 | 3 | story-002-skiing-on-snow | story-done | queued | |
 | 4 | story-003-test-slope-unity-view, sim half only: slope generator, snow-type map, feature data (kickers, trees), sim-side height checks | dev-story | queued | |
