@@ -107,3 +107,8 @@ Engine follow-up from item 2 (`41e4a12`): the sim now rejects a `Tuning` with `M
   - Sharp crests at high speed can give very short hops; Story 006 may want a minimum air time.
   - The safe spot is often a kicker lip, so a reset can leave you at rest on the lip.
 - Not verified: feel, and anything in Unity.
+
+## Item 6: story-004-air-landings-crashes, /story-done
+- Verdict: COMPLETE WITH NOTES. Status set to Complete (`6636874`).
+- Engine review (unity-specialist): nothing blocking. Its RISK (gravity of 0 or less kept a flight going forever) and its tuning notes are fixed in `19e292a`. The sim now checks the whole `Tuning` when a ride starts. 243 tests pass, and rides are unchanged.
+- Decisions made for you: closed it (the recommended option), although Story 003 is still In Progress. Story 004 needed only 003's finished slope data.
