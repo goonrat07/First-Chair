@@ -58,8 +58,8 @@ namespace FirstChair.Sim.Tests
         [Test]
         public void FromPacked_ReservedBitsSet_IgnoresThem()
         {
-            // Arrange: bits 6-7 and 16-31 are reserved.
-            const uint reservedOnly = 0xFFFF00C0u;
+            // Arrange: bit 7 and bits 16-31 are reserved (bit 6 is Reset since sim version 3).
+            const uint reservedOnly = 0xFFFF0080u;
 
             // Act
             SimInput input = SimInput.FromPacked(reservedOnly);

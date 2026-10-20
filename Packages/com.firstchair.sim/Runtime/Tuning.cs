@@ -103,6 +103,46 @@ namespace FirstChair.Sim
         /// <summary>Slopes whose gradient (rise over run) is below this are flats, where forward input poles.</summary>
         public Fix64 FlatGradientMax;
 
+        /// <summary>Pop speed at the shortest load (one step), m/s, added along the surface normal on release.</summary>
+        public Fix64 PopSpeedMin;
+
+        /// <summary>Pop speed at a full load, m/s: the cap. Between, it grows linearly with hold time.</summary>
+        public Fix64 PopSpeedMax;
+
+        /// <summary>Seconds of holding jump to reach <see cref="PopSpeedMax"/>. Must be positive.</summary>
+        public Fix64 PopLoadTime;
+
+        /// <summary>
+        /// Takeoff detection, m/s: the rider leaves the snow when the ground under the next position falls away from
+        /// where the rider's own velocity carries them faster than this (a lip or a sharp crest). Slower, the rider
+        /// rolls over and stays on the snow. Per step the gap must exceed this times the step length.
+        /// </summary>
+        public Fix64 TakeoffDropSpeed;
+
+        /// <summary>Spin rate in the air at full steering, radians per second.</summary>
+        public Fix64 SpinRate;
+
+        /// <summary>Flip rate in the air while forward or back is held, radians per second.</summary>
+        public Fix64 FlipRate;
+
+        /// <summary>
+        /// Fraction of full steering (0 to 1) that makes grab plus left a Japan or grab plus right a safety; less is a
+        /// mute.
+        /// </summary>
+        public Fix64 GrabSteeringThreshold;
+
+        /// <summary>Largest landing angle, radians, graded clean.</summary>
+        public Fix64 CleanLandingAngle;
+
+        /// <summary>Largest landing angle, radians, graded solid.</summary>
+        public Fix64 SolidLandingAngle;
+
+        /// <summary>Largest landing angle, radians, graded sketchy; past it the landing is a crash.</summary>
+        public Fix64 SketchyLandingAngle;
+
+        /// <summary>Seconds from a crash to the reset to the last safe spot.</summary>
+        public Fix64 CrashResetDelay;
+
         /// <summary>The default tuning.</summary>
         public static Tuning Default => new Tuning
         {
@@ -128,6 +168,17 @@ namespace FirstChair.Sim
             PoleAcceleration = Fix64.FromRatio(15, 10),
             PoleSpeedMax = Fix64.FromInt(4),
             FlatGradientMax = Fix64.FromRatio(8, 100),
+            PopSpeedMin = Fix64.FromInt(2),
+            PopSpeedMax = Fix64.FromInt(5),
+            PopLoadTime = Fix64.FromRatio(1, 2),
+            TakeoffDropSpeed = Fix64.FromRatio(1, 2),
+            SpinRate = Fix64.Pi * Fix64.FromRatio(5, 2),
+            FlipRate = Fix64.TwoPi,
+            GrabSteeringThreshold = Fix64.FromRatio(1, 2),
+            CleanLandingAngle = Fix64.Pi / Fix64.FromInt(12),
+            SolidLandingAngle = Fix64.Pi / Fix64.FromInt(6),
+            SketchyLandingAngle = Fix64.Pi / Fix64.FromInt(4),
+            CrashResetDelay = Fix64.One,
         };
 
         /// <summary>The grip of a snow type, m/s^2.</summary>
@@ -180,6 +231,17 @@ namespace FirstChair.Sim
             hash = Fnv1a64.AddInt64(hash, PoleAcceleration.Raw);
             hash = Fnv1a64.AddInt64(hash, PoleSpeedMax.Raw);
             hash = Fnv1a64.AddInt64(hash, FlatGradientMax.Raw);
+            hash = Fnv1a64.AddInt64(hash, PopSpeedMin.Raw);
+            hash = Fnv1a64.AddInt64(hash, PopSpeedMax.Raw);
+            hash = Fnv1a64.AddInt64(hash, PopLoadTime.Raw);
+            hash = Fnv1a64.AddInt64(hash, TakeoffDropSpeed.Raw);
+            hash = Fnv1a64.AddInt64(hash, SpinRate.Raw);
+            hash = Fnv1a64.AddInt64(hash, FlipRate.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrabSteeringThreshold.Raw);
+            hash = Fnv1a64.AddInt64(hash, CleanLandingAngle.Raw);
+            hash = Fnv1a64.AddInt64(hash, SolidLandingAngle.Raw);
+            hash = Fnv1a64.AddInt64(hash, SketchyLandingAngle.Raw);
+            hash = Fnv1a64.AddInt64(hash, CrashResetDelay.Raw);
             return hash;
         }
     }

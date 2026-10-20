@@ -13,7 +13,8 @@ namespace FirstChair.Sim.Tests
     /// </summary>
     /// <remarks>
     /// Since Story 002 the inputs steer, tuck, brake and pole, and the scripted ride crosses all five snow
-    /// types, so these tests prove that every riding feature replays exactly, not only the recording path.
+    /// types; since Story 004 it also jumps, grabs, spins, lands, crashes and resets. So these tests prove that every
+    /// riding feature replays exactly, not only the recording path.
     /// </remarks>
     public class DeterminismTests
     {
@@ -22,8 +23,11 @@ namespace FirstChair.Sim.Tests
         // Re-pinned for version 2 (Story 002): carving, skidding, tuck, brake, poling and snow types change
         // the ride, the trace gained heading, edge, skid, snow and stance, and the ride runs on banded snow with
         // a new input script (symmetric taps and a triangle wave) and a start at z = 20.
-        private const ushort GoldenSimVersion = 2;
-        private const string GoldenTraceSha256 = "52A0F8DB9F976BC8827568518894401A4BEDFE4BF7F4ACBEF8B00B4CD6A36FEC";
+        // Re-pinned for version 3 (Story 004): pops, takeoff, spins, flips, grabs, graded landings, crashes and reset
+        // change the ride; the trace gained the air, crash and safe-spot fields and the event payloads; and the script
+        // (18 s now) pops three times with scripted air input and taps reset once.
+        private const ushort GoldenSimVersion = 3;
+        private const string GoldenTraceSha256 = "C4AAC54ABAA63558031772E65D792F84F00F9831BE02CFF20CAEF9CA76F72657";
 
         [Test]
         public void ScriptedRide_RecordedThenReplayedFromBytes_MatchesBitForBitEveryStep()
@@ -45,7 +49,7 @@ namespace FirstChair.Sim.Tests
             Assert.That(result.Status, Is.EqualTo(ReplayStatus.Ok));
             Assert.That(live.Count, Is.GreaterThanOrEqualTo(10 * Simulation.StepsPerSecond), "the ride must last at least 10 s");
             Assert.That(replayed.Count, Is.EqualTo(live.Count));
-            Assert.That(CountEvents(live), Is.EqualTo(1), "the ride must leave the map once, so the event lists are really compared");
+            AssertRaisesEveryEvent(live);
             AssertExercisesEveryFeature(live);
             for (int i = 0; i < live.Count; i++)
             {
@@ -229,29 +233,52 @@ namespace FirstChair.Sim.Tests
                 simulation.Step(ScriptedRide.InputAt(step));
             }
 
-            // Act: the rest of the ride, including skids and the step that raises LeftHeightmap.
+            // Act: the rest of the ride, including skids, pops, landings, the crash, both resets and the step that
+            // raises LeftHeightmap. Event kinds are counted by index, which allocates nothing.
+            var seen = new int[8];
             long before = GC.GetAllocatedBytesForCurrentThread();
             for (int step = warmupSteps; step < ScriptedRide.Steps; step++)
             {
                 simulation.Step(ScriptedRide.InputAt(step));
+                for (int i = 0; i < simulation.Events.Count; i++)
+                {
+                    seen[(int)simulation.Events[i].Kind]++;
+                }
             }
 
             long allocated = GC.GetAllocatedBytesForCurrentThread() - before;
 
             // Assert
             Assert.That(simulation.State.OutsideHeightmap, Is.True, "the measured steps must include the edge crossing");
+            foreach (SimEventKind kind in new[] { SimEventKind.Takeoff, SimEventKind.Land, SimEventKind.Crash, SimEventKind.Reset })
+            {
+                Assert.That(seen[(int)kind], Is.GreaterThan(0), "the measured steps must raise " + kind);
+            }
+
             Assert.That(allocated, Is.EqualTo(0L));
         }
 
-        private static int CountEvents(List<StepSnapshot> trace)
+        /// <summary>
+        /// The ride must raise every event kind, land a grab and a spin, and crash, so event payloads are really
+        /// compared.
+        /// </summary>
+        private static void AssertRaisesEveryEvent(List<StepSnapshot> trace)
         {
-            int count = 0;
+            var kinds = new HashSet<SimEventKind>();
+            bool landedGrab = false, landedSpin = false;
             foreach (StepSnapshot snapshot in trace)
             {
-                count += snapshot.Events.Length;
+                foreach (SimEvent simEvent in snapshot.Events)
+                {
+                    kinds.Add(simEvent.Kind);
+                    landedGrab |= simEvent.Kind == SimEventKind.Land && simEvent.Air.Grab != GrabKind.None;
+                    landedSpin |= simEvent.Kind == SimEventKind.Land && Fix64.Abs(simEvent.Air.Spin) > Fix64.Pi;
+                }
             }
 
-            return count;
+            Assert.That(kinds, Is.EquivalentTo((SimEventKind[])Enum.GetValues(typeof(SimEventKind))), "the ride must raise every event kind");
+            Assert.That(landedGrab, Is.True, "the ride must land a grab");
+            Assert.That(landedSpin, Is.True, "the ride must land a spin");
         }
 
         /// <summary>The ride must carve, skid, use every stance and cross every snow type, or it proves too little.</summary>
@@ -273,6 +300,8 @@ namespace FirstChair.Sim.Tests
             Assert.That(skidded, Is.True, "the ride must skid");
             Assert.That(stances, Is.EquivalentTo(new[] { Stance.Stand, Stance.Tuck, Stance.Brake }), "the ride must stand, tuck and brake");
             Assert.That(snows, Is.EquivalentTo((SnowType[])Enum.GetValues(typeof(SnowType))), "the ride must cross every snow type");
+            Assert.That(trace.Exists(snapshot => snapshot.State.Airborne), Is.True, "the ride must fly");
+            Assert.That(trace.Exists(snapshot => snapshot.State.Crashed), Is.True, "the ride must crash");
         }
     }
 }

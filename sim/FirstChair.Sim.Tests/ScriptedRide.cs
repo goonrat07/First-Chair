@@ -9,12 +9,35 @@ namespace FirstChair.Sim.Tests
     /// <summary>
     /// The scripted ride the determinism tests record and replay: 12 s (1440 steps) from a fixed start on
     /// the +Z incline over banded snow (all five types), with a fixed, varied input pattern built from integer
-    /// arithmetic (no random source). It carves, skids, tucks and brakes, and leaves the 128 m map once, at
-    /// about 10.7 s, so the ride raises one event.
+    /// arithmetic (no random source). It carves, skids, tucks and brakes, and since Story 004 (18 s) it pops three
+    /// times: a Japan grab and a 360 that land, and a flip that crashes, with a reset tap while the rider lies
+    /// crashed. It leaves the 128 m map once.
     /// </summary>
     internal static class ScriptedRide
     {
-        public const int Steps = 12 * Simulation.StepsPerSecond;
+        public const int Steps = 18 * Simulation.StepsPerSecond;
+
+        /// <summary>Release steps of the three full-load pops (Story 004).</summary>
+        public const int GrabJumpRelease = 300, SpinJumpRelease = 700, CrashJumpRelease = 1100;
+
+        /// <summary>A full load at the default <see cref="Tuning.PopLoadTime"/> (0.5 s).</summary>
+        public const int PopLoadSteps = 60;
+
+        /// <summary>Steps of each jump's scripted air input, from the release step; longer than the flight.</summary>
+        public const int AirWindow = 150;
+
+        /// <summary>One turn at the default <see cref="Tuning.SpinRate"/> (2.5 pi rad/s): lands clean.</summary>
+        public const int SpinSteps = 96;
+
+        /// <summary>A 60 degree forward flip at the default <see cref="Tuning.FlipRate"/>: past sketchy, a crash.</summary>
+        public const int FlipSteps = 20;
+
+        /// <summary>The step whose input taps reset: the rider is lying crashed after the third jump.</summary>
+        public const int ResetStep = 1300;
+
+        private static bool Loading(int step, int release) => step >= release - PopLoadSteps && step < release;
+
+        private static bool InWindow(int step, int release) => step >= release && step < release + AirWindow;
 
         public static readonly RunSetup Setup =
             new RunSetup(Sport.Skis, 0, 0x5EED_F1A5_C0DE_0001UL, Fix64.FromInt(64), Fix64.FromInt(20));
@@ -26,6 +49,22 @@ namespace FirstChair.Sim.Tests
         /// </summary>
         public static SimInput InputAt(int step)
         {
+            // Each jump's air window replaces the riding pattern: a Japan grab, a 360 to the right, a 60 degree flip.
+            if (InWindow(step, GrabJumpRelease))
+            {
+                return SimInput.Pack(step - GrabJumpRelease < 40 ? SimButtons.Grab | SimButtons.Left : SimButtons.None, 0);
+            }
+
+            if (InWindow(step, SpinJumpRelease))
+            {
+                return SimInput.Pack(step - SpinJumpRelease < SpinSteps ? SimButtons.Right : SimButtons.None, 0);
+            }
+
+            if (InWindow(step, CrashJumpRelease))
+            {
+                return SimInput.Pack(step - CrashJumpRelease < FlipSteps ? SimButtons.Forward : SimButtons.None, 0);
+            }
+
             SimButtons buttons = SimButtons.None;
             if (step % 160 < 15)
             {
@@ -47,9 +86,16 @@ namespace FirstChair.Sim.Tests
                 buttons |= SimButtons.Back;
             }
 
-            if (step % 300 == 7)
+            // Jump: loaded for PopLoadSteps before each release step.
+            if (Loading(step, GrabJumpRelease) || Loading(step, SpinJumpRelease) || Loading(step, CrashJumpRelease))
             {
                 buttons |= SimButtons.Jump;
+            }
+
+            // Reset: one tap, while the rider lies crashed after the third jump.
+            if (step == ResetStep)
+            {
+                buttons |= SimButtons.Reset;
             }
 
             if (step % 500 < 25)
@@ -91,6 +137,10 @@ namespace FirstChair.Sim.Tests
                     state.Heading.Raw, state.EdgeAngle.Raw, state.Skidding ? 1L : 0L, state.SlipAngle.Raw,
                     (long)state.Snow, (long)state.Stance,
                     state.Tick, state.OutsideHeightmap ? 1L : 0L, state.LastInput.Packed, unchecked((long)state.Rng.State),
+                    state.Airborne ? 1L : 0L, state.PopLoadTicks, state.AirTicks, state.MaxHeight.Raw,
+                    state.SpinAngle.Raw, state.FlipAngle.Raw, (long)state.Grab, state.GrabTicks,
+                    (long)state.BestGrab, state.BestGrabTicks, state.Crashed ? 1L : 0L, state.CrashTicks,
+                    state.SafePosition.X.Raw, state.SafePosition.Y.Raw, state.SafePosition.Z.Raw, state.SafeHeading.Raw,
                     snapshot.Events.Length,
                 })
                 {
@@ -101,6 +151,17 @@ namespace FirstChair.Sim.Tests
                 {
                     AddLittleEndian(bytes, simEvent.Tick);
                     bytes.Add((byte)simEvent.Kind);
+                    bytes.Add((byte)simEvent.Grade);
+                    bytes.Add((byte)simEvent.Cause);
+                    bytes.Add((byte)simEvent.Air.Grab);
+                    foreach (long raw in new[]
+                    {
+                        simEvent.Speed.Raw, simEvent.Air.AirTicks, simEvent.Air.MaxHeight.Raw, simEvent.Air.Spin.Raw,
+                        simEvent.Air.Flip.Raw, simEvent.Air.GrabTicks, simEvent.Air.LandingAngle.Raw,
+                    })
+                    {
+                        AddLittleEndian(bytes, raw);
+                    }
                 }
             }
 
