@@ -9,16 +9,19 @@ namespace FirstChair.Sim
         /// <summary>No button held.</summary>
         None = 0,
 
-        /// <summary>Steer left.</summary>
+        /// <summary>Steer left: adds full left to the analog steering (see <see cref="SimInput.CombinedSteering"/>).</summary>
         Left = 1u << 0,
 
-        /// <summary>Steer right.</summary>
+        /// <summary>Steer right: adds full right to the analog steering (see <see cref="SimInput.CombinedSteering"/>).</summary>
         Right = 1u << 1,
 
-        /// <summary>Forward: tuck, or pole on flats.</summary>
+        /// <summary>
+        /// Forward: tuck on slopes. On flats (gradient below <see cref="Tuning.FlatGradientMax"/>) it poles while the
+        /// rider is slower than <see cref="Tuning.PoleSpeedMax"/> and tucks at or above it.
+        /// </summary>
         Forward = 1u << 2,
 
-        /// <summary>Back: brake.</summary>
+        /// <summary>Back: brake. Wins over <see cref="Forward"/> when both are held.</summary>
         Back = 1u << 3,
 
         /// <summary>Jump.</summary>
@@ -35,7 +38,8 @@ namespace FirstChair.Sim
     /// <para>Bit layout: bits 0-5 are <see cref="SimButtons"/>; bits 6-7 are reserved; bits 8-15 hold the
     /// steering value as a signed byte from -127 (full left) to 127 (full right); bits 16-31 are reserved.
     /// Reserved bits are written as zero and ignored when read.</para>
-    /// <para>Analog steering is quantized to this range by the caller before it reaches the sim.</para>
+    /// <para>Analog steering is quantized to this range by the caller before it reaches the sim. The sim steers by
+    /// <see cref="CombinedSteering"/>, which folds the left and right buttons into it.</para>
     /// <para>Immutable and thread-safe.</para>
     /// </remarks>
     /// <example>
@@ -66,6 +70,32 @@ namespace FirstChair.Sim
 
         /// <summary>Steering, -127 (full left) to 127 (full right).</summary>
         public int Steering => unchecked((sbyte)(byte)(Packed >> SteeringShift));
+
+        /// <summary>
+        /// The steering the sim rides with, -127 to 127: <see cref="Steering"/>, minus 127 when
+        /// <see cref="SimButtons.Left"/> is held, plus 127 when <see cref="SimButtons.Right"/> is held, clamped to
+        /// +-127. A keyboard sends buttons with steering 0 and gets full lock; a gamepad sends its quantized stick
+        /// with no buttons; left and right held together cancel, leaving the analog value.
+        /// </summary>
+        public int CombinedSteering
+        {
+            get
+            {
+                int steering = Steering;
+                SimButtons buttons = Buttons;
+                if ((buttons & SimButtons.Left) != 0)
+                {
+                    steering -= SteeringMax;
+                }
+
+                if ((buttons & SimButtons.Right) != 0)
+                {
+                    steering += SteeringMax;
+                }
+
+                return steering > SteeringMax ? SteeringMax : (steering < -SteeringMax ? -SteeringMax : steering);
+            }
+        }
 
         /// <summary>Packs buttons and steering. Steering outside +-127 is clamped.</summary>
         /// <param name="buttons">Held buttons.</param>

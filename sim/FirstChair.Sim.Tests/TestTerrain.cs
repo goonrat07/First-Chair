@@ -4,7 +4,7 @@ using FirstChair.Sim;
 namespace FirstChair.Sim.Tests
 {
     /// <summary>
-    /// Builds small R16 heightmaps in memory, so no test touches the filesystem for terrain.
+    /// Builds small R16 heightmaps and their snow maps in memory, so no test touches the filesystem for terrain.
     /// The standard map is 65 x 65 samples over 128 m (2 m cells) with heights from 0 m to 60 m.
     /// </summary>
     internal static class TestTerrain
@@ -49,6 +49,31 @@ namespace FirstChair.Sim.Tests
                     int index = 2 * (row * resolution + column);
                     bytes[index] = (byte)sample;
                     bytes[index + 1] = (byte)(sample >> 8);
+                }
+            }
+
+            return bytes;
+        }
+
+        /// <summary>A snow map for <paramref name="heightmap"/> with one type everywhere.</summary>
+        public static SnowMap Uniform(Heightmap heightmap, SnowType type) => Snow(heightmap, (row, column) => type);
+
+        /// <summary>A snow map whose type changes every 6 rows (12 m) through all five types, in enum order.</summary>
+        public static SnowMap Bands(Heightmap heightmap) => Snow(heightmap, (row, column) => (SnowType)(row / 6 % 5));
+
+        /// <summary>A snow map for <paramref name="heightmap"/> with the type at each row and column.</summary>
+        public static SnowMap Snow(Heightmap heightmap, Func<int, int, SnowType> typeAt) =>
+            SnowMap.FromBytes(SnowBytes(heightmap.Resolution, typeAt), heightmap);
+
+        /// <summary>Encodes snow types (by row and column) as one byte per sample, row-major.</summary>
+        public static byte[] SnowBytes(int resolution, Func<int, int, SnowType> typeAt)
+        {
+            var bytes = new byte[resolution * resolution];
+            for (int row = 0; row < resolution; row++)
+            {
+                for (int column = 0; column < resolution; column++)
+                {
+                    bytes[row * resolution + column] = (byte)typeAt(row, column);
                 }
             }
 

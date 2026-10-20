@@ -69,6 +69,15 @@ namespace FirstChair.Sim
         /// <param name="b">Second vector.</param>
         public static Fix64 Dot(Vec3 a, Vec3 b) => a.X * b.X + a.Y * b.Y + a.Z * b.Z;
 
+        /// <summary>
+        /// Cross product: (a.Y b.Z - a.Z b.Y, a.Z b.X - a.X b.Z, a.X b.Y - a.Y b.X). With Y up,
+        /// Cross(up, forward) points to the right in a left-handed view (Unity).
+        /// </summary>
+        /// <param name="a">First vector.</param>
+        /// <param name="b">Second vector.</param>
+        public static Vec3 Cross(Vec3 a, Vec3 b) =>
+            new Vec3(a.Y * b.Z - a.Z * b.Y, a.Z * b.X - a.X * b.Z, a.X * b.Y - a.Y * b.X);
+
         /// <inheritdoc/>
         public bool Equals(Vec3 other) => X == other.X && Y == other.Y && Z == other.Z;
 

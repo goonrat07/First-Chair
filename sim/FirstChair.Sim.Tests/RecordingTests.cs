@@ -15,7 +15,8 @@ namespace FirstChair.Sim.Tests
             Heightmap heightmap = TestTerrain.InclineDownhillPlusZ();
             Tuning tuning = Tuning.Default;
             var setup = new RunSetup(Sport.Skis, 3, 0x0102030405060708UL, Fix64.FromRaw(0x1122334455667788L), Fix64.FromRaw(-2L));
-            var recording = new Recording(setup, heightmap, tuning);
+            SnowMap snowMap = TestTerrain.Bands(heightmap);
+            var recording = new Recording(setup, heightmap, snowMap, tuning);
             recording.Append(SimInput.FromPacked(0xAABBCCDDu));
             recording.Append(SimInput.FromPacked(7u));
 
@@ -36,9 +37,10 @@ namespace FirstChair.Sim.Tests
                 Assert.That(BinaryPrimitives.ReadInt64LittleEndian(bytes.AsSpan(26)), Is.EqualTo(-2L));
                 Assert.That(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(34)), Is.EqualTo(tuning.ComputeHash()));
                 Assert.That(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(42)), Is.EqualTo(heightmap.Hash));
-                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(50)), Is.EqualTo(2u));
-                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(54)), Is.EqualTo(0xAABBCCDDu));
-                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(58)), Is.EqualTo(7u));
+                Assert.That(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(50)), Is.EqualTo(snowMap.Hash));
+                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(58)), Is.EqualTo(2u));
+                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(62)), Is.EqualTo(0xAABBCCDDu));
+                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(66)), Is.EqualTo(7u));
             });
         }
 
@@ -47,7 +49,7 @@ namespace FirstChair.Sim.Tests
         {
             // Arrange
             Heightmap heightmap = TestTerrain.InclineDownhillPlusZ();
-            Recording original = ScriptedRide.Record(heightmap, Tuning.Default, 300, null);
+            Recording original = ScriptedRide.Record(heightmap, TestTerrain.Bands(heightmap), Tuning.Default, 300, null);
 
             // Act
             bool read = Recording.TryRead(original.ToBytes(), out Recording parsed);
@@ -57,6 +59,7 @@ namespace FirstChair.Sim.Tests
             Assert.That(parsed.Setup, Is.EqualTo(original.Setup));
             Assert.That(parsed.TuningHash, Is.EqualTo(original.TuningHash));
             Assert.That(parsed.HeightmapHash, Is.EqualTo(original.HeightmapHash));
+            Assert.That(parsed.SnowMapHash, Is.EqualTo(original.SnowMapHash));
             Assert.That(parsed.Inputs, Is.EqualTo(original.Inputs));
         }
 
@@ -69,7 +72,8 @@ namespace FirstChair.Sim.Tests
         public void TryRead_CorruptOrForeignData_ReturnsFalse(string corruption)
         {
             // Arrange
-            byte[] good = ScriptedRide.Record(TestTerrain.Flat(), Tuning.Default, 10, null).ToBytes();
+            Heightmap flat = TestTerrain.Flat();
+            byte[] good = ScriptedRide.Record(flat, TestTerrain.Uniform(flat, SnowType.Groomed), Tuning.Default, 10, null).ToBytes();
             byte[] data;
             switch (corruption)
             {

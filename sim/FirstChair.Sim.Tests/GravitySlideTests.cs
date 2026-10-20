@@ -5,7 +5,7 @@ using NUnit.Framework;
 
 namespace FirstChair.Sim.Tests
 {
-    /// <summary>The minimal rider model: a rider at rest with no input slides downhill under gravity.</summary>
+    /// <summary>A rider at rest with no input faces down the fall line and slides straight downhill under gravity.</summary>
     public class GravitySlideTests
     {
         private static readonly SimInput NoInput = SimInput.Pack(SimButtons.None, 0);
@@ -80,16 +80,17 @@ namespace FirstChair.Sim.Tests
         [Test]
         public void SlideAfterOneSecond_MatchesClosedFormWithinTwoPercent()
         {
-            // Arrange: along the slope, a = g sin(theta) and linear drag k give
-            // s(t) = (a / k) * (t - (1 - e^(-k t)) / k); the horizontal run is s cos(theta).
+            // Arrange: straight down groomed snow, a = g (sin(theta) - mu cos(theta)) less air drag k v^2 gives
+            // s(t) = ln(cosh(t sqrt(a k))) / k along the slope; the horizontal run is s cos(theta).
             // 120 steps must be one second: a wrong step length fails this test.
             Tuning tuning = Tuning.Default;
             double g = TestTerrain.ToDouble(tuning.Gravity);
-            double k = TestTerrain.ToDouble(tuning.SlideDrag);
+            double mu = TestTerrain.ToDouble(tuning.GroomedDrag);
+            double k = TestTerrain.ToDouble(tuning.AirDrag);
             double theta = Math.Atan(TestTerrain.Gradient);
-            double a = g * Math.Sin(theta);
+            double a = g * (Math.Sin(theta) - mu * Math.Cos(theta));
             const double t = 1.0;
-            double expectedRun = a / k * (t - (1 - Math.Exp(-k * t)) / k) * Math.Cos(theta);
+            double expectedRun = Math.Log(Math.Cosh(t * Math.Sqrt(a * k))) / k * Math.Cos(theta);
             Simulation simulation = StartAt(TestTerrain.InclineDownhillPlusZ(), 64, 4);
 
             // Act
@@ -143,7 +144,8 @@ namespace FirstChair.Sim.Tests
             const long limitRaw = 1L << (20 + 32);
 
             // Act
-            ScriptedRide.Record(TestTerrain.InclineDownhillPlusZ(), Tuning.Default, ScriptedRide.Steps, trace);
+            Heightmap heightmap = TestTerrain.InclineDownhillPlusZ();
+            ScriptedRide.Record(heightmap, TestTerrain.Bands(heightmap), Tuning.Default, ScriptedRide.Steps, trace);
 
             // Assert
             long largest = 0;
@@ -160,6 +162,10 @@ namespace FirstChair.Sim.Tests
         }
 
         private static Simulation StartAt(Heightmap heightmap, int x, int z) =>
-            new Simulation(new RunSetup(Sport.Skis, 0, 7UL, Fix64.FromInt(x), Fix64.FromInt(z)), heightmap, Tuning.Default);
+            new Simulation(
+                new RunSetup(Sport.Skis, 0, 7UL, Fix64.FromInt(x), Fix64.FromInt(z)),
+                heightmap,
+                TestTerrain.Uniform(heightmap, SnowType.Groomed),
+                Tuning.Default);
     }
 }

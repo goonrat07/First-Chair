@@ -34,6 +34,8 @@ namespace FirstChair.Sim
         private const int MaxSample = 65535;
         private const int MillimetresPerMetre = 1000;
 
+        private static readonly Fix64 Half = Fix64.FromRatio(1, 2);
+
         private readonly ushort[] _samples;
         private readonly int _lastCell;
         private readonly Fix64 _cellsPerMetreX;
@@ -168,6 +170,18 @@ namespace FirstChair.Sim
             Fix64 slopeZ = outsideZ ? Fix64.Zero : (oneMinusU * (h01 - h00) + u * (h11 - h10)) * _cellsPerMetreZ;
             Fix64 inverseLength = Fix64.One / Fix64.Sqrt(Fix64.One + slopeX * slopeX + slopeZ * slopeZ);
             normal = new Vec3(-slopeX * inverseLength, inverseLength, -slopeZ * inverseLength);
+        }
+
+        /// <summary>
+        /// Index (row * <see cref="Resolution"/> + column) of the sample nearest (x, z); halves round up,
+        /// toward +X and +Z. Points off the map use the nearest edge sample. <see cref="SnowMap"/> looks its
+        /// layer up through this, so the two grids line up exactly.
+        /// </summary>
+        internal int NearestSampleIndex(Fix64 x, Fix64 z)
+        {
+            int column = (Fix64.Clamp(x, Fix64.Zero, SizeX) * _cellsPerMetreX + Half).FloorToInt();
+            int row = (Fix64.Clamp(z, Fix64.Zero, SizeZ) * _cellsPerMetreZ + Half).FloorToInt();
+            return row * Resolution + column;
         }
 
         private Fix64 HeightAt(int row, int column) =>

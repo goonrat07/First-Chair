@@ -31,8 +31,9 @@ namespace FirstChair.Sim.Tests
             var setupB = new RunSetup(Sport.Skis, 0, 1235UL, Fix64.FromInt(64), Fix64.FromInt(64));
 
             // Act
-            var simulationA = new Simulation(setupA, heightmap, Tuning.Default);
-            var simulationB = new Simulation(setupB, heightmap, Tuning.Default);
+            SnowMap snowMap = TestTerrain.Uniform(heightmap, SnowType.Groomed);
+            var simulationA = new Simulation(setupA, heightmap, snowMap, Tuning.Default);
+            var simulationB = new Simulation(setupB, heightmap, snowMap, Tuning.Default);
 
             // Assert
             Assert.That(simulationA.State.Rng, Is.EqualTo(new SimRandom(1234UL)));

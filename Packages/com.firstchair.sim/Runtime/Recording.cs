@@ -3,11 +3,12 @@ using System.Collections.Generic;
 namespace FirstChair.Sim
 {
     /// <summary>
-    /// A ride as data: a header (the <see cref="RunSetup"/> plus tuning and heightmap hashes) followed by
-    /// one packed input per step. Replaying it with the same heightmap and tuning rebuilds the ride bit for bit.
+    /// A ride as data: a header (the <see cref="RunSetup"/> plus tuning, heightmap and snow map hashes) followed
+    /// by one packed input per step. Replaying it with the same heightmap, snow map and tuning rebuilds the ride
+    /// bit for bit.
     /// </summary>
     /// <remarks>
-    /// <para><b>Byte layout</b> (all little-endian, <see cref="HeaderSize"/> = 54 bytes of header):</para>
+    /// <para><b>Byte layout</b> (all little-endian, <see cref="HeaderSize"/> = 62 bytes of header):</para>
     /// <list type="table">
     /// <item><term>0, 4 bytes</term><description>magic "FCRC"</description></item>
     /// <item><term>4, 2</term><description>format version (<see cref="FormatVersion"/>)</description></item>
@@ -19,31 +20,33 @@ namespace FirstChair.Sim
     /// <item><term>26, 8</term><description>start Z, raw Q32.32</description></item>
     /// <item><term>34, 8</term><description>tuning hash</description></item>
     /// <item><term>42, 8</term><description>heightmap hash</description></item>
-    /// <item><term>50, 4</term><description>input count</description></item>
-    /// <item><term>54, 4 each</term><description>packed inputs, one per step</description></item>
+    /// <item><term>50, 8</term><description>snow map hash (added in format version 2)</description></item>
+    /// <item><term>58, 4</term><description>input count</description></item>
+    /// <item><term>62, 4 each</term><description>packed inputs, one per step</description></item>
     /// </list>
     /// <para>The format version describes this container; the sim version describes riding behaviour.
-    /// A recording with another sim version still reads, and the <see cref="Replayer"/> refuses it.</para>
+    /// A recording with another sim version still reads, and the <see cref="Replayer"/> refuses it. A recording
+    /// in another format version does not read.</para>
     /// <para>Not thread-safe.</para>
     /// </remarks>
     /// <example>
     /// <code>
-    /// var recording = new Recording(setup, heightmap, tuning);
+    /// var recording = new Recording(setup, heightmap, snowMap, tuning);
     /// recording.Append(input);              // before each simulation.Step(input)
     /// byte[] bytes = recording.ToBytes();   // the game layer saves them
     /// if (Recording.TryRead(bytes, out Recording loaded))
     /// {
-    ///     ReplayResult result = Replayer.Replay(loaded, heightmap, tuning);
+    ///     ReplayResult result = Replayer.Replay(loaded, heightmap, snowMap, tuning);
     /// }
     /// </code>
     /// </example>
     public sealed class Recording
     {
         /// <summary>Version of this byte layout.</summary>
-        public const ushort FormatVersion = 1;
+        public const ushort FormatVersion = 2;
 
         /// <summary>Header size in bytes; the inputs start here.</summary>
-        public const int HeaderSize = 54;
+        public const int HeaderSize = 62;
 
         private const uint MagicValue = 0x43524346u; // "FCRC" read as a little-endian uint32
         private const int InputSize = 4;
@@ -53,17 +56,19 @@ namespace FirstChair.Sim
         /// <summary>Starts an empty recording of a run.</summary>
         /// <param name="setup">The run setup, copied into the header.</param>
         /// <param name="heightmap">The terrain; its hash goes in the header.</param>
+        /// <param name="snowMap">The snow types; their hash goes in the header.</param>
         /// <param name="tuning">The tuning; its hash goes in the header.</param>
-        public Recording(RunSetup setup, Heightmap heightmap, Tuning tuning)
-            : this(setup, tuning.ComputeHash(), heightmap.Hash, new List<SimInput>())
+        public Recording(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Tuning tuning)
+            : this(setup, tuning.ComputeHash(), heightmap.Hash, snowMap.Hash, new List<SimInput>())
         {
         }
 
-        private Recording(RunSetup setup, ulong tuningHash, ulong heightmapHash, List<SimInput> inputs)
+        private Recording(RunSetup setup, ulong tuningHash, ulong heightmapHash, ulong snowMapHash, List<SimInput> inputs)
         {
             Setup = setup;
             TuningHash = tuningHash;
             HeightmapHash = heightmapHash;
+            SnowMapHash = snowMapHash;
             _inputs = inputs;
         }
 
@@ -75,6 +80,9 @@ namespace FirstChair.Sim
 
         /// <summary>Hash of the heightmap the ride was made with.</summary>
         public ulong HeightmapHash { get; }
+
+        /// <summary>Hash of the snow map the ride was made with.</summary>
+        public ulong SnowMapHash { get; }
 
         /// <summary>The recorded inputs, one per step.</summary>
         public IReadOnlyList<SimInput> Inputs => _inputs;
@@ -98,6 +106,7 @@ namespace FirstChair.Sim
             Write(bytes, ref offset, unchecked((ulong)Setup.StartZ.Raw), 8);
             Write(bytes, ref offset, TuningHash, 8);
             Write(bytes, ref offset, HeightmapHash, 8);
+            Write(bytes, ref offset, SnowMapHash, 8);
             Write(bytes, ref offset, (uint)_inputs.Count, 4);
             for (int i = 0; i < _inputs.Count; i++)
             {
@@ -135,6 +144,7 @@ namespace FirstChair.Sim
             long startZ = unchecked((long)Read(data, ref offset, 8));
             ulong tuningHash = Read(data, ref offset, 8);
             ulong heightmapHash = Read(data, ref offset, 8);
+            ulong snowMapHash = Read(data, ref offset, 8);
             ulong count = Read(data, ref offset, 4);
             if ((ulong)data.Length != HeaderSize + InputSize * count)
             {
@@ -148,7 +158,7 @@ namespace FirstChair.Sim
             }
 
             var setup = new RunSetup(simVersion, sport, assistLevel, seed, Fix64.FromRaw(startX), Fix64.FromRaw(startZ));
-            recording = new Recording(setup, tuningHash, heightmapHash, inputs);
+            recording = new Recording(setup, tuningHash, heightmapHash, snowMapHash, inputs);
             return true;
         }
 
