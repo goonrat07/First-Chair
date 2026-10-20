@@ -72,3 +72,9 @@ Started 2026-10-20T11:05:45Z · Ended (running) · Reason (running) · Commits (
   - then the stepping, skier, camera, input, Unity replay and playtest.
 
 Engine follow-up from item 2 (`41e4a12`): the sim now rejects a `Tuning` with `MaxEdgeAngle` 0 or below, and a rider at rest no longer divides by zero under bad tuning. Rides are unchanged (golden trace matches). 201 tests pass.
+
+## Item 3: story-002-skiing-on-snow, /story-done
+- Verdict: COMPLETE WITH NOTES. Status set to Complete (`919ce3a`).
+- Tests: 201 passed; CI green.
+- Decisions made for you: closed it (the recommended option).
+- Not verified: feel and Unity (see item 2).

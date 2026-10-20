@@ -6,7 +6,7 @@ Started: 2026-10-20T11:05:45Z · Until: none · Branch: claude/beautiful-gates-8
 |---|------|-------|--------|---------|
 | 1 | story-001-sim-core-replay | story-done | done | bb0e1c0 |
 | 2 | story-002-skiing-on-snow | dev-story | done | 77371d7 |
-| 3 | story-002-skiing-on-snow | story-done | queued | |
+| 3 | story-002-skiing-on-snow | story-done | done | 919ce3a |
 | 4 | story-003-test-slope-unity-view, sim half only: slope generator, snow-type map, feature data (kickers, trees), sim-side height checks | dev-story | done | 5d9a50a |
 | 5 | story-004-air-landings-crashes (needs item 4's kicker data; goes ahead of 003's Unity half) | dev-story | queued | |
 | 6 | story-004-air-landings-crashes | story-done | queued | |
