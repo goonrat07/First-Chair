@@ -134,3 +134,12 @@ The usage limit hit during item 7 (about 13:00 UTC). Sleep mode's own wake-up fo
   - New numbers: rider radius 0.3 m, no near miss below 3 m/s, Flow gain 0.05 at 2.4 m rising to 0.25 at 0 m.
 - Not covered by tests yet: a second pass of the same tree, and hitting a trunk in the air.
 - Not verified: feel, and anything in Unity.
+
+## Item 8: story-005-trees-and-flow, /story-done
+- Verdict: COMPLETE WITH NOTES. Status set to Complete (`87e86fc`).
+- Engine review (unity-specialist): nothing blocking. Both RISKs and the low-risk note are fixed in `1c880ae`:
+  - a start inside a trunk looped crash and reset forever, and is now rejected;
+  - the per-tree pass state was outside the replay comparison, and `TreePassHash` now covers it;
+  - the Flow bonus had no cap, and is now capped at 1000.
+- One design question for you (non-blocking): can a rider jump over trees? See questions.md #1.
+- Decisions made for you: closed it (the recommended option), although Story 003 is still In Progress. Story 005 needed only 003's finished tree data.
