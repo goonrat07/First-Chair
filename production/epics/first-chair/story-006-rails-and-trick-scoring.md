@@ -1,7 +1,7 @@
 # Story 006: Rails, boxes and single-trick scoring
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
@@ -96,3 +96,17 @@
 
 - Depends on: `production/epics/first-chair/story-004-air-landings-crashes.md`, `production/epics/first-chair/story-005-trees-and-flow.md` (Flow value)
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-20
+**Criteria**: 7/7 passing (none deferred). Each is covered by a test that ran, in `TrickScoringTests`, `RailTests` and `DeterminismTests`; 337 tests and 10 pytest tests pass.
+**Deviations**: ADVISORY:
+- The grind rate (200 points per second) is a placeholder; the spec gives no value.
+- Open design question: should a rail exit score? See `production/sleep-mode/questions.md` #2.
+- The engine review's RISK, scores wrapping under extreme valid tuning, is fixed (`818e5ba`).
+- For the Unity driver: call `RunScore.AddAll` after every `Step`, because events are cleared each step. Also pass the slope's `RailSet` and `Forest`.
+- Feel is untuned, and nothing is verified in Unity. Unity doesn't draw rails, boxes or a score yet.
+**Test Evidence**: waived at qa.level minimal; unit tests in `sim/FirstChair.Sim.Tests/TrickScoringTests.cs` and `RailTests.cs` exist anyway, as `.claude/rules/sim-code.md` requires
+**Reviewed by**: self, no independent review (solo mode; a unity-specialist engine review ran during `/dev-story`)
