@@ -60,13 +60,23 @@
 
 ## Files
 
-- `tools/terrain/make_test_slope.py` (heightmap, snow map and feature data)
-- `Assets/Terrain/TestSlope/` (generated `.raw` heightmap, snow map, feature data)
+Sim half, done in the cloud (`5d9a50a`):
+
+- `tools/terrain/make_test_slope.py`
+- `tools/terrain/test_make_test_slope.py`
+- `Assets/Terrain/TestSlope/TestSlope.raw` (heightmap, Git LFS)
+- `Assets/Terrain/TestSlope/TestSlopeSnow.raw` (snow map, Git LFS)
+- `Assets/Terrain/TestSlope/TestSlope.txt` (layout: spec, zones, start, kickers, trees)
+- `Packages/com.firstchair.sim/Runtime/SlopeLayout.cs`
+- `sim/FirstChair.Sim.Tests/SlopeLayoutTests.cs`
+- `sim/FirstChair.Sim.Tests/TestSlopeTests.cs`
+- `.github/workflows/sim-tests.yml` (checks out LFS)
+
+Unity half, still to build on the PC:
+
 - `Assets/Scripts/Riding/` (sim driver, rider view, input to sim, follow camera)
 - `Assets/Scenes/TestSlope.unity`
 - `Assets/Tests/EditMode/TerrainParityTests.cs`
-
----
 
 ## QA Test Cases
 

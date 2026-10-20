@@ -41,3 +41,34 @@ Started 2026-10-20T11:05:45Z · Ended (running) · Reason (running) · Commits (
   - Braking is equally strong on every snow type.
   - Default numbers are placeholders: grip groomed 16, powder 13, crud 10, ice 6, slush 12; brake 8 m/s²; poling up to 4 m/s.
 - Not verified: feel, which needs Story 003's Unity view and a playtest on the PC. Nothing was compiled in Unity.
+
+## Item 4: story-003-test-slope-unity-view, /dev-story (sim half only)
+- Result: sim half done (`5d9a50a`). The story stays In Progress; its Unity half needs the PC.
+- Changed:
+  - `tools/terrain/make_test_slope.py` and its pytest file;
+  - `Assets/Terrain/TestSlope/`: `TestSlope.raw` heightmap and `TestSlopeSnow.raw` snow map (both Git LFS), plus the `TestSlope.txt` layout;
+  - the sim's `SlopeLayout.cs` loader and two test files;
+  - `sim-tests.yml` now checks out LFS.
+- The slope:
+  - 512 m square at 0.5 m per sample, heights 0 to 160 m;
+  - a groomer with a steeper pitch, an 18 m-deep powder bowl, and three kickers (0.8, 1.2 and 1.6 m) in a park;
+  - a 51-tree glade and a level run-out;
+  - every snow type present, including ice on the pitch and slush at its foot.
+- Tests:
+  - pytest: 9 passed. Two runs are byte-identical, and the committed files match a fresh run.
+  - `dotnet test sim/`: 198 passed (50 new), and CI is green with LFS.
+  - Six breaks were watched failing.
+- Decisions made for you:
+  - 1025 samples at 0.5 m; 2049 would be 12 MB, and 513 too coarse for a kicker.
+  - The snow map is a `.raw` in LFS rather than a `.bytes` in plain git.
+  - The layout is one text file in whole millimetres and millidegrees. JSON was out: the sim has no parser for it.
+  - Zones are rectangles painted in order.
+  - A `start` record was added, so Unity and the tests share the run start.
+  - Kicker profile: h = H·(s/L)². The lips stand at 21.8°, 25.6° and 28.1° to the slope.
+  - Trees sit on a jittered 12 m grid with a fixed seed.
+- For the PC (Unity half), none of it verified:
+  - import the heightmap at 1025, 16-bit, Windows byte order, 512 x 160 x 512 m, and check that row 0 is z = 0;
+  - get the `.raw` bytes to the sim in a build (StreamingAssets or an importer); the `.txt` loads as a TextAsset;
+  - then the stepping, skier, camera, input, Unity replay and playtest.
+
+Engine follow-up from item 2 (`41e4a12`): the sim now rejects a `Tuning` with `MaxEdgeAngle` 0 or below, and a rider at rest no longer divides by zero under bad tuning. Rides are unchanged (golden trace matches). 201 tests pass.
