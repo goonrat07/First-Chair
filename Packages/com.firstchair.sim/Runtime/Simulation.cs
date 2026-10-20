@@ -85,8 +85,15 @@ namespace FirstChair.Sim
         /// <param name="heightmap">The terrain.</param>
         /// <param name="snowMap">The snow types, loaded for <paramref name="heightmap"/>.</param>
         /// <param name="tuning">The riding numbers, copied once.</param>
+        /// <exception cref="System.ArgumentException"><see cref="Tuning.MaxEdgeAngle"/> is not positive; every step
+        /// divides by it.</exception>
         public Simulation(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Tuning tuning)
         {
+            if (tuning.MaxEdgeAngle <= Fix64.Zero)
+            {
+                throw new System.ArgumentException("Tuning.MaxEdgeAngle must be positive.", nameof(tuning));
+            }
+
             Setup = setup;
             _heightmap = heightmap;
             _snowMap = snowMap;
@@ -183,7 +190,9 @@ namespace FirstChair.Sim
             }
 
             Fix64 loss = deceleration * dt;
-            velocity = loss >= speed ? Vec3.Zero : velocity - velocity * (loss / speed);
+            // At rest the velocity is already zero; testing speed first keeps a negative loss (bad tuning) from
+            // dividing by zero.
+            velocity = speed == Fix64.Zero || loss >= speed ? Vec3.Zero : velocity - velocity * (loss / speed);
 
             Fix64 x = _state.Position.X + velocity.X * dt;
             Fix64 z = _state.Position.Z + velocity.Z * dt;

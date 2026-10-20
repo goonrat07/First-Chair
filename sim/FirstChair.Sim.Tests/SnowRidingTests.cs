@@ -445,6 +445,33 @@ namespace FirstChair.Sim.Tests
             Assert.That(Speed(forward.State), Is.GreaterThan(Speed(gliding.State)));
         }
 
+        [TestCase(0)]
+        [TestCase(-1)]
+        public void NewRun_MaxEdgeAngleNotPositive_ThrowsArgumentException(int maxEdgeAngle)
+        {
+            // Arrange
+            Tuning tuning = Tuning.Default;
+            tuning.MaxEdgeAngle = Fix64.FromInt(maxEdgeAngle);
+
+            // Act and Assert
+            Assert.That(() => StartOn(TestTerrain.Flat(), SnowType.Groomed, tuning, 64, 64), Throws.ArgumentException);
+        }
+
+        [Test]
+        public void Step_AtRestWithNegativeDrag_StaysAtRestWithoutThrowing()
+        {
+            // Arrange: a negative drag is bad tuning, but it must not crash a ride that is standing still.
+            Tuning tuning = Tuning.Default;
+            tuning.GroomedDrag = -Tuning.Default.GroomedDrag;
+            Simulation simulation = StartOn(TestTerrain.Flat(), SnowType.Groomed, tuning, 64, 64);
+
+            // Act
+            simulation.Step(NoInput);
+
+            // Assert
+            Assert.That(simulation.State.Velocity, Is.EqualTo(Vec3.Zero));
+        }
+
         private static Simulation Start(Heightmap heightmap, SnowMap snowMap, Tuning tuning, int x, int z) =>
             new Simulation(new RunSetup(Sport.Skis, 0, 1UL, Fix64.FromInt(x), Fix64.FromInt(z)), heightmap, snowMap, tuning);
 
