@@ -58,10 +58,15 @@
 
 ## Files
 
-- `Packages/com.firstchair.sim/Runtime/` (air state, pop loading, rotation and grabs, landing grading, crash and reset, events)
+- `Packages/com.firstchair.sim/Runtime/RiderState.cs`
+- `Packages/com.firstchair.sim/Runtime/SimEvent.cs`
+- `Packages/com.firstchair.sim/Runtime/SimInput.cs`
+- `Packages/com.firstchair.sim/Runtime/Simulation.cs`
+- `Packages/com.firstchair.sim/Runtime/Tuning.cs`
 - `sim/FirstChair.Sim.Tests/AirTests.cs`
-
----
+- `sim/FirstChair.Sim.Tests/DeterminismTests.cs`
+- `sim/FirstChair.Sim.Tests/ScriptedRide.cs`
+- `sim/FirstChair.Sim.Tests/SimInputTests.cs`
 
 ## QA Test Cases
 

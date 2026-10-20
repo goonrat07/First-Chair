@@ -78,3 +78,32 @@ Engine follow-up from item 2 (`41e4a12`): the sim now rejects a `Tuning` with `M
 - Tests: 201 passed; CI green.
 - Decisions made for you: closed it (the recommended option).
 - Not verified: feel and Unity (see item 2).
+
+## Item 5: story-004-air-landings-crashes, /dev-story
+- Result: implemented (`9223bb3`). Sim version 2 to 3.
+  - Pop: loaded by holding jump, with a strength cap.
+  - Takeoff: detected from the terrain itself, so all three test-slope kickers launch at their lips.
+  - In the air: spins, flips, and five grabs (mute, tip, tail, Japan, safety).
+  - Landing: graded clean, solid or sketchy, or a crash from over- or under-rotation.
+  - Reset: after a crash, the rider goes back to the last safe spot after 1 s; a new Reset button does it at once.
+  - Events: takeoff, land (with a summary of the flight for Story 006's trick scoring), crash and reset.
+- Changed: `Simulation.cs`, `RiderState.cs`, `SimEvent.cs`, `SimInput.cs` (Reset is bit 6) and `Tuning.cs` (11 new numbers), plus the new `AirTests.cs` and updates to the determinism, scripted-ride and input tests.
+- Tests: `dotnet test sim/`, 228 passed. Seven breaks were watched failing:
+  - takeoff only from a pop;
+  - crash cause inverted;
+  - safe spot never sampled;
+  - pop ignores hold time;
+  - wrong grab mapping;
+  - fixed crash delay;
+  - landing ignores the spin.
+- Decisions made for you:
+  - Takeoff happens when the ground falls away faster than a tuned speed. A fixed 4 cm gap missed the lips, which are smooth.
+  - The landing angle is the unfinished flip or spin, whichever is larger. Landing switch is fine.
+  - The pop pushes along the slope's normal.
+  - Spins and flips turn only while their key is held; holding grab stops rotation.
+  - Reset puts you back at rest, facing the safe heading.
+  - A `Reset` event was added so the view can snap the rider back.
+- Playtest flags from the programmer:
+  - Sharp crests at high speed can give very short hops; Story 006 may want a minimum air time.
+  - The safe spot is often a kicker lip, so a reset can leave you at rest on the lip.
+- Not verified: feel, and anything in Unity.
