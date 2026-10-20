@@ -1,6 +1,7 @@
 # Sleep mode plan
 
 Started: 2026-10-20T11:05:45Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 5268986
+Finished: 2026-10-20T16:41:20Z · Reason: done
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
@@ -13,7 +14,7 @@ Started: 2026-10-20T11:05:45Z · Until: none · Branch: claude/beautiful-gates-8
 | 7 | story-005-trees-and-flow (needs item 4's tree data and story 004) | dev-story | done | c5b5e6c |
 | 8 | story-005-trees-and-flow | story-done | done | 87e86fc |
 | 9 | story-006-rails-and-trick-scoring | dev-story | done | e69c968 |
-| 10 | story-006-rails-and-trick-scoring | story-done | queued | |
+| 10 | story-006-rails-and-trick-scoring | story-done | done | d472f3d |
 
 Story 003 stays In Progress after item 4: its Unity half is left for the PC, so it gets
 no `/story-done` here.

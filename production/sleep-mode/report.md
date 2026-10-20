@@ -1,13 +1,35 @@
 # Sleep mode report
 
-Started 2026-10-20T11:05:45Z · Ended (running) · Reason (running) · Commits (running) (`5268986..`)
+Started 2026-10-20T11:05:45Z · Ended 2026-10-20T16:41:20Z · Reason done · Commits 30 (`5268986..`, all pushed)
 
 ## Summary
-- Finished: (running)
-- Skipped: (running)
-- Waiting on you: see production/sleep-mode/questions.md
-- Needs the PC: story 003's Unity half, story 007, feel tuning (production/sleep-mode/plan.md, "Left for the PC")
-- Next: (running)
+- **Finished:**
+  - Story 001 closed.
+  - Story 002 (skiing on snow) built and closed.
+  - Story 003's sim half built: the test-slope generator, heightmap, snow map and layout.
+  - Story 004 (air, landings, crashes) built and closed.
+  - Story 005 (trees and Flow) built and closed.
+  - Story 006 (rails, grinds, trick scoring) built and closed.
+  - Stories complete: 5 of 7. Sim tests: 80 to 337, all green, with CI green on every push.
+- **Engine reviews:** a Unity specialist reviewed every story's code for Unity and IL2CPP problems. None found anything blocking. The risks they raised are fixed:
+  - bad tuning values that divided by zero, froze a flight or wrapped a score;
+  - a start inside a tree trunk;
+  - tree state hidden from the replay check.
+- **Skipped:** none.
+- **Waiting on you:** two design questions in `production/sleep-mode/questions.md`. Neither blocks anything.
+  - Can a rider jump over trees?
+  - Should a rail exit score?
+- **Needs the PC:**
+  - Story 003's Unity half: Terrain from the heightmap, 120 Hz stepping, placeholder skier, follow camera, input, Unity replay, playtest.
+  - Story 007, art.
+  - Feel tuning: every riding and scoring number is a placeholder.
+  - Unity has compiled none of this yet. When it first opens, commit the `.meta` files it creates.
+  - The Unity driver must pass `Forest.FromLayout` and the `RailSet` to the sim, and call `RunScore.AddAll` after every step.
+- **Usage limit:** the limit hit at about 13:00 UTC during Story 005. Sleep mode's own wake-up fired at 15:51, one minute after the reset, and work carried on from the files still on disk.
+- **Next:**
+  1. Create the Unity project on your PC (README, "Set up your PC").
+  2. `/dev-story production/epics/first-chair/story-003-test-slope-unity-view.md` for the Unity half.
+  3. Ride it and tune the feel.
 
 ## Item 1: story-001-sim-core-replay, /story-done
 - Verdict: COMPLETE WITH NOTES. Status set to Complete (`bb0e1c0`).
@@ -165,3 +187,13 @@ The usage limit hit during item 7 (about 13:00 UTC). Sleep mode's own wake-up fo
   - Grinds score 200 points per second (a placeholder).
 - Design question for you (non-blocking): should a rail exit score? See questions.md #2.
 - Not verified: feel, and anything in Unity. Unity doesn't draw rails, boxes or a score yet.
+
+## Item 10: story-006-rails-and-trick-scoring, /story-done
+- Verdict: COMPLETE WITH NOTES. Status set to Complete (`d472f3d`).
+- Engine review (unity-specialist): nothing blocking. Its RISK was that scoring numbers `Validate` accepted could wrap into wrong or negative points, e.g. -1,294,907,296 for a Right 540. Fixed in `818e5ba`:
+  - points coefficients are capped at 10,000, and landing factors and the Flow bonus at 10;
+  - at most 100 turns or flips, and 600 s of air or grind time, count toward a score;
+  - points are clamped before rounding.
+  - The worst case is now about 8.8e8. 337 tests pass.
+- Decisions made for you: closed it (the recommended option).
+- For the Unity driver: call `RunScore.AddAll` after every `Step`, not once per frame, because events are cleared each step.
