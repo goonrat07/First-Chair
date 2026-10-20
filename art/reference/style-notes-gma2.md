@@ -1,6 +1,6 @@
 # Look notes from Grand Mountain Adventure 2 (user's screenshots, 2026-10-20)
 
-The user shared four GMA2 screenshots as inspiration: a skier close-up, a high follow-camera shot on a slope, a village
+The user shared five GMA2 screenshots as inspiration: two skier close-ups, a high follow-camera shot on a slope, a village
 with a railway, and a foggy glade. The screenshots are copyrighted, so they are not stored in this repo
 (`.claude/skills/blender-image-to-3d/FIRST-CHAIR.md`: commit only references we made or that are CC0). These notes are
 our own description of what they show. Use them as the brief for our own reference sheets and models: take the feel,
@@ -36,6 +36,25 @@ proportions and palette, never copy a design one to one.
 - **Poles.** Thin dark shafts, small baskets, held angled back.
 - **Skis.** Teal-green (`#5E9E86`) with a lighter green top-sheet graphic: small X marks near the tip and tail, and
   rows of short horizontal stripes. Fairly wide, with twin-tip-like rounded ends.
+
+## Second skier (close-up in a deep crouch, user's screenshot 2)
+
+- **Face.** The lower face shows under the goggles: a simple faceted nose, mouth and chin in a light-medium skin
+  tone. The head reads as a person, not a helmet with a scarf. Our skier should show the lower face too, with the
+  neck warmer pulled down or left off.
+- **Head gear.** A teal knit beanie with a darker folded cuff band and a tan pom-pom on top, with the goggle strap
+  around it. The goggles are big, with an amber lens and a light frame. A beanie is a good second head option next to
+  the helmet.
+- **Jacket.** Teal-blue and very puffy, rounded at the shoulders, with a hood bunched up at the back of the neck and a
+  light centre zip. It carries a darker zigzag (chevron) pattern. A simple pattern like this suits the flat-colour
+  style, as a texture or vertex-colour bands.
+- **Trousers and gloves.** Orange-tan, baggy, big rounded knees. Gloves are the same tan.
+- **Poles.** Orange shafts, blue grips, and big chunky octagonal baskets that read clearly at a distance.
+- **Skis and boots.** Long orange-brown skis with a darker top-sheet pattern; light grey-blue boots.
+- **Stance.** A deep crouch: hips back and low, back rounded forward, hands wide and forward with the poles angled
+  back. The long jacket covers the hips.
+- **Proportions.** The head is modest next to the bulky jacket; most of the volume is in the torso and shoulders.
+  The user is happy with our current proportions; take the face, hood and puffiness from this, not a resize.
 
 ## Trees (slope shot and glade shot)
 
