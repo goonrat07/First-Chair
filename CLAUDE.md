@@ -30,6 +30,10 @@ riding works and feels right. Skis first, snowboard later.
   Unity-side change made in the cloud as **not verified in the editor**. On the user's
   PC, Unity's official Claude Code plugin and the Blender Lab MCP give live editor
   access.
+- **Sleep mode:** `/sleep-mode` (user-typed only) works unattended in the cloud and
+  wakes itself with scheduled messages. A message that starts "Sleep mode wake-up"
+  means: run the command it carries, then follow Phase 3 of
+  `.claude/skills/sleep-mode/SKILL.md`.
 
 ## Technology Stack
 

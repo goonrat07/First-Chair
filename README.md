@@ -59,6 +59,26 @@ Claude Code cloud sessions run `.claude/hooks/cloud-setup.sh` at start. It insta
 LTS, the libraries Blender needs to render without a GPU, Pillow and the .NET 10 SDK, so asset
 builds and sim tests work there. It runs only in the cloud; on your PC it does nothing.
 
+### Sleep mode
+
+Type `/sleep-mode` in a cloud session before you sleep or leave for school, or
+`/sleep-mode 8` to stop after 8 hours. Claude works through the stories that can be done
+in the cloud. It commits and pushes after every step, and you get a phone notification
+when it finishes, stalls or gets blocked. In the morning, read
+`production/sleep-mode/report.md`, then answer anything in
+`production/sleep-mode/questions.md`.
+
+- **Before you start:** set the session's mode dropdown to **Auto**. In any other mode
+  the first permission prompt would wait all night.
+- **Usage limits:** cloud sessions don't continue on their own when a usage limit
+  resets; that feature is only for terminal sessions. Sleep mode schedules a message to
+  itself for one minute after the reset, and it resumes then. A weekly limit resets
+  days later, so hitting one ends the run without a notification. The report is kept
+  up to date as it goes, so it's still there.
+- **What it leaves for you:** work that needs the Unity Editor, a playtest or your
+  sign-off, and any question where a guess could be wrong.
+- **Stop it:** `/sleep-mode off`. `/sleep-mode status` shows where it is.
+
 ## How work runs
 
 The project uses [Claude Code Game Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)
