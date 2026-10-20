@@ -1245,6 +1245,7 @@ namespace FirstChair.Sim
             Require(IsWithin(tuning.GrabPointsPerSecond, MaxPointsCoefficient), "GrabPointsPerSecond must be in [0, 10000]");
             Require(IsWithin(tuning.GrabPointsCap, MaxPointsCoefficient), "GrabPointsCap must be in [0, 10000]");
             Require(tuning.GrabMinTime >= Fix64.Zero && tuning.GrabMinTime < MaxTuningSeconds, "GrabMinTime must be zero or more and fit an int of steps");
+            Require(tuning.MinScoredAirTime >= Fix64.Zero && tuning.MinScoredAirTime < MaxTuningSeconds, "MinScoredAirTime must be zero or more and fit an int of steps");
             Require(IsWithin(tuning.CleanTrickFactor, MaxTrickFactor), "CleanTrickFactor must be in [0, 10]");
             Require(IsWithin(tuning.SolidTrickFactor, MaxTrickFactor), "SolidTrickFactor must be in [0, 10]");
             Require(IsWithin(tuning.SketchyTrickFactor, MaxTrickFactor), "SketchyTrickFactor must be in [0, 10]");

@@ -20,4 +20,4 @@ Questions only you can answer. Each says whether it stopped an item; nothing was
 
 ## Answers (2026-10-20)
 1. **Trees always block.** Kept as built; revisit after the first playtest. No code change.
-2. **Minimum air time.** Air shorter than a tuned minimum scores nothing. That covers short rail exits and the tiny hops off sharp crests. To be added after the first playtest, when the threshold can be picked by feel.
+2. **Minimum air time.** Air shorter than a tuned minimum scores nothing. That covers short rail exits and the tiny hops off sharp crests. Added on the user's request with a 0.25 s placeholder (`Tuning.MinScoredAirTime`); a playtest picks the real value.

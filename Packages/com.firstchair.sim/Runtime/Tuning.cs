@@ -212,6 +212,13 @@ namespace FirstChair.Sim
         /// <summary>Shortest grab, seconds, that counts: shorter earns no bonus and does not name the trick.</summary>
         public Fix64 GrabMinTime;
 
+        /// <summary>
+        /// Shortest air time, seconds, that scores: a landed jump with less air scores nothing and does not count as a
+        /// repeat. It keeps short hops off crests and small rail exits from earning points. A placeholder until a
+        /// playtest picks it.
+        /// </summary>
+        public Fix64 MinScoredAirTime;
+
         /// <summary>Landing-quality factor q of a clean landing.</summary>
         public Fix64 CleanTrickFactor;
 
@@ -319,6 +326,7 @@ namespace FirstChair.Sim
             GrabPointsPerSecond = Fix64.FromInt(300),
             GrabPointsCap = Fix64.FromInt(600),
             GrabMinTime = Fix64.FromRatio(15, 100),
+            MinScoredAirTime = Fix64.FromRatio(1, 4),
             CleanTrickFactor = Fix64.FromRatio(3, 2),
             SolidTrickFactor = Fix64.One,
             SketchyTrickFactor = Fix64.FromRatio(6, 10),
@@ -422,6 +430,7 @@ namespace FirstChair.Sim
             hash = Fnv1a64.AddInt64(hash, GrabPointsPerSecond.Raw);
             hash = Fnv1a64.AddInt64(hash, GrabPointsCap.Raw);
             hash = Fnv1a64.AddInt64(hash, GrabMinTime.Raw);
+            hash = Fnv1a64.AddInt64(hash, MinScoredAirTime.Raw);
             hash = Fnv1a64.AddInt64(hash, CleanTrickFactor.Raw);
             hash = Fnv1a64.AddInt64(hash, SolidTrickFactor.Raw);
             hash = Fnv1a64.AddInt64(hash, SketchyTrickFactor.Raw);

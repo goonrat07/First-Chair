@@ -161,6 +161,26 @@ namespace FirstChair.Sim.Tests
         }
 
         [Test]
+        public void HopShorterThanMinScoredAirTime_ScoresNothingAndIsNotARepeat()
+        {
+            // Arrange: one step under the minimum, then exactly the minimum, both straight airs.
+            Tuning tuning = Tuning.Default;
+            int minTicks = (tuning.MinScoredAirTime * Fix64.FromInt(Simulation.StepsPerSecond)).FloorToInt();
+            var score = new RunScore(tuning);
+
+            // Act
+            score.Add(SimEvent.Land(10, LandingGrade.Clean, Air(minTicks - 1)));
+            score.Add(SimEvent.Land(20, LandingGrade.Clean, Air(minTicks)));
+
+            // Assert: the hop left no trace; the first counted landing is not a repeat.
+            Assert.That(score.Tricks.Count, Is.EqualTo(1));
+            Assert.That(score.Tricks[0].Tick, Is.EqualTo(20));
+            Assert.That(score.Tricks[0].Repeat, Is.EqualTo(0));
+            Assert.That(score.Tricks[0].Points, Is.GreaterThan(0));
+            Assert.That(score.TimesLanded(TrickScoring.Id(TrickScoring.StraightAir)), Is.EqualTo(1));
+        }
+
+        [Test]
         public void Crash_KeepsEverythingAlreadyScored_AndScoresNothing()
         {
             // Arrange

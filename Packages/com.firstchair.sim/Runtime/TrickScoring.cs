@@ -65,6 +65,11 @@ namespace FirstChair.Sim
         /// <param name="flip">Total flip, radians (<see cref="AirSummary.Flip"/>).</param>
         public static int Flips(Fix64 flip) => Capped(((Fix64.Abs(flip) + Fix64.Pi) / Fix64.TwoPi).FloorToInt());
 
+        /// <summary>True when the flight lasted at least <see cref="Tuning.MinScoredAirTime"/>, so the jump scores.</summary>
+        /// <param name="air">The flight.</param>
+        /// <param name="tuning">The tuning.</param>
+        public static bool AirCounts(AirSummary air, Tuning tuning) => air.AirSeconds >= tuning.MinScoredAirTime;
+
         /// <summary>True when the flight's grab was held at least <see cref="Tuning.GrabMinTime"/>.</summary>
         /// <param name="air">The flight.</param>
         /// <param name="tuning">The tuning.</param>

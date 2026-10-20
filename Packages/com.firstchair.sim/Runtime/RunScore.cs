@@ -110,11 +110,15 @@ namespace FirstChair.Sim
             return index < 0 ? 0 : _landings[index];
         }
 
-        /// <summary>Folds one event in: scores <see cref="SimEventKind.Land"/> and <see cref="SimEventKind.GrindEnd"/>, ignores the rest.</summary>
+        /// <summary>
+        /// Folds one event in: scores <see cref="SimEventKind.Land"/> and <see cref="SimEventKind.GrindEnd"/>, ignores the
+        /// rest. A landing with less air than <see cref="Tuning.MinScoredAirTime"/> is ignored too: it scores nothing and
+        /// does not count as a repeat.
+        /// </summary>
         /// <param name="simEvent">The event.</param>
         public void Add(SimEvent simEvent)
         {
-            if (simEvent.Kind == SimEventKind.Land)
+            if (simEvent.Kind == SimEventKind.Land && TrickScoring.AirCounts(simEvent.Air, _tuning))
             {
                 string name = TrickScoring.Name(simEvent.Air, _tuning);
                 string id = TrickScoring.Id(name);
