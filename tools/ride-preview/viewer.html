@@ -1,0 +1,570 @@
+<title>Test Slope Rides</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a resort trail map. The map is the page; a side rail carries the readouts, the timeline and the log. */
+  :root {
+    --bg: #edf1f4;
+    --surface: #fbfcfd;
+    --ink: #17212b;
+    --muted: #5a6a77;
+    --line: #d3dbe2;
+    --accent: #d4512c;   /* the skier's jacket */
+    --trail: #2459b3;    /* trail-map blue, for selection */
+    --good: #2f8a5b;
+    --warn: #b7791f;
+    --bad: #c2362f;
+    --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+    --body: "Barlow", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1418; --surface: #151d23; --ink: #e5ecf1; --muted: #8b9ba8; --line: #26323b;
+      --accent: #ee6b44; --trail: #6c9fe8; --good: #4fb07f; --warn: #d9a03f; --bad: #e0605a;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0e1418; --surface: #151d23; --ink: #e5ecf1; --muted: #8b9ba8; --line: #26323b;
+    --accent: #ee6b44; --trail: #6c9fe8; --good: #4fb07f; --warn: #d9a03f; --bad: #e0605a;
+    color-scheme: dark;
+  }
+
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: var(--body); font-size: 15px; line-height: 1.45; }
+  .page {
+    max-width: 1240px; margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 20px 40px;
+    display: grid; gap: 18px;
+  }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px; }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 4.5vw, 40px); letter-spacing: 0.02em; text-transform: uppercase; margin: 0; line-height: 1; text-wrap: balance; }
+  .sub { color: var(--muted); margin: 0; max-width: 62ch; }
+  .meta { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+
+  .rides { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ride-btn {
+    font-family: var(--display); font-weight: 600; font-size: 16px; letter-spacing: 0.04em; text-transform: uppercase;
+    border: 1.5px solid var(--line); background: var(--surface); color: var(--ink);
+    border-radius: 999px; padding: 6px 14px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .ride-btn .score { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 0; }
+  .ride-btn[aria-pressed="true"] { border-color: var(--trail); background: var(--trail); color: #fff; }
+  .ride-btn[aria-pressed="true"] .score { color: rgba(255,255,255,0.8); }
+  .ride-btn:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .main { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+  @media (min-width: 920px) { .main { grid-template-columns: minmax(0, 1.35fr) minmax(300px, 1fr); align-items: start; } }
+
+  .map-wrap { display: grid; gap: 10px; min-width: 0; }
+  .map-frame { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  #map { display: block; width: 100%; aspect-ratio: 1 / 1; max-width: 100%; touch-action: manipulation; }
+  .map-tools { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
+  .chip-btn {
+    font-family: var(--display); font-weight: 600; font-size: 14px; letter-spacing: 0.05em; text-transform: uppercase;
+    background: rgba(255,255,255,0.92); color: #17212b; border: 1px solid #c9d3db; border-radius: 6px; padding: 4px 9px; cursor: pointer;
+  }
+  .chip-btn[aria-pressed="true"] { background: #17212b; color: #fff; border-color: #17212b; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12px; color: var(--muted); align-items: center; }
+  .sw { display: inline-block; width: 12px; height: 12px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; border: 1px solid rgba(0,0,0,0.15); }
+  .speed-scale { display: inline-block; width: 120px; height: 8px; border-radius: 4px; vertical-align: 1px; margin: 0 6px; }
+
+  .rail { display: grid; gap: 14px; min-width: 0; }
+  .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px; display: grid; gap: 12px; min-width: 0; }
+  .panel h2 { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: 0.06em; text-transform: uppercase; margin: 0; }
+  .desc { margin: 0; color: var(--muted); font-size: 14px; }
+
+  .gauges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .gauge { display: grid; gap: 2px; }
+  .label { font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .value { font-family: var(--mono); font-size: 20px; font-variant-numeric: tabular-nums; }
+  .value small { font-size: 12px; color: var(--muted); }
+  .big { font-size: 30px; line-height: 1.05; }
+  .states { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pill { font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); }
+  .pill.on { color: #fff; border-color: transparent; }
+  .pill.air.on { background: var(--trail); }
+  .pill.grind.on { background: #7b4fc4; }
+  .pill.skid.on { background: var(--warn); }
+  .pill.crash.on { background: var(--bad); }
+  .pill.snow.on { background: var(--good); }
+  .flow { display: grid; gap: 4px; }
+  .flow-bar { height: 10px; border-radius: 5px; background: var(--line); overflow: hidden; }
+  .flow-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #39a0a6, #5ccf8d); }
+
+  .timeline { display: grid; gap: 8px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .play {
+    font-family: var(--display); font-weight: 700; font-size: 16px; letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 7px 16px; cursor: pointer; min-width: 84px;
+  }
+  select, .time { font-family: var(--mono); font-size: 13px; }
+  select { background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; }
+  .time { color: var(--muted); font-variant-numeric: tabular-nums; margin-left: auto; }
+  #scrub { width: 100%; accent-color: var(--accent); }
+  #chart { display: block; width: 100%; height: 96px; max-width: 100%; cursor: pointer; }
+
+  .log { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; max-height: 300px; overflow-y: auto; }
+  .log li { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 8px; align-items: baseline; padding: 5px 6px; border-radius: 6px; cursor: pointer; }
+  .log li:hover { background: color-mix(in srgb, var(--trail) 10%, transparent); }
+  .log li.future { opacity: 0.45; }
+  .log .t { font-family: var(--mono); font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .log .what { min-width: 0; overflow-wrap: anywhere; }
+  .log .pts { font-family: var(--mono); font-size: 13px; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .empty { color: var(--muted); font-size: 14px; margin: 0; }
+
+  .findings { display: grid; gap: 10px; margin: 0; padding-left: 20px; }
+  .findings li { max-width: 72ch; }
+  .findings b { font-weight: 600; }
+  .note { font-size: 13px; color: var(--muted); margin: 0; max-width: 72ch; }
+
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
+</style>
+
+<div class="page">
+  <header>
+    <div>
+      <h1>Test Slope Rides</h1>
+      <p class="sub">Five scripted rides of First Chair's riding sim on the generated test slope, played back from the sim's own state. The fall line runs down the map.</p>
+    </div>
+    <span class="meta" id="meta"></span>
+  </header>
+
+  <nav class="rides" id="rides" aria-label="Rides"></nav>
+
+  <div class="main">
+    <section class="map-wrap" aria-label="Map">
+      <div class="map-frame">
+        <canvas id="map" aria-label="Top-down map of the test slope with the selected ride"></canvas>
+        <div class="map-tools">
+          <button class="chip-btn" id="view-all" aria-pressed="false" type="button">Whole slope</button>
+          <button class="chip-btn" id="view-follow" aria-pressed="true" type="button">Follow rider</button>
+        </div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </section>
+
+    <aside class="rail">
+      <section class="panel" aria-label="Rider">
+        <h2 id="ride-title">Ride</h2>
+        <p class="desc" id="ride-desc"></p>
+        <div class="gauges">
+          <div class="gauge"><span class="label">Speed</span><span class="value big" id="g-speed">0</span><span class="value"><small id="g-speed-ms">0 m/s</small></span></div>
+          <div class="gauge"><span class="label">Stance</span><span class="value" id="g-stance">Stand</span><span class="value"><small id="g-edge">edge 0°</small></span></div>
+          <div class="gauge"><span class="label">Score</span><span class="value big" id="g-score">0</span><span class="value"><small id="g-snow">groomed</small></span></div>
+        </div>
+        <div class="states" aria-label="State">
+          <span class="pill snow" id="p-snow">On snow</span>
+          <span class="pill air" id="p-air">In the air</span>
+          <span class="pill grind" id="p-grind">Grinding</span>
+          <span class="pill skid" id="p-skid">Skidding</span>
+          <span class="pill crash" id="p-crash">Crashed</span>
+        </div>
+        <div class="flow">
+          <div style="display:flex;justify-content:space-between"><span class="label">Flow</span><span class="value" style="font-size:13px" id="g-flow">0.00</span></div>
+          <div class="flow-bar"><div class="flow-fill" id="flow-fill"></div></div>
+        </div>
+      </section>
+
+      <section class="panel timeline" aria-label="Timeline">
+        <div class="controls">
+          <button class="play" id="play" type="button">Play</button>
+          <label class="label" for="rate">Speed</label>
+          <select id="rate">
+            <option value="0.5">0.5×</option>
+            <option value="1" selected>1×</option>
+            <option value="2">2×</option>
+            <option value="4">4×</option>
+          </select>
+          <span class="time" id="time">0.0 / 0.0 s</span>
+        </div>
+        <input id="scrub" type="range" min="0" max="1000" value="1000" aria-label="Ride time">
+        <canvas id="chart" aria-label="Speed over the ride"></canvas>
+      </section>
+
+      <section class="panel" aria-label="Tricks and events">
+        <h2>Tricks and events</h2>
+        <ul class="log" id="log"></ul>
+      </section>
+    </aside>
+  </div>
+
+  <section class="panel" aria-label="What the rides show">
+    <h2>What the rides show</h2>
+    <ol class="findings">
+      <li><b>Full-lock turns skid at almost any speed.</b> With a turn rate of 1.8 rad/s, groomed grip only carves a full-lock turn below about 9 m/s, and a tuck reaches 29 m/s. The carving ride skids 23 to 55% of the time. Whether hard turns should carve at speed is a feel call for the playtest.</li>
+      <li><b>The run-out doesn't stop a fast rider.</b> A tucked run stands up on the flat and still leaves the map at 19 m/s. Braking stops the rider from 13 m/s in about 14 m. The slope needs a longer or uphill run-out.</li>
+      <li><b>Grabs outscore spins.</b> A 1 s Japan (778) is worth almost twice a clean 360 (420), because a grab earns up to 600 and a spin 100 per half turn. Those coefficients come from the old spec.</li>
+      <li><b>A rail exit still scores as a small air.</b> The drop off the rail's end is 0.33 s of air, above the 0.25 s placeholder minimum, so it scores 15 points.</li>
+      <li><b>Flow on its own scores nothing.</b> Seven near misses in the glade build Flow to 0.53, but Flow only multiplies later tricks.</li>
+      <li><b>Unconfirmed: a weak launch on kicker 1.</b> One scripted run lost speed on the lip while steering. A clean probe didn't reproduce it, so it needs a sim test.</li>
+    </ol>
+    <p class="note">Every riding and scoring number is a placeholder until the first playtest on the PC. These rides are scripted by a simple steering controller, not a player.</p>
+  </section>
+</div>
+
+<script id="rides-data" type="application/json">/*__RIDES_JSON__*/</script>
+<script>
+(() => {
+  const DATA = JSON.parse(document.getElementById('rides-data').textContent);
+  const slope = DATA.slope;
+  const SIZE = slope.sizeX;
+  const RES = slope.grid.resolution;
+  const CELL = slope.grid.cellX;
+  const SNOW_NAMES = ['Groomed', 'Powder', 'Crud', 'Ice', 'Slush'];
+  // Map colours are the picture itself, the same in both themes.
+  const SNOW_RGB = [[246, 248, 250], [234, 242, 252], [236, 234, 229], [206, 229, 241], [236, 224, 203]];
+  const SHADOW_RGB = [138, 163, 205];
+  const SPEED_STOPS = [[0, [59, 111, 182]], [8, [42, 161, 152]], [16, [224, 177, 0]], [24, [228, 87, 46]], [32, [181, 23, 46]]];
+
+  const $ = (id) => document.getElementById(id);
+  const mapCanvas = $('map'), ctx = mapCanvas.getContext('2d');
+  const chartCanvas = $('chart'), cctx = chartCanvas.getContext('2d');
+
+  // ---------- slope picture ----------
+  const heightAt = (x, z) => {
+    const gx = Math.min(Math.max(x / CELL, 0), RES - 1.0001), gz = Math.min(Math.max(z / CELL, 0), RES - 1.0001);
+    const c = Math.floor(gx), r = Math.floor(gz), fx = gx - c, fz = gz - r;
+    const h = slope.heights, i = r * RES + c;
+    const top = h[i] * (1 - fx) + h[i + 1] * fx, bottom = h[i + RES] * (1 - fx) + h[i + RES + 1] * fx;
+    return top * (1 - fz) + bottom * fz;
+  };
+  const snowAt = (x, z) => {
+    const c = Math.min(RES - 1, Math.max(0, Math.round(x / CELL))), r = Math.min(RES - 1, Math.max(0, Math.round(z / CELL)));
+    return slope.snow[r * RES + c];
+  };
+
+  const BASE = 1024, PPM = BASE / SIZE;
+  const base = document.createElement('canvas');
+  base.width = base.height = BASE;
+  (function paintBase() {
+    const b = base.getContext('2d');
+    const img = b.createImageData(BASE, BASE);
+    const H = new Float32Array(BASE * BASE);
+    for (let py = 0; py < BASE; py++) for (let px = 0; px < BASE; px++) H[py * BASE + px] = heightAt((px + 0.5) / PPM, (py + 0.5) / PPM);
+    // Sun low from the lower left, so the downhill-facing slope is lit and its far walls fall into blue shadow.
+    const L = [-0.5, 0.8, 0.45], ln = Math.hypot(...L), lx = L[0] / ln, ly = L[1] / ln, lz = L[2] / ln;
+    const d = 1 / PPM;
+    for (let py = 0; py < BASE; py++) {
+      for (let px = 0; px < BASE; px++) {
+        const i = py * BASE + px, h = H[i];
+        const hx = (H[py * BASE + Math.min(px + 1, BASE - 1)] - H[py * BASE + Math.max(px - 1, 0)]) / (2 * d);
+        const hz = (H[Math.min(py + 1, BASE - 1) * BASE + px] - H[Math.max(py - 1, 0) * BASE + px]) / (2 * d);
+        const nl = Math.hypot(hx, 1, hz), lam = Math.max(0, (-hx * lx + ly - hz * lz) / nl);
+        const s = Math.min(lam / ly, 1.2);
+        const snow = SNOW_RGB[snowAt((px + 0.5) / PPM, (py + 0.5) / PPM)] || SNOW_RGB[0];
+        const shade = Math.min(Math.max((1 - s) * 1.6, 0), 0.65), lift = 0.86 + 0.14 * Math.min(s, 1.1);
+        let r = (snow[0] * (1 - shade) + SHADOW_RGB[0] * shade) * lift;
+        let g = (snow[1] * (1 - shade) + SHADOW_RGB[1] * shade) * lift;
+        let bl = (snow[2] * (1 - shade) + SHADOW_RGB[2] * shade) * lift;
+        const band = Math.floor(h / 5);
+        const right = px + 1 < BASE ? Math.floor(H[i + 1] / 5) : band, down = py + 1 < BASE ? Math.floor(H[i + BASE] / 5) : band;
+        if (band !== right || band !== down) {
+          const k = (Math.max(band, right, down) % 10 === 0) ? 0.84 : 0.93;
+          r *= k; g *= k; bl *= k;
+        }
+        const o = i * 4;
+        img.data[o] = r; img.data[o + 1] = g; img.data[o + 2] = bl; img.data[o + 3] = 255;
+      }
+    }
+    b.putImageData(img, 0, 0);
+  })();
+
+  // ---------- helpers ----------
+  const speedRGB = (v) => {
+    for (let i = 1; i < SPEED_STOPS.length; i++) {
+      const [s1, c1] = SPEED_STOPS[i];
+      if (v <= s1) {
+        const [s0, c0] = SPEED_STOPS[i - 1], t = (v - s0) / (s1 - s0);
+        return `rgb(${c0.map((c, k) => Math.round(c + (c1[k] - c) * t)).join(',')})`;
+      }
+    }
+    return `rgb(${SPEED_STOPS[SPEED_STOPS.length - 1][1].join(',')})`;
+  };
+  const cssVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const fmt = (n, d = 1) => Number(n).toFixed(d);
+
+  // ---------- state ----------
+  let rideIndex = DATA.rides.findIndex(r => r.name === 'park-line');
+  if (rideIndex < 0) rideIndex = 0;
+  let ride = DATA.rides[rideIndex];
+  let t = ride.duration, playing = false, rate = 1, follow = true, lastFrame = 0;
+
+  // ---------- ride picker ----------
+  const ridesNav = $('rides');
+  DATA.rides.forEach((r, i) => {
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'ride-btn'; btn.id = 'ride-' + r.name;
+    btn.innerHTML = `<span>${r.name.replace('-', ' ')}</span><span class="score">${r.score ? r.score + ' pts' : fmt(r.duration, 0) + ' s'}</span>`;
+    btn.addEventListener('click', () => selectRide(i));
+    ridesNav.appendChild(btn);
+  });
+
+  $('meta').textContent = `sim v${DATA.sim.version} · ${DATA.sim.stepsPerSecond} Hz · ${SIZE} m slope`;
+
+  // ---------- legend ----------
+  $('legend').innerHTML = SNOW_NAMES.map((n, i) => `<span><span class="sw" style="background:rgb(${SNOW_RGB[i].join(',')})"></span>${n}</span>`).join('')
+    + `<span>Speed 0<span class="speed-scale" style="background:linear-gradient(90deg,${SPEED_STOPS.map(s => `rgb(${s[1].join(',')})`).join(',')})"></span>32 m/s</span>`
+    + `<span>Contours every 5 m</span>`;
+
+  // ---------- sampling ----------
+  const sampleAt = (time) => {
+    const s = ride.samples;
+    if (time <= s[0].t) return s[0];
+    if (time >= s[s.length - 1].t) return s[s.length - 1];
+    let lo = 0, hi = s.length - 1;
+    while (hi - lo > 1) { const mid = (lo + hi) >> 1; if (s[mid].t <= time) lo = mid; else hi = mid; }
+    const a = s[lo], b = s[hi], f = (time - a.t) / (b.t - a.t || 1);
+    let dh = b.heading - a.heading;
+    if (dh > Math.PI) dh -= 2 * Math.PI; else if (dh < -Math.PI) dh += 2 * Math.PI;
+    return { ...a, x: a.x + (b.x - a.x) * f, y: a.y + (b.y - a.y) * f, z: a.z + (b.z - a.z) * f, speed: a.speed + (b.speed - a.speed) * f, heading: a.heading + dh * f, flow: a.flow + (b.flow - a.flow) * f };
+  };
+
+  // ---------- map drawing ----------
+  let view = { scale: 1, ox: 0, oy: 0 };
+  const sizeCanvas = (c) => {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = c.clientWidth, h = c.clientHeight;
+    if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+    return { w: c.width, h: c.height, dpr };
+  };
+  const toScreen = (x, z) => [view.ox + x * view.scale, view.oy + z * view.scale];
+
+  function drawMap(rider) {
+    const { w, h, dpr } = sizeCanvas(mapCanvas);
+    const fit = w / SIZE;
+    if (follow) {
+      view.scale = fit * 4;
+      view.ox = w / 2 - rider.x * view.scale; view.oy = h / 2 - rider.z * view.scale;
+      view.ox = Math.min(0, Math.max(w - SIZE * view.scale, view.ox));
+      view.oy = Math.min(0, Math.max(h - SIZE * view.scale, view.oy));
+    } else {
+      view.scale = fit; view.ox = 0; view.oy = 0;
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(base, view.ox, view.oy, SIZE * view.scale, SIZE * view.scale);
+    const k = view.scale;
+
+    // zone labels
+    ctx.font = `600 ${Math.max(11, Math.min(15, k * 3)) * dpr}px ${cssVar('--display') || 'sans-serif'}`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const zn of slope.zones) {
+      if (!['groomer', 'park', 'bowl', 'glade', 'runout'].includes(zn.name)) continue;
+      const [sx, sy] = toScreen((zn.xMin + zn.xMax) / 2, zn.zMin + 26);
+      ctx.fillStyle = 'rgba(23,33,43,0.55)';
+      ctx.fillText(zn.name.toUpperCase(), sx, sy);
+    }
+
+    // rails and boxes
+    slope.rails.forEach((rl, i) => {
+      const [x0, y0] = toScreen(rl.x0, rl.z0), [x1, y1] = toScreen(rl.x1, rl.z1);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = rl.kind === 'box' ? '#7b5a3c' : '#2b2f36';
+      ctx.lineWidth = Math.max(2.5 * dpr, rl.width * k * (rl.kind === 'box' ? 1 : 2));
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    });
+
+    // kickers: a wedge from the ramp's foot to its lip
+    for (const kk of slope.kickers) {
+      const f = kk.facing * Math.PI / 180, dx = Math.sin(f), dz = Math.cos(f);
+      const half = kk.width / 2, px = dz, pz = -dx;
+      const lipL = toScreen(kk.x + px * half, kk.z + pz * half), lipR = toScreen(kk.x - px * half, kk.z - pz * half);
+      const footL = toScreen(kk.x - dx * kk.length + px * half, kk.z - dz * kk.length + pz * half);
+      const footR = toScreen(kk.x - dx * kk.length - px * half, kk.z - dz * kk.length - pz * half);
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#7d93a8'; ctx.lineWidth = 1.2 * dpr;
+      ctx.beginPath(); ctx.moveTo(...footL); ctx.lineTo(...lipL); ctx.lineTo(...lipR); ctx.lineTo(...footR); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = cssVar('--accent'); ctx.lineWidth = Math.max(2 * dpr, 0.3 * k);
+      ctx.beginPath(); ctx.moveTo(...lipL); ctx.lineTo(...lipR); ctx.stroke();
+    }
+
+    // trees, with a long blue shadow toward the lower right
+    const nearTrees = new Set(ride.events.filter(e => e.kind === 'NearMiss' && e.t <= t).map(e => e.tree));
+    for (let i = 0; i < slope.trees.length; i++) {
+      const tr = slope.trees[i], [sx, sy] = toScreen(tr.x, tr.z), rad = Math.max(2 * dpr, tr.branch * k);
+      ctx.fillStyle = 'rgba(110,138,190,0.35)';
+      ctx.beginPath(); ctx.ellipse(sx + rad * 1.6, sy + rad * 0.9, rad * 1.9, rad * 0.55, 0.45, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = nearTrees.has(i) ? '#3f9e6a' : '#2f5946';
+      ctx.beginPath(); ctx.arc(sx, sy, rad, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.75)';
+      ctx.beginPath(); ctx.arc(sx - rad * 0.25, sy - rad * 0.25, rad * 0.45, 0, Math.PI * 2); ctx.fill();
+      if (nearTrees.has(i)) { ctx.strokeStyle = '#5ccf8d'; ctx.lineWidth = 1.5 * dpr; ctx.beginPath(); ctx.arc(sx, sy, rad + 3 * dpr, 0, Math.PI * 2); ctx.stroke(); }
+    }
+
+    // start marker
+    const [stx, sty] = toScreen(slope.start.x, slope.start.z);
+    ctx.fillStyle = '#17212b'; ctx.beginPath(); ctx.arc(stx, sty, 3.5 * dpr, 0, Math.PI * 2); ctx.fill();
+
+    // path: the future faint, the past coloured by speed, air dotted
+    const s = ride.samples;
+    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    ctx.strokeStyle = 'rgba(23,33,43,0.18)'; ctx.lineWidth = 1.5 * dpr; ctx.setLineDash([]);
+    ctx.beginPath(); s.forEach((p, i) => { const [x, y] = toScreen(p.x, p.z); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.stroke();
+    const width = Math.max(2.5 * dpr, 0.45 * k);
+    for (let i = 1; i < s.length && s[i].t <= t; i++) {
+      const a = s[i - 1], b = s[i];
+      const [x0, y0] = toScreen(a.x, a.z), [x1, y1] = toScreen(b.x, b.z);
+      ctx.setLineDash(b.airborne ? [2 * dpr, 4 * dpr] : []);
+      ctx.strokeStyle = b.crashed ? cssVar('--bad') : speedRGB(b.speed);
+      ctx.lineWidth = b.grinding ? width * 1.6 : width;
+      ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+
+    // event markers
+    for (const e of ride.events) {
+      if (e.t > t) break;
+      const [ex, ey] = toScreen(e.x, e.z);
+      if (e.kind === 'Land') {
+        ctx.fillStyle = e.grade === 'Clean' ? '#2f8a5b' : e.grade === 'Solid' ? '#b7791f' : '#c2362f';
+        ctx.beginPath(); ctx.arc(ex, ey, 4.5 * dpr, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5 * dpr; ctx.stroke();
+      } else if (e.kind === 'Crash') {
+        ctx.strokeStyle = '#c2362f'; ctx.lineWidth = 2.5 * dpr; const q = 5 * dpr;
+        ctx.beginPath(); ctx.moveTo(ex - q, ey - q); ctx.lineTo(ex + q, ey + q); ctx.moveTo(ex + q, ey - q); ctx.lineTo(ex - q, ey + q); ctx.stroke();
+      } else if (e.kind === 'Takeoff') {
+        ctx.strokeStyle = '#17212b'; ctx.lineWidth = 1.5 * dpr;
+        ctx.beginPath(); ctx.arc(ex, ey, 3.5 * dpr, 0, Math.PI * 2); ctx.stroke();
+      }
+    }
+
+    // the rider: an arrow along the heading, red when crashed
+    const [rx, ry] = toScreen(rider.x, rider.z);
+    const a = Math.atan2(Math.cos(rider.heading), Math.sin(rider.heading));
+    const L = Math.max(9 * dpr, 2.2 * k);
+    ctx.save(); ctx.translate(rx, ry); ctx.rotate(a);
+    ctx.fillStyle = rider.crashed ? '#c2362f' : cssVar('--accent'); ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2 * dpr;
+    ctx.beginPath(); ctx.moveTo(L, 0); ctx.lineTo(-L * 0.7, L * 0.55); ctx.lineTo(-L * 0.35, 0); ctx.lineTo(-L * 0.7, -L * 0.55); ctx.closePath();
+    ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+
+  // ---------- speed chart ----------
+  function drawChart() {
+    const { w, h, dpr } = sizeCanvas(chartCanvas);
+    cctx.setTransform(1, 0, 0, 1, 0, 0); cctx.clearRect(0, 0, w, h);
+    const s = ride.samples, D = ride.duration || 1, vmax = Math.max(10, Math.ceil(Math.max(...s.map(p => p.speed)) / 5) * 5);
+    const padL = 30 * dpr, padB = 16 * dpr, padT = 6 * dpr, pw = w - padL - 4 * dpr, ph = h - padB - padT;
+    const X = (tt) => padL + (tt / D) * pw, Y = (v) => padT + ph - (v / vmax) * ph;
+    cctx.font = `${10 * dpr}px ${cssVar('--mono') || 'monospace'}`; cctx.fillStyle = cssVar('--muted'); cctx.strokeStyle = cssVar('--line'); cctx.lineWidth = 1;
+    cctx.textAlign = 'right'; cctx.textBaseline = 'middle';
+    for (const v of [0, vmax / 2, vmax]) { cctx.beginPath(); cctx.moveTo(padL, Y(v)); cctx.lineTo(w, Y(v)); cctx.stroke(); cctx.fillText(String(v), padL - 4 * dpr, Y(v)); }
+    cctx.textAlign = 'center'; cctx.textBaseline = 'top';
+    const step = D > 60 ? 20 : D > 30 ? 10 : 5;
+    for (let tt = 0; tt <= D; tt += step) cctx.fillText(tt + 's', X(tt), padT + ph + 3 * dpr);
+    // air bands
+    cctx.fillStyle = 'rgba(36,89,179,0.14)';
+    let start = null;
+    s.forEach((p, i) => { if (p.airborne && start === null) start = p.t; if ((!p.airborne || i === s.length - 1) && start !== null) { cctx.fillRect(X(start), padT, Math.max(1, X(p.t) - X(start)), ph); start = null; } });
+    // area and line
+    const accent = cssVar('--accent');
+    cctx.beginPath(); cctx.moveTo(X(0), Y(0)); s.forEach(p => cctx.lineTo(X(p.t), Y(p.speed))); cctx.lineTo(X(s[s.length - 1].t), Y(0)); cctx.closePath();
+    cctx.fillStyle = 'rgba(212,81,44,0.12)'; cctx.fill();
+    cctx.beginPath(); s.forEach((p, i) => i ? cctx.lineTo(X(p.t), Y(p.speed)) : cctx.moveTo(X(p.t), Y(p.speed)));
+    cctx.strokeStyle = accent; cctx.lineWidth = 1.6 * dpr; cctx.stroke();
+    // trick ticks
+    for (const e of ride.events) if (e.points) { cctx.fillStyle = cssVar('--ink'); cctx.fillRect(X(e.t) - dpr, padT, 2 * dpr, 5 * dpr); }
+    // playhead
+    cctx.strokeStyle = cssVar('--ink'); cctx.lineWidth = 1.5 * dpr;
+    cctx.beginPath(); cctx.moveTo(X(t), padT); cctx.lineTo(X(t), padT + ph); cctx.stroke();
+    chartCanvas._geom = { padL, pw, D, dpr };
+  }
+
+  // ---------- readouts and log ----------
+  const describe = (e) => {
+    switch (e.kind) {
+      case 'Takeoff': return `Takeoff at ${fmt(e.speed)} m/s`;
+      case 'Land': return `${e.trick || 'Landing'} · ${e.grade}${e.trick ? '' : ` (${fmt(e.airTime, 2)} s air, below the minimum)`}`;
+      case 'Crash': return `Crash · ${e.cause}`;
+      case 'NearMiss': return `Near miss · ${fmt(e.gap, 2)} m gap`;
+      case 'BranchHit': return `Branch clip`;
+      case 'GrindStart': return `On the ${e.box ? 'box' : 'rail'}`;
+      case 'GrindEnd': return `${e.trick || 'Grind'} · ${fmt(e.seconds, 2)} s · balance ${Math.round(e.balance * 100)}%${e.fell ? ' · fell' : ''}`;
+      case 'Reset': return 'Reset to the last safe spot';
+      case 'LeftHeightmap': return 'Left the map';
+      default: return e.kind;
+    }
+  };
+  function buildLog() {
+    const log = $('log'); log.innerHTML = '';
+    if (!ride.events.length) { log.innerHTML = '<li style="cursor:default"><span></span><p class="empty">No events on this ride.</p><span></span></li>'; return; }
+    ride.events.forEach((e, i) => {
+      const li = document.createElement('li'); li.dataset.t = e.t;
+      li.innerHTML = `<span class="t">${fmt(e.t)}s</span><span class="what">${describe(e)}</span><span class="pts">${e.points ? '+' + e.points : ''}</span>`;
+      li.addEventListener('click', () => { pause(); setTime(e.t); });
+      log.appendChild(li);
+    });
+  }
+  function updateReadouts(p) {
+    $('g-speed').innerHTML = `${Math.round(p.speed * 3.6)}<small> km/h</small>`;
+    $('g-speed-ms').textContent = `${fmt(p.speed)} m/s`;
+    $('g-stance').textContent = p.stance;
+    const edgeDeg = Math.round(p.edge * 180 / Math.PI);
+    $('g-edge').textContent = `edge ${Math.abs(edgeDeg)}° ${edgeDeg > 0 ? 'right' : edgeDeg < 0 ? 'left' : ''}`;
+    const score = ride.events.reduce((sum, e) => sum + (e.t <= t && e.points ? e.points : 0), 0);
+    $('g-score').textContent = score;
+    $('g-snow').textContent = (SNOW_NAMES[p.snow] || '').toLowerCase() + ' snow';
+    const onSnow = !p.airborne && !p.grinding && !p.crashed;
+    $('p-snow').classList.toggle('on', onSnow);
+    $('p-air').classList.toggle('on', !!p.airborne);
+    $('p-grind').classList.toggle('on', !!p.grinding);
+    $('p-skid').classList.toggle('on', !!p.skidding);
+    $('p-crash').classList.toggle('on', !!p.crashed);
+    $('g-flow').textContent = fmt(p.flow, 2);
+    $('flow-fill').style.width = `${Math.round(Math.min(1, Math.max(0, p.flow)) * 100)}%`;
+    $('time').textContent = `${fmt(t)} / ${fmt(ride.duration)} s`;
+    for (const li of $('log').children) if (li.dataset.t !== undefined) li.classList.toggle('future', Number(li.dataset.t) > t);
+  }
+
+  // ---------- control ----------
+  function render() {
+    const p = sampleAt(t);
+    drawMap(p); drawChart(); updateReadouts(p);
+    $('scrub').value = String(Math.round((t / (ride.duration || 1)) * 1000));
+  }
+  function setTime(nt) { t = Math.min(Math.max(nt, 0), ride.duration); render(); }
+  function pause() { playing = false; $('play').textContent = 'Play'; }
+  function play() {
+    if (t >= ride.duration - 0.01) t = 0;
+    playing = true; $('play').textContent = 'Pause'; lastFrame = performance.now(); requestAnimationFrame(tick);
+  }
+  function tick(now) {
+    if (!playing) return;
+    const dt = Math.min(0.1, (now - lastFrame) / 1000); lastFrame = now;
+    t += dt * rate;
+    if (t >= ride.duration) { t = ride.duration; render(); pause(); return; }
+    render(); requestAnimationFrame(tick);
+  }
+  function selectRide(i) {
+    rideIndex = i; ride = DATA.rides[i];
+    for (const [j, b] of [...ridesNav.children].entries()) b.setAttribute('aria-pressed', String(j === i));
+    $('ride-title').textContent = ride.name.replace('-', ' ');
+    $('ride-desc').textContent = `${ride.description} Ends: ${ride.end}.`;
+    buildLog(); pause(); t = ride.duration; render();
+  }
+  function setFollow(on) {
+    follow = on; $('view-follow').setAttribute('aria-pressed', String(on)); $('view-all').setAttribute('aria-pressed', String(!on)); render();
+  }
+
+  $('play').addEventListener('click', () => playing ? pause() : play());
+  $('rate').addEventListener('change', (e) => { rate = Number(e.target.value); });
+  $('scrub').addEventListener('input', (e) => { pause(); setTime((Number(e.target.value) / 1000) * ride.duration); });
+  $('view-all').addEventListener('click', () => setFollow(false));
+  $('view-follow').addEventListener('click', () => setFollow(true));
+  chartCanvas.addEventListener('click', (e) => {
+    const g = chartCanvas._geom; if (!g) return;
+    const rect = chartCanvas.getBoundingClientRect(), x = (e.clientX - rect.left) * (chartCanvas.width / rect.width);
+    pause(); setTime(((x - g.padL) / g.pw) * g.D);
+  });
+  window.addEventListener('resize', render);
+  if (window.matchMedia) window.matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', render);
+  new MutationObserver(render).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+  selectRide(rideIndex);
+  setFollow(false);
+})();
+</script>
