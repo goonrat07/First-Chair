@@ -1,12 +1,12 @@
 # Story 005: Trees and Flow
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-20
 
 ## Context
 
