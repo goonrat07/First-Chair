@@ -35,8 +35,14 @@ P = {
     "goggle_centre": [0.0, -0.135, 1.60], "goggle_size": [0.22, 0.06, 0.085], "goggle_r": 0.03,
     "lens_centre": [0.0, -0.166, 1.60], "lens_size": [0.19, 0.012, 0.06], "lens_r": 0.02,
     "strap_z": [1.578, 1.622],
-    "neck_warmer_centre": [0.0, -0.02, 1.49], "neck_warmer_size": [0.17, 0.19, 0.14], "neck_warmer_r": 0.05,
-    "collar_centre": [0.0, 0.03, 1.46], "collar_size": [0.30, 0.26, 0.12], "collar_r": 0.05,
+    # neck warmer lowered to a band, hood bunched behind the neck, lower face showing (user, 2026-10-20)
+    "neck_warmer_centre": [0.0, 0.005, 1.44], "neck_warmer_size": [0.17, 0.18, 0.05], "neck_warmer_r": 0.02,
+    "collar_centre": [0.0, 0.05, 1.41], "collar_size": [0.30, 0.24, 0.06], "collar_r": 0.025,
+    "hood_centre": [0.0, 0.10, 1.47], "hood_radii": [0.15, 0.085, 0.08],
+    "head_centre": [0.0, -0.01, 1.54], "head_radii": [0.08, 0.09, 0.10],
+    "chin_centre": [0.0, -0.07, 1.468], "chin_size": [0.075, 0.05, 0.04], "chin_r": 0.015,
+    "nose_centre": [0.0, -0.10, 1.525], "nose_size": [0.032, 0.05, 0.05], "nose_r": 0.01,
+    "mouth_centre": [0.0, -0.092, 1.494], "mouth_size": [0.04, 0.012, 0.008],
     # jacket
     "torso_centre": [0.0, 0.02, 1.13], "torso_size": [0.46, 0.30, 0.62], "torso_r": 0.07,
     "hem_centre": [0.0, 0.02, 0.88], "hem_size": [0.48, 0.32, 0.12], "hem_r": 0.04,
@@ -63,16 +69,16 @@ P = {
     "cuff_band_centre": [0.02, 0.26], "cuff_band_size": [0.13, 0.17, 0.06], "cuff_band_r": 0.02,
 }
 
-# PALETTE. Hex values given in the notes are marked "notes"; the rest are placeholders matching the
-# colour the notes name, for the art-director to set (as PR_Ski's were).
+# PALETTE: the user's "First Chair" outfit (2026-10-20), replacing the GMA2-derived colours. Entries marked
+# "placeholder" are my picks for colours the user did not set, for the art-director or the user to confirm.
+U = "user choice 2026-10-20"
 PALETTE = {
-    "jacket": ("#D4512C", "notes"), "stripe": ("#F2F2EE", "placeholder: white"),
-    "cuff": ("#2E2F36", "placeholder: dark cuffs"), "mitten": ("#E3CF3A", "notes"),
-    "trousers": ("#C3B45C", "notes"), "knee_patch": ("#8E8440", "placeholder: darker olive"),
-    "boot": ("#3C434C", "placeholder: dark slate"), "boot_band": ("#B5562A", "placeholder: rust-orange"),
-    "helmet": ("#8A929C", "placeholder: grey to blue-grey"), "helmet_panel": ("#B9C0C8", "placeholder: lighter top panel"),
-    "goggle_frame": ("#24262B", "placeholder: dark frame"), "goggle_lens": ("#F0C419", "placeholder: bright yellow"),
-    "neck_warmer": ("#26304A", "placeholder: dark navy"),
+    "jacket": ("#F2B705", U), "stripe": ("#22304A", U), "cuff": ("#22304A", U), "mitten": ("#D7263D", U),
+    "trousers": ("#22304A", U), "knee_patch": ("#18223A", U), "boot": ("#2B2F38", U), "boot_band": ("#D7263D", U),
+    "helmet": ("#2C3A57", U), "helmet_panel": ("#4A5B7D", U), "goggle_frame": ("#15181E", U),
+    "goggle_lens": ("#E2557A", U), "neck_warmer": ("#D7263D", U),
+    "skin": ("#D9A07A", "placeholder: light-medium skin tone"),
+    "mouth": ("#9A5A4E", "placeholder: mouth, a darker skin tone"),
 }
 
 
@@ -168,16 +174,21 @@ def torso():
 def head(view):
     hc, hr = P["helmet_centre"], P["helmet_radii"]
     strap_r = [hr[0] + 0.004, hr[1] + 0.004, hr[2] + 0.004]
+    hood = ell(P["hood_centre"], P["hood_radii"], "jacket")
     collar = box(P["collar_centre"], P["collar_size"], P["collar_r"], "jacket")
-    warmer = box(P["neck_warmer_centre"], P["neck_warmer_size"], P["neck_warmer_r"], "neck_warmer")
+    band = box(P["neck_warmer_centre"], P["neck_warmer_size"], P["neck_warmer_r"], "neck_warmer")
+    face = ell(P["head_centre"], P["head_radii"], "skin")
+    chin = box(P["chin_centre"], P["chin_size"], P["chin_r"], "skin")
+    nose = box(P["nose_centre"], P["nose_size"], P["nose_r"], "skin")
+    mouth = box(P["mouth_centre"], P["mouth_size"], 0.0, "mouth")
+    mouth["front_only"] = True
     helmet = [ell(hc, hr, "helmet", zmin=P["helmet_rim_z"]),
               ell(hc, strap_r, "goggle_frame", zmin=P["strap_z"][0], zmax=P["strap_z"][1]),
               ell(hc, hr, "helmet_panel", zmin=P["helmet_panel_z"])]
     goggles = [box(P["goggle_centre"], P["goggle_size"], P["goggle_r"], "goggle_frame"),
                box(P["lens_centre"], P["lens_size"], P["lens_r"], "goggle_lens")]
-    if view == "front":                       # neck warmer is in front of the face opening
-        return [collar] + helmet + [warmer] + goggles
-    return [collar, warmer] + helmet + goggles
+    # far first: hood behind the neck, collar rim, head, the band in front of the neck, chin over the band
+    return [hood, collar, face, band, chin, nose, mouth] + helmet + goggles
 
 
 def figure(view):

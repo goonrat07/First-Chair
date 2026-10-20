@@ -37,8 +37,12 @@ THUMB = (-0.04, -0.02, -0.085, 0.025)  # side: thumb points forward (-Y)
 TORSO = ((0.0, 0.02, 1.13), (0.46, 0.30, 0.62), 0.07)    # jacket box: z 0.82 to 1.44, boxy, oversized
 HEM = ((0.0, 0.02, 0.88), (0.48, 0.32, 0.12), 0.04)      # jacket hem flare, bottom at 0.82
 PELVIS = ((0.0, 0.03, 0.86), (0.38, 0.28, 0.18), 0.07)   # trouser seat 0.38 wide, crotch 0.77
-COLLAR = ((0.0, 0.03, 1.46), (0.30, 0.26, 0.12), 0.05)   # hood collar, front: 0.30 wide
-NECK_WARMER = ((0.0, -0.02, 1.49), (0.17, 0.19, 0.14), 0.05)  # front: 0.17 wide, z 1.42 to 1.56
+COLLAR = ((0.0, 0.05, 1.41), (0.30, 0.24, 0.06), 0.025)  # hood collar rim, front: 0.30 wide, z 1.38 to 1.44
+NECK_WARMER = ((0.0, 0.005, 1.44), (0.17, 0.18, 0.05), 0.02)  # band around the neck, z 1.415 to 1.465 (user 2026-10-20)
+HOOD = ((0.0, 0.10, 1.47), (0.15, 0.085, 0.08))     # side: hood bunched behind the neck, z 1.39 to 1.55
+HEAD = ((0.0, -0.01, 1.54), (0.08, 0.09, 0.10))     # front and side: lower face under the goggles
+CHIN = ((0.0, -0.07, 1.468), (0.075, 0.05, 0.04), 0.015)   # side: chin over the band
+NOSE = ((0.0, -0.10, 1.525), (0.032, 0.05, 0.05), 0.01)    # side: nose tip y -0.125
 # HEAD (front and side)
 HELMET = ((0.0, 0.01, 1.60), (0.13, 0.155, 0.15), 1.53)  # ellipsoid radii, rim cut at z 1.53; top 1.75
 GOGGLES = ((0.0, -0.135, 1.60), (0.22, 0.06, 0.085), 0.03)
@@ -147,6 +151,10 @@ def build(scene, args):
     sl, sr = arm_frame(1)[0], arm_frame(-1)[0]
     limb("CH_Skier_ShoulderBar_block", sr, sl, SLEEVE_R[0], SLEEVE_R[0], "jacket")
     helmet("CH_Skier_Helmet_block", HELMET[0], HELMET[1], HELMET[2], "helmet")
+    paint(T.sphere("CH_Skier_Hood_block", 1.0, location=HOOD[0], u=16, v=8, scale=HOOD[1]), "jacket")
+    paint(T.sphere("CH_Skier_Head_block", 1.0, location=HEAD[0], u=16, v=8, scale=HEAD[1]), "skin")
+    rbox("CH_Skier_Chin_block", CHIN[0], CHIN[1], CHIN[2], "skin")
+    rbox("CH_Skier_Nose_block", NOSE[0], NOSE[1], NOSE[2], "skin")
     rbox("CH_Skier_Goggles_block", GOGGLES[0], GOGGLES[1], GOGGLES[2], "goggle_frame")
     rbox("CH_Skier_Lens_block", LENS[0], LENS[1], LENS[2], "goggle_lens")
     a = ARM_DEG

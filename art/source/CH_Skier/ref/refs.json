@@ -36,7 +36,7 @@
   "matte_extent_m": {
    "horizontal": [
     -0.19,
-    0.18
+    0.185
    ],
    "top_z": 1.75
   }
@@ -54,8 +54,8 @@
   "helmet_depth": 0.31,
   "helmet_height_rim_to_top": 0.22,
   "neck_warmer_z": [
-   1.42,
-   1.56
+   1.415,
+   1.4649999999999999
   ],
   "shoulder_top_z": 1.445,
   "shoulder_joint": [
@@ -148,26 +148,78 @@
   ],
   "neck_warmer_centre": [
    0.0,
-   -0.02,
-   1.49
+   0.005,
+   1.44
   ],
   "neck_warmer_size": [
    0.17,
-   0.19,
-   0.14
+   0.18,
+   0.05
   ],
-  "neck_warmer_r": 0.05,
+  "neck_warmer_r": 0.02,
   "collar_centre": [
    0.0,
-   0.03,
-   1.46
+   0.05,
+   1.41
   ],
   "collar_size": [
    0.3,
-   0.26,
-   0.12
+   0.24,
+   0.06
   ],
-  "collar_r": 0.05,
+  "collar_r": 0.025,
+  "hood_centre": [
+   0.0,
+   0.1,
+   1.47
+  ],
+  "hood_radii": [
+   0.15,
+   0.085,
+   0.08
+  ],
+  "head_centre": [
+   0.0,
+   -0.01,
+   1.54
+  ],
+  "head_radii": [
+   0.08,
+   0.09,
+   0.1
+  ],
+  "chin_centre": [
+   0.0,
+   -0.07,
+   1.468
+  ],
+  "chin_size": [
+   0.075,
+   0.05,
+   0.04
+  ],
+  "chin_r": 0.015,
+  "nose_centre": [
+   0.0,
+   -0.1,
+   1.525
+  ],
+  "nose_size": [
+   0.032,
+   0.05,
+   0.05
+  ],
+  "nose_r": 0.01,
+  "mouth_centre": [
+   0.0,
+   -0.092,
+   1.494
+  ],
+  "mouth_size": [
+   0.04,
+   0.012,
+   0.008
+  ],
   "torso_centre": [
    0.0,
    0.02,
@@ -314,56 +366,64 @@
  },
  "palette": {
   "jacket": {
-   "hex": "#D4512C",
-   "source": "notes"
+   "hex": "#F2B705",
+   "source": "user choice 2026-10-20"
   },
   "stripe": {
-   "hex": "#F2F2EE",
-   "source": "placeholder: white"
+   "hex": "#22304A",
+   "source": "user choice 2026-10-20"
   },
   "cuff": {
-   "hex": "#2E2F36",
-   "source": "placeholder: dark cuffs"
+   "hex": "#22304A",
+   "source": "user choice 2026-10-20"
   },
   "mitten": {
-   "hex": "#E3CF3A",
-   "source": "notes"
+   "hex": "#D7263D",
+   "source": "user choice 2026-10-20"
   },
   "trousers": {
-   "hex": "#C3B45C",
-   "source": "notes"
+   "hex": "#22304A",
+   "source": "user choice 2026-10-20"
   },
   "knee_patch": {
-   "hex": "#8E8440",
-   "source": "placeholder: darker olive"
+   "hex": "#18223A",
+   "source": "user choice 2026-10-20"
   },
   "boot": {
-   "hex": "#3C434C",
-   "source": "placeholder: dark slate"
+   "hex": "#2B2F38",
+   "source": "user choice 2026-10-20"
   },
   "boot_band": {
-   "hex": "#B5562A",
-   "source": "placeholder: rust-orange"
+   "hex": "#D7263D",
+   "source": "user choice 2026-10-20"
   },
   "helmet": {
-   "hex": "#8A929C",
-   "source": "placeholder: grey to blue-grey"
+   "hex": "#2C3A57",
+   "source": "user choice 2026-10-20"
   },
   "helmet_panel": {
-   "hex": "#B9C0C8",
-   "source": "placeholder: lighter top panel"
+   "hex": "#4A5B7D",
+   "source": "user choice 2026-10-20"
   },
   "goggle_frame": {
-   "hex": "#24262B",
-   "source": "placeholder: dark frame"
+   "hex": "#15181E",
+   "source": "user choice 2026-10-20"
   },
   "goggle_lens": {
-   "hex": "#F0C419",
-   "source": "placeholder: bright yellow"
+   "hex": "#E2557A",
+   "source": "user choice 2026-10-20"
   },
   "neck_warmer": {
-   "hex": "#26304A",
-   "source": "placeholder: dark navy"
+   "hex": "#D7263D",
+   "source": "user choice 2026-10-20"
+  },
+  "skin": {
+   "hex": "#D9A07A",
+   "source": "placeholder: light-medium skin tone"
+  },
+  "mouth": {
+   "hex": "#9A5A4E",
+   "source": "placeholder: mouth, a darker skin tone"
   }
  }
 }
