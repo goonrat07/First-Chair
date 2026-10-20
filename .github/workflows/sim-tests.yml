@@ -23,8 +23,9 @@ jobs:
       - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          # The sim tests build their terrain in memory and read no LFS assets.
-          lfs: false
+          # TestSlopeTests (Story 003) read the generated test-slope heightmap and snow map
+          # (Assets/Terrain/TestSlope/*.raw), which live in Git LFS.
+          lfs: true
 
       - name: Set up the .NET 10 SDK
         uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0

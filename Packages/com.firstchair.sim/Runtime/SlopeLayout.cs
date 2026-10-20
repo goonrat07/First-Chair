@@ -1,0 +1,505 @@
+using System;
+using System.Collections.Generic;
+
+namespace FirstChair.Sim
+{
+    /// <summary>
+    /// A named rectangle of a slope and the snow painted on it: a groomer, a park, a bowl, a glade, a patch of ice.
+    /// </summary>
+    /// <remarks>Edges are included. A <see cref="SlopeLayout"/> lists its zones in paint order: where two overlap,
+    /// the later zone's snow is the one on the snow map. Immutable.</remarks>
+    public readonly struct SlopeZone
+    {
+        /// <summary>The zone's name, unique within its layout.</summary>
+        public readonly string Name;
+
+        /// <summary>The snow painted on the zone.</summary>
+        public readonly SnowType Snow;
+
+        /// <summary>Smallest X, millimetres.</summary>
+        public readonly int XMinMm;
+
+        /// <summary>Smallest Z, millimetres.</summary>
+        public readonly int ZMinMm;
+
+        /// <summary>Largest X, millimetres.</summary>
+        public readonly int XMaxMm;
+
+        /// <summary>Largest Z, millimetres.</summary>
+        public readonly int ZMaxMm;
+
+        internal SlopeZone(string name, SnowType snow, int xMinMm, int zMinMm, int xMaxMm, int zMaxMm)
+        {
+            Name = name;
+            Snow = snow;
+            XMinMm = xMinMm;
+            ZMinMm = zMinMm;
+            XMaxMm = xMaxMm;
+            ZMaxMm = zMaxMm;
+        }
+
+        /// <summary>Smallest X, metres.</summary>
+        public Fix64 XMin => SlopeLayout.Metres(XMinMm);
+
+        /// <summary>Smallest Z, metres.</summary>
+        public Fix64 ZMin => SlopeLayout.Metres(ZMinMm);
+
+        /// <summary>Largest X, metres.</summary>
+        public Fix64 XMax => SlopeLayout.Metres(XMaxMm);
+
+        /// <summary>Largest Z, metres.</summary>
+        public Fix64 ZMax => SlopeLayout.Metres(ZMaxMm);
+
+        /// <summary>True when (x, z) lies in the zone, edges included.</summary>
+        /// <param name="x">X, metres.</param>
+        /// <param name="z">Z, metres.</param>
+        public bool Contains(Fix64 x, Fix64 z) => x >= XMin && x <= XMax && z >= ZMin && z <= ZMax;
+    }
+
+    /// <summary>
+    /// A kicker shaped into the heightmap: a ramp that rises <see cref="HeightMm"/> above the slope over
+    /// <see cref="LengthMm"/>, ending at its lip.
+    /// </summary>
+    /// <remarks>Immutable. The ramp itself is in the heightmap; this record says where it is and which way it
+    /// launches.</remarks>
+    public readonly struct SlopeKicker
+    {
+        /// <summary>X of the centre of the lip, millimetres.</summary>
+        public readonly int XMm;
+
+        /// <summary>Z of the centre of the lip, millimetres.</summary>
+        public readonly int ZMm;
+
+        /// <summary>Direction of travel off the lip, millidegrees clockwise seen from above: 0 is +Z, 90000 is +X.</summary>
+        public readonly int FacingMillidegrees;
+
+        /// <summary>Distance from the foot of the ramp to the lip, millimetres.</summary>
+        public readonly int LengthMm;
+
+        /// <summary>Width of the ramp, millimetres.</summary>
+        public readonly int WidthMm;
+
+        /// <summary>Height of the lip above the surrounding slope, millimetres.</summary>
+        public readonly int HeightMm;
+
+        internal SlopeKicker(int xMm, int zMm, int facingMillidegrees, int lengthMm, int widthMm, int heightMm)
+        {
+            XMm = xMm;
+            ZMm = zMm;
+            FacingMillidegrees = facingMillidegrees;
+            LengthMm = lengthMm;
+            WidthMm = widthMm;
+            HeightMm = heightMm;
+        }
+
+        /// <summary>X of the centre of the lip, metres.</summary>
+        public Fix64 X => SlopeLayout.Metres(XMm);
+
+        /// <summary>Z of the centre of the lip, metres.</summary>
+        public Fix64 Z => SlopeLayout.Metres(ZMm);
+
+        /// <summary>
+        /// Direction of travel off the lip, radians, in the sim's heading convention: 0 faces +Z and π/2 faces +X,
+        /// so the direction is (sin, cos) in (X, Z).
+        /// </summary>
+        public Fix64 Facing => Fix64.Pi * Fix64.FromInt(FacingMillidegrees) / Fix64.FromInt(SlopeLayout.HalfTurnMillidegrees);
+
+        /// <summary>Distance from the foot of the ramp to the lip, metres.</summary>
+        public Fix64 Length => SlopeLayout.Metres(LengthMm);
+
+        /// <summary>Width of the ramp, metres.</summary>
+        public Fix64 Width => SlopeLayout.Metres(WidthMm);
+
+        /// <summary>Height of the lip above the surrounding slope, metres.</summary>
+        public Fix64 Height => SlopeLayout.Metres(HeightMm);
+    }
+
+    /// <summary>A tree standing on the slope: a trunk the rider hits and a wider ring of branches.</summary>
+    /// <remarks>Immutable. Trees are not in the heightmap.</remarks>
+    public readonly struct SlopeTree
+    {
+        /// <summary>X of the trunk's centre, millimetres.</summary>
+        public readonly int XMm;
+
+        /// <summary>Z of the trunk's centre, millimetres.</summary>
+        public readonly int ZMm;
+
+        /// <summary>Trunk radius, millimetres. Positive.</summary>
+        public readonly int TrunkRadiusMm;
+
+        /// <summary>Branch radius, millimetres. Never below <see cref="TrunkRadiusMm"/>.</summary>
+        public readonly int BranchRadiusMm;
+
+        internal SlopeTree(int xMm, int zMm, int trunkRadiusMm, int branchRadiusMm)
+        {
+            XMm = xMm;
+            ZMm = zMm;
+            TrunkRadiusMm = trunkRadiusMm;
+            BranchRadiusMm = branchRadiusMm;
+        }
+
+        /// <summary>X of the trunk's centre, metres.</summary>
+        public Fix64 X => SlopeLayout.Metres(XMm);
+
+        /// <summary>Z of the trunk's centre, metres.</summary>
+        public Fix64 Z => SlopeLayout.Metres(ZMm);
+
+        /// <summary>Trunk radius, metres.</summary>
+        public Fix64 TrunkRadius => SlopeLayout.Metres(TrunkRadiusMm);
+
+        /// <summary>Branch radius, metres.</summary>
+        public Fix64 BranchRadius => SlopeLayout.Metres(BranchRadiusMm);
+    }
+
+    /// <summary>
+    /// What a slope holds besides its heightmap and snow map: the <see cref="HeightmapSpec"/>, the snow zones, the
+    /// start point, the kickers and the trees. Read from the layout text file a slope generator writes next to its
+    /// heightmap (<c>tools/terrain/make_test_slope.py</c> for the test slope).
+    /// </summary>
+    /// <remarks>
+    /// <para><b>Text format.</b> One record per line, fields separated by spaces or tabs, every number a whole
+    /// (possibly negative) integer. Blank lines and lines whose first non-blank character is <c>#</c> are skipped;
+    /// LF and CRLF line endings both work. Lengths and positions are millimetres, in heightmap coordinates (X along
+    /// columns, Z along rows). Facing is millidegrees clockwise seen from above: 0 is +Z, 90000 is +X.</para>
+    /// <code>
+    /// format 1                                          first record, exactly once
+    /// spec &lt;sizeX&gt; &lt;sizeZ&gt; &lt;minHeight&gt; &lt;maxHeight&gt;     exactly once, before any zone, start, kicker or tree
+    /// background &lt;snow&gt;                                 exactly once: the snow outside every zone
+    /// zone &lt;name&gt; &lt;snow&gt; &lt;xMin&gt; &lt;zMin&gt; &lt;xMax&gt; &lt;zMax&gt;   any number, in paint order; names unique
+    /// start &lt;x&gt; &lt;z&gt;                                     exactly once
+    /// kicker &lt;lipX&gt; &lt;lipZ&gt; &lt;facing&gt; &lt;length&gt; &lt;width&gt; &lt;height&gt;   any number
+    /// tree &lt;x&gt; &lt;z&gt; &lt;trunkRadius&gt; &lt;branchRadius&gt;            any number
+    /// </code>
+    /// <para>A snow name is one of <c>groomed powder crud ice slush</c>. Every position must lie on the map. Sizes,
+    /// lengths, widths, heights and radii must be positive; a zone's minimum must be below its maximum; a facing runs
+    /// from 0 to 359999; a branch radius may not be below its trunk radius.</para>
+    /// <para>The sim never reads files: the caller passes the text. Anything malformed throws
+    /// <see cref="ArgumentException"/> naming the line. Immutable after parsing, so one instance may be shared by any
+    /// number of simulations and threads.</para>
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// SlopeLayout layout = SlopeLayout.Parse(layoutText);          // text loaded by the game layer
+    /// Heightmap heightmap = Heightmap.FromR16(r16Bytes, layout.Spec);
+    /// SnowMap snowMap = SnowMap.FromBytes(snowBytes, heightmap);
+    /// var setup = new RunSetup(Sport.Skis, 0, seed, layout.StartX, layout.StartZ);
+    /// </code>
+    /// </example>
+    public sealed class SlopeLayout
+    {
+        /// <summary>The layout format this parser reads, as named by the <c>format</c> record.</summary>
+        public const int FormatVersion = 1;
+
+        internal const int HalfTurnMillidegrees = 180000;
+
+        private const int FullTurnMillidegrees = 360000;
+        private const int MillimetresPerMetre = 1000;
+        private const string TextParameter = "text";
+
+        private static readonly char[] FieldSeparators = { ' ', '\t' };
+
+        // Indexed by SnowType value.
+        private static readonly string[] SnowNames = { "groomed", "powder", "crud", "ice", "slush" };
+
+        private readonly SlopeZone[] _zones;
+        private readonly SlopeKicker[] _kickers;
+        private readonly SlopeTree[] _trees;
+
+        private SlopeLayout(
+            HeightmapSpec spec, SnowType background, int startXMm, int startZMm, SlopeZone[] zones, SlopeKicker[] kickers, SlopeTree[] trees)
+        {
+            Spec = spec;
+            Background = background;
+            StartXMm = startXMm;
+            StartZMm = startZMm;
+            _zones = zones;
+            _kickers = kickers;
+            _trees = trees;
+        }
+
+        /// <summary>World size and height range of the slope's heightmap.</summary>
+        public HeightmapSpec Spec { get; }
+
+        /// <summary>The snow outside every zone.</summary>
+        public SnowType Background { get; }
+
+        /// <summary>X where a run begins, millimetres.</summary>
+        public int StartXMm { get; }
+
+        /// <summary>Z where a run begins, millimetres.</summary>
+        public int StartZMm { get; }
+
+        /// <summary>X where a run begins, metres: pass it to <see cref="RunSetup"/>.</summary>
+        public Fix64 StartX => Metres(StartXMm);
+
+        /// <summary>Z where a run begins, metres: pass it to <see cref="RunSetup"/>.</summary>
+        public Fix64 StartZ => Metres(StartZMm);
+
+        /// <summary>The snow zones, in paint order.</summary>
+        public IReadOnlyList<SlopeZone> Zones => Array.AsReadOnly(_zones);
+
+        /// <summary>The kickers, in file order.</summary>
+        public IReadOnlyList<SlopeKicker> Kickers => Array.AsReadOnly(_kickers);
+
+        /// <summary>The trees, in file order.</summary>
+        public IReadOnlyList<SlopeTree> Trees => Array.AsReadOnly(_trees);
+
+        /// <summary>Finds a zone by name (ordinal, case-sensitive).</summary>
+        /// <param name="name">The zone's name.</param>
+        /// <param name="zone">The zone, or default when there is none.</param>
+        /// <returns>True when the layout has a zone of that name.</returns>
+        public bool TryGetZone(string name, out SlopeZone zone)
+        {
+            for (int i = 0; i < _zones.Length; i++)
+            {
+                if (string.Equals(_zones[i].Name, name, StringComparison.Ordinal))
+                {
+                    zone = _zones[i];
+                    return true;
+                }
+            }
+
+            zone = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Parses a layout (format in the class remarks). Throws <see cref="ArgumentNullException"/> for null text and
+        /// <see cref="ArgumentException"/>, naming the line, for anything malformed or out of range.
+        /// </summary>
+        /// <param name="text">The layout file's contents.</param>
+        public static SlopeLayout Parse(string text)
+        {
+            if (text == null)
+            {
+                throw new ArgumentNullException(TextParameter);
+            }
+
+            bool formatSeen = false;
+            bool specSeen = false;
+            bool backgroundSeen = false;
+            bool startSeen = false;
+            HeightmapSpec spec = default;
+            SnowType background = SnowType.Groomed;
+            int startX = 0;
+            int startZ = 0;
+            var zones = new List<SlopeZone>();
+            var kickers = new List<SlopeKicker>();
+            var trees = new List<SlopeTree>();
+
+            string[] lines = text.Split('\n');
+            for (int index = 0; index < lines.Length; index++)
+            {
+                int line = index + 1;
+                string record = lines[index].Trim();
+                if (record.Length == 0 || record[0] == '#')
+                {
+                    continue;
+                }
+
+                string[] fields = record.Split(FieldSeparators, StringSplitOptions.RemoveEmptyEntries);
+                string keyword = fields[0];
+
+                if (!formatSeen)
+                {
+                    if (!Is(keyword, "format") || fields.Length != 2 || ParseInt(fields[1], line) != FormatVersion)
+                    {
+                        throw Error(line, "the first record must be 'format " + FormatVersion + "'");
+                    }
+
+                    formatSeen = true;
+                }
+                else if (Is(keyword, "format"))
+                {
+                    throw Error(line, "'format' may appear only once");
+                }
+                else if (Is(keyword, "spec"))
+                {
+                    ExpectFields(fields, 5, line);
+                    RequireOnce(specSeen, keyword, line);
+                    spec = new HeightmapSpec(ParseInt(fields[1], line), ParseInt(fields[2], line), ParseInt(fields[3], line), ParseInt(fields[4], line));
+                    if (spec.SizeXMm <= 0 || spec.SizeZMm <= 0 || spec.MaxHeightMm < spec.MinHeightMm)
+                    {
+                        throw Error(line, "sizes must be positive and the maximum height must not be below the minimum");
+                    }
+
+                    specSeen = true;
+                }
+                else if (Is(keyword, "background"))
+                {
+                    ExpectFields(fields, 2, line);
+                    RequireOnce(backgroundSeen, keyword, line);
+                    background = ParseSnow(fields[1], line);
+                    backgroundSeen = true;
+                }
+                else if (Is(keyword, "zone"))
+                {
+                    ExpectFields(fields, 7, line);
+                    RequireSpec(specSeen, keyword, line);
+                    var zone = new SlopeZone(
+                        fields[1], ParseSnow(fields[2], line), ParseInt(fields[3], line), ParseInt(fields[4], line), ParseInt(fields[5], line), ParseInt(fields[6], line));
+                    RequireOnMap(spec, zone.XMinMm, zone.ZMinMm, line);
+                    RequireOnMap(spec, zone.XMaxMm, zone.ZMaxMm, line);
+                    if (zone.XMinMm >= zone.XMaxMm || zone.ZMinMm >= zone.ZMaxMm)
+                    {
+                        throw Error(line, "a zone's minimum must be below its maximum");
+                    }
+
+                    for (int i = 0; i < zones.Count; i++)
+                    {
+                        if (string.Equals(zones[i].Name, zone.Name, StringComparison.Ordinal))
+                        {
+                            throw Error(line, "there is already a zone named '" + zone.Name + "'");
+                        }
+                    }
+
+                    zones.Add(zone);
+                }
+                else if (Is(keyword, "start"))
+                {
+                    ExpectFields(fields, 3, line);
+                    RequireSpec(specSeen, keyword, line);
+                    RequireOnce(startSeen, keyword, line);
+                    startX = ParseInt(fields[1], line);
+                    startZ = ParseInt(fields[2], line);
+                    RequireOnMap(spec, startX, startZ, line);
+                    startSeen = true;
+                }
+                else if (Is(keyword, "kicker"))
+                {
+                    ExpectFields(fields, 7, line);
+                    RequireSpec(specSeen, keyword, line);
+                    var kicker = new SlopeKicker(
+                        ParseInt(fields[1], line), ParseInt(fields[2], line), ParseInt(fields[3], line), ParseInt(fields[4], line), ParseInt(fields[5], line), ParseInt(fields[6], line));
+                    RequireOnMap(spec, kicker.XMm, kicker.ZMm, line);
+                    if (kicker.FacingMillidegrees < 0 || kicker.FacingMillidegrees >= FullTurnMillidegrees)
+                    {
+                        throw Error(line, "a facing runs from 0 to " + (FullTurnMillidegrees - 1) + " millidegrees");
+                    }
+
+                    if (kicker.LengthMm <= 0 || kicker.WidthMm <= 0 || kicker.HeightMm <= 0)
+                    {
+                        throw Error(line, "a kicker's length, width and height must be positive");
+                    }
+
+                    kickers.Add(kicker);
+                }
+                else if (Is(keyword, "tree"))
+                {
+                    ExpectFields(fields, 5, line);
+                    RequireSpec(specSeen, keyword, line);
+                    var tree = new SlopeTree(ParseInt(fields[1], line), ParseInt(fields[2], line), ParseInt(fields[3], line), ParseInt(fields[4], line));
+                    RequireOnMap(spec, tree.XMm, tree.ZMm, line);
+                    if (tree.TrunkRadiusMm <= 0 || tree.BranchRadiusMm < tree.TrunkRadiusMm)
+                    {
+                        throw Error(line, "a trunk radius must be positive and the branch radius must not be below it");
+                    }
+
+                    trees.Add(tree);
+                }
+                else
+                {
+                    throw Error(line, "unknown record '" + keyword + "'");
+                }
+            }
+
+            if (!formatSeen)
+            {
+                throw new ArgumentException("A slope layout must start with 'format " + FormatVersion + "'.", TextParameter);
+            }
+
+            if (!specSeen || !backgroundSeen || !startSeen)
+            {
+                throw new ArgumentException("A slope layout needs one 'spec', one 'background' and one 'start' record.", TextParameter);
+            }
+
+            return new SlopeLayout(spec, background, startX, startZ, zones.ToArray(), kickers.ToArray(), trees.ToArray());
+        }
+
+        internal static Fix64 Metres(int millimetres) => Fix64.FromRatio(millimetres, MillimetresPerMetre);
+
+        private static bool Is(string keyword, string expected) => string.Equals(keyword, expected, StringComparison.Ordinal);
+
+        private static void ExpectFields(string[] fields, int count, int line)
+        {
+            if (fields.Length != count)
+            {
+                throw Error(line, "'" + fields[0] + "' takes " + (count - 1) + " fields; got " + (fields.Length - 1));
+            }
+        }
+
+        private static void RequireOnce(bool seen, string keyword, int line)
+        {
+            if (seen)
+            {
+                throw Error(line, "'" + keyword + "' may appear only once");
+            }
+        }
+
+        private static void RequireSpec(bool specSeen, string keyword, int line)
+        {
+            if (!specSeen)
+            {
+                throw Error(line, "'" + keyword + "' must come after 'spec'");
+            }
+        }
+
+        private static void RequireOnMap(HeightmapSpec spec, int xMm, int zMm, int line)
+        {
+            if (xMm < 0 || xMm > spec.SizeXMm || zMm < 0 || zMm > spec.SizeZMm)
+            {
+                throw Error(line, "(" + xMm + ", " + zMm + ") is off the " + spec.SizeXMm + " x " + spec.SizeZMm + " mm map");
+            }
+        }
+
+        private static SnowType ParseSnow(string name, int line)
+        {
+            for (int i = 0; i < SnowNames.Length; i++)
+            {
+                if (Is(name, SnowNames[i]))
+                {
+                    return (SnowType)i;
+                }
+            }
+
+            throw Error(line, "unknown snow '" + name + "'; use groomed, powder, crud, ice or slush");
+        }
+
+        // Culture-free: digits with an optional leading minus, within int range.
+        private static int ParseInt(string token, int line)
+        {
+            int start = token.Length > 0 && token[0] == '-' ? 1 : 0;
+            if (start == token.Length)
+            {
+                throw Error(line, "'" + token + "' is not a whole number");
+            }
+
+            long value = 0;
+            for (int i = start; i < token.Length; i++)
+            {
+                char digit = token[i];
+                if (digit < '0' || digit > '9')
+                {
+                    throw Error(line, "'" + token + "' is not a whole number");
+                }
+
+                value = value * 10 + (digit - '0');
+                if (value > 1L + int.MaxValue)
+                {
+                    throw Error(line, "'" + token + "' is out of range");
+                }
+            }
+
+            value = start == 1 ? -value : value;
+            if (value > int.MaxValue)
+            {
+                throw Error(line, "'" + token + "' is out of range");
+            }
+
+            return (int)value;
+        }
+
+        private static ArgumentException Error(int line, string message) =>
+            new ArgumentException("Slope layout line " + line + ": " + message + ".", TextParameter);
+    }
+}
