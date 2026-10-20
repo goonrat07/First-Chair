@@ -5,7 +5,8 @@ namespace FirstChair.Sim
     /// <summary>
     /// The deterministic riding sim. It advances only in fixed steps of 1/120 s, and the state after a step
     /// depends only on the previous state, that step's <see cref="SimInput"/>, the <see cref="RunSetup"/>,
-    /// the <see cref="Heightmap"/>, the <see cref="SnowMap"/> and the <see cref="Tuning"/>. It reads no clock.
+    /// the <see cref="Heightmap"/>, the <see cref="SnowMap"/>, the <see cref="Forest"/> and the <see cref="Tuning"/>. It
+    /// reads no clock.
     /// </summary>
     /// <remarks>
     /// <para><b>Input on snow.</b> Steering is <see cref="SimInput.CombinedSteering"/>: the analog value plus full lock
@@ -42,7 +43,8 @@ namespace FirstChair.Sim
     /// <item><description>Slow the rider by snow drag (the snow's drag * gravity * cos slope), air drag
     /// (<see cref="Tuning.AirDrag"/> * speed^2, times <see cref="Tuning.TuckAirDragFactor"/> in a tuck), skid drag
     /// (<see cref="Tuning.SkidDrag"/> * slip angle * speed) and the brake
-    /// (<see cref="Tuning.BrakeDeceleration"/>), together and never past a stop.</description></item>
+    /// (<see cref="Tuning.BrakeDeceleration"/>), together and never past a stop. Flow cuts the snow and air drag (see
+    /// Trees and Flow).</description></item>
     /// <item><description>Pop: while jump is held, count the load up to <see cref="Tuning.PopLoadTime"/>. On the first
     /// step without it, add PopSpeedMin + (PopSpeedMax - PopSpeedMin) * load / PopLoadTime along the surface normal
     /// (<see cref="Tuning.PopSpeedMin"/>, <see cref="Tuning.PopSpeedMax"/>) and leave the snow.</description></item>
@@ -65,19 +67,44 @@ namespace FirstChair.Sim
     /// under-rotation otherwise.</para>
     /// <para><b>Crashed:</b> the rider lies still and riding input is ignored; after
     /// <see cref="Tuning.CrashResetDelay"/> the rider is reset as above.</para>
-    /// <para>Every step then stores the input, advances the tick, raises <see cref="SimEventKind.LeftHeightmap"/> if the
+    /// <para><b>Trees.</b> After every step that moves the rider, on snow or in the air, and does not end in a landing
+    /// crash, the path the rider covered that step, seen from above, is checked against each tree of the
+    /// <see cref="Forest"/> in index order. Distances run from the trunk's centre to the closest point of the path; the
+    /// rider is a circle of <see cref="Tuning.RiderRadius"/>, so the gap is distance - trunk radius - rider radius.</para>
+    /// <list type="bullet">
+    /// <item><description>Trunk: a gap at or below zero is a crash (<see cref="CrashCause.Tree"/>). The rider stops on
+    /// the snow where the step began, Flow empties, and the crash runs as any other: lie still, then reset to the safe
+    /// spot. No later tree is checked that step.</description></item>
+    /// <item><description>Branches: entering the circle of branch radius + rider radius clips them once per pass: the
+    /// velocity loses <see cref="Tuning.BranchSpeedLoss"/> of itself, Flow loses <see cref="Tuning.BranchFlowCost"/>,
+    /// and <see cref="SimEventKind.BranchHit"/> is raised. Leaving the circle ends the pass.</description></item>
+    /// <item><description>Near miss: a pass starts when the gap falls to <see cref="Tuning.NearMissDistance"/> or less
+    /// and ends when it rises past it. It is judged once: at its closest approach (the first step whose gap is larger
+    /// than the smallest so far) or when it ends, whichever is first. If the rider is then at least
+    /// <see cref="Tuning.NearMissMinSpeed"/> fast, <see cref="SimEventKind.NearMiss"/> is raised with the smallest gap
+    /// and Flow fills by NearMissFlowGainFar + (NearMissFlowGainClose - NearMissFlowGainFar) * (1 - gap /
+    /// NearMissDistance), up to 1. A trunk hit before the judgement raises no near miss.</description></item>
+    /// </list>
+    /// <para><b>Flow</b> (<see cref="RiderState.Flow"/>, 0 to 1) starts empty. Once <see cref="Tuning.FlowDrainDelay"/>
+    /// has passed since the last near miss it drains at <see cref="Tuning.FlowDrainRate"/> per second. On snow it
+    /// multiplies snow and air drag by 1 - <see cref="Tuning.FlowDragCut"/> * Flow, and any crash empties it. Trick
+    /// points scale by <see cref="Tuning.TrickMultiplier"/> (Story 006 applies it).</para>
+    /// <para>The per-tree pass flags are kept here, one entry per tree, sized when the simulation is built. The start and
+    /// every reset re-read them at the rider's new position, so a rider put down inside a ring starts a pass already
+    /// judged: no clip and no near miss until they leave it.</para>
+    /// <para>Every step then updates the Flow drain, stores the input, advances the tick, raises <see cref="SimEventKind.LeftHeightmap"/> if the
     /// rider just left the map, and samples the safe spot.</para>
     /// <para>A new run faces down the fall line at the start point (+Z on level ground) and starts at rest.</para>
     /// <para>Bump <see cref="Version"/> whenever riding behaviour changes; old recordings then report a
     /// version mismatch instead of replaying into a different ride.</para>
     /// <para>Not thread-safe: one instance per ride, stepped from one thread. Instances share no state,
-    /// and a <see cref="Heightmap"/> or <see cref="SnowMap"/> may be shared between them. <see cref="Step"/>
+    /// and a <see cref="Heightmap"/>, <see cref="SnowMap"/> or <see cref="Forest"/> may be shared between them. <see cref="Step"/>
     /// allocates nothing: event payloads are fields of the <see cref="SimEvent"/> value.</para>
     /// </remarks>
     /// <example>
     /// <code>
-    /// var simulation = new Simulation(setup, heightmap, snowMap, Tuning.Default);
-    /// var recording = new Recording(setup, heightmap, snowMap, Tuning.Default);
+    /// var simulation = new Simulation(setup, heightmap, snowMap, forest, Tuning.Default);
+    /// var recording = new Recording(setup, heightmap, snowMap, forest, Tuning.Default);
     /// // Each frame, run as many steps as the elapsed time needs:
     /// SimInput input = SimInput.Pack(buttons, steering);
     /// recording.Append(input);
@@ -90,9 +117,10 @@ namespace FirstChair.Sim
         /// <summary>
         /// The sim version. Bump it whenever riding behaviour changes. Version 2: carving, skidding, tuck,
         /// brake, poling and snow types (Story 002). Version 3: pops, takeoff, spins, flips, grabs, graded landings,
-        /// crashes and reset (Story 004).
+        /// crashes and reset (Story 004). Version 4: trees (trunk crashes, branch clips, near misses) and Flow
+        /// (Story 005).
         /// </summary>
-        public const ushort Version = 3;
+        public const ushort Version = 4;
 
         /// <summary>Fixed steps per simulated second.</summary>
         public const int StepsPerSecond = 120;
@@ -103,7 +131,20 @@ namespace FirstChair.Sim
         /// <summary>The longest a tuning duration may be, seconds: its step count must fit an int.</summary>
         private static readonly Fix64 MaxTuningSeconds = Fix64.FromInt(int.MaxValue / StepsPerSecond);
 
-        private const int EventCapacity = 8;
+        /// <summary>Events one step can raise without trees; each tree adds at most a near miss and a branch hit.</summary>
+        private const int BaseEventCapacity = 8;
+
+        /// <summary>
+        /// The largest <see cref="Tuning.RiderRadius"/> or <see cref="Tuning.NearMissDistance"/>, metres, so squared
+        /// distances to trees fit Q32.32.
+        /// </summary>
+        private const int MaxTreeReachMetres = 1000;
+
+        // Per-tree pass flags (see the class remarks).
+        private const int PassNone = 0;
+        private const int PassNear = 1;
+        private const int PassJudged = 2;
+        private const int PassBranches = 4;
 
         private static readonly Fix64 Half = Fix64.FromRatio(1, 2);
 
@@ -112,13 +153,26 @@ namespace FirstChair.Sim
         private readonly Tuning _tuning;
         private readonly Fix64 _popLoadSteps;
         private readonly Fix64 _crashResetSteps;
-        private readonly List<SimEvent> _events = new List<SimEvent>(EventCapacity);
+        private readonly Fix64 _flowDrainSteps;
+        private readonly Fix64 _flowDrainPerStep;
+        private readonly List<SimEvent> _events;
+
+        // One entry per tree, by index: centre, trunk reach (trunk + rider radius), branch reach (branch + rider radius),
+        // the reach of every ring (a box test skips trees beyond it), the pass flags and the pass's smallest gap.
+        private readonly Fix64[] _treeX;
+        private readonly Fix64[] _treeZ;
+        private readonly Fix64[] _trunkReach;
+        private readonly Fix64[] _branchReach;
+        private readonly Fix64[] _ringReach;
+        private readonly int[] _treePass;
+        private readonly Fix64[] _treeMinGap;
         private RiderState _state;
 
         /// <summary>
         /// Starts a run: copies <paramref name="setup"/> and <paramref name="tuning"/>, and places the rider
         /// at rest on the surface at (<see cref="RunSetup.StartX"/>, <see cref="RunSetup.StartZ"/>), facing down
-        /// the fall line. The start is the first safe spot.
+        /// the fall line. The start is the first safe spot. No trees: the overload that takes a <see cref="Forest"/> adds
+        /// them.
         /// </summary>
         /// <param name="setup">The run setup, copied once.</param>
         /// <param name="heightmap">The terrain.</param>
@@ -127,15 +181,58 @@ namespace FirstChair.Sim
         /// <exception cref="System.ArgumentException"><paramref name="tuning"/> holds a value a ride cannot run on; the
         /// message names it. See <see cref="Validate"/>.</exception>
         public Simulation(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Tuning tuning)
+            : this(setup, heightmap, snowMap, Forest.Empty, tuning)
+        {
+        }
+
+        /// <summary>
+        /// Starts a run among trees: as the constructor without a forest, with <paramref name="forest"/>'s trees on the
+        /// slope (see the class remarks).
+        /// </summary>
+        /// <param name="setup">The run setup, copied once.</param>
+        /// <param name="heightmap">The terrain.</param>
+        /// <param name="snowMap">The snow types, loaded for <paramref name="heightmap"/>.</param>
+        /// <param name="forest">The trees; <see cref="Forest.Empty"/> for none.</param>
+        /// <param name="tuning">The riding numbers, copied once.</param>
+        /// <exception cref="System.ArgumentNullException"><paramref name="forest"/> is null.</exception>
+        /// <exception cref="System.ArgumentException"><paramref name="tuning"/> holds a value a ride cannot run on; the
+        /// message names it. See <see cref="Validate"/>.</exception>
+        public Simulation(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Forest forest, Tuning tuning)
         {
             Validate(tuning);
+            if (forest == null)
+            {
+                throw new System.ArgumentNullException(nameof(forest));
+            }
 
             Setup = setup;
+            Forest = forest;
             _heightmap = heightmap;
             _snowMap = snowMap;
             _tuning = tuning;
             _popLoadSteps = tuning.PopLoadTime * Fix64.FromInt(StepsPerSecond);
             _crashResetSteps = tuning.CrashResetDelay * Fix64.FromInt(StepsPerSecond);
+            _flowDrainSteps = tuning.FlowDrainDelay * Fix64.FromInt(StepsPerSecond);
+            _flowDrainPerStep = tuning.FlowDrainRate * StepSeconds;
+            _events = new List<SimEvent>(BaseEventCapacity + 2 * forest.Count);
+
+            int treeCount = forest.Count;
+            _treeX = new Fix64[treeCount];
+            _treeZ = new Fix64[treeCount];
+            _trunkReach = new Fix64[treeCount];
+            _branchReach = new Fix64[treeCount];
+            _ringReach = new Fix64[treeCount];
+            _treePass = new int[treeCount];
+            _treeMinGap = new Fix64[treeCount];
+            for (int i = 0; i < treeCount; i++)
+            {
+                SlopeTree tree = forest[i];
+                _treeX[i] = tree.X;
+                _treeZ[i] = tree.Z;
+                _trunkReach[i] = tree.TrunkRadius + tuning.RiderRadius;
+                _branchReach[i] = tree.BranchRadius + tuning.RiderRadius;
+                _ringReach[i] = Fix64.Max(_branchReach[i], _trunkReach[i] + tuning.NearMissDistance);
+            }
 
             heightmap.Sample(setup.StartX, setup.StartZ, out Fix64 height, out Vec3 normal);
             _state.Position = new Vec3(setup.StartX, height, setup.StartZ);
@@ -146,10 +243,14 @@ namespace FirstChair.Sim
             _state.Rng = new SimRandom(setup.Seed);
             _state.SafePosition = _state.Position;
             _state.SafeHeading = _state.Heading;
+            PrimeTrees(_state.Position);
         }
 
         /// <summary>The run setup this simulation was started with.</summary>
         public RunSetup Setup { get; }
+
+        /// <summary>The trees this simulation rides among.</summary>
+        public Forest Forest { get; }
 
         /// <summary>A copy of the current state.</summary>
         public RiderState State => _state;
@@ -165,6 +266,7 @@ namespace FirstChair.Sim
             int tick = _state.Tick + 1;
             bool resetTapped = (input.Buttons & SimButtons.Reset) != 0 && (_state.LastInput.Buttons & SimButtons.Reset) == 0;
 
+            bool nearMiss = false;
             if (resetTapped)
             {
                 ResetToSafeSpot(tick);
@@ -173,15 +275,25 @@ namespace FirstChair.Sim
             {
                 StepCrashed(tick);
             }
-            else if (_state.Airborne)
-            {
-                StepAir(input, tick);
-            }
             else
             {
-                StepSnow(input, tick);
+                Vec3 from = _state.Position;
+                if (_state.Airborne)
+                {
+                    StepAir(input, tick);
+                }
+                else
+                {
+                    StepSnow(input, tick);
+                }
+
+                if (!_state.Crashed)
+                {
+                    nearMiss = CheckTrees(from, tick);
+                }
             }
 
+            UpdateFlowDrain(nearMiss);
             _state.LastInput = input;
             _state.Tick = tick;
 
@@ -263,7 +375,10 @@ namespace FirstChair.Sim
             // Everything that slows the rider, together; it can stop the rider but never push them backward.
             speed = Fix64.Sqrt(Vec3.Dot(velocity, velocity));
             Fix64 airDrag = stance == Stance.Tuck ? _tuning.AirDrag * _tuning.TuckAirDragFactor : _tuning.AirDrag;
-            Fix64 deceleration = _tuning.Drag(snow) * normalGravity + airDrag * speed * speed + _tuning.SkidDrag * slip * speed;
+            // Flow cuts snow and air drag in proportion: the whole FlowDragCut at full Flow.
+            Fix64 flowDragFactor = Fix64.One - _tuning.FlowDragCut * _state.Flow;
+            Fix64 deceleration = (_tuning.Drag(snow) * normalGravity + airDrag * speed * speed) * flowDragFactor
+                + _tuning.SkidDrag * slip * speed;
             if (stance == Stance.Brake)
             {
                 deceleration = deceleration + _tuning.BrakeDeceleration;
@@ -405,6 +520,7 @@ namespace FirstChair.Sim
                 _state.Velocity = Vec3.Zero;
                 _state.Crashed = true;
                 _state.CrashTicks = 0;
+                _state.Flow = Fix64.Zero;
                 _events.Add(SimEvent.Crash(tick, cause, air));
                 return;
             }
@@ -444,7 +560,221 @@ namespace FirstChair.Sim
             _state.CrashTicks = 0;
             _state.PopLoadTicks = 0;
             ClearAir();
+            PrimeTrees(_state.Position);
             _events.Add(new SimEvent(tick, SimEventKind.Reset));
+        }
+
+        /// <summary>
+        /// Checks this step's path, from <paramref name="from"/> to the rider's position, against every tree in index
+        /// order: trunk crash, branch clip, near-miss pass (see the class remarks). Returns true if a near miss was raised.
+        /// </summary>
+        private bool CheckTrees(Vec3 from, int tick)
+        {
+            bool nearMiss = false;
+            Vec3 to = _state.Position;
+            Fix64 pathX = to.X - from.X;
+            Fix64 pathZ = to.Z - from.Z;
+            Fix64 pathLengthSquared = pathX * pathX + pathZ * pathZ;
+            Fix64 minX = Fix64.Min(from.X, to.X);
+            Fix64 maxX = Fix64.Max(from.X, to.X);
+            Fix64 minZ = Fix64.Min(from.Z, to.Z);
+            Fix64 maxZ = Fix64.Max(from.Z, to.Z);
+            for (int i = 0; i < _treeX.Length; i++)
+            {
+                int pass = _treePass[i];
+                Fix64 reach = _ringReach[i];
+                if (_treeX[i] < minX - reach || _treeX[i] > maxX + reach || _treeZ[i] < minZ - reach || _treeZ[i] > maxZ + reach)
+                {
+                    // Beyond every ring: a pass in progress ends, judged now if it was not yet.
+                    if ((pass & (PassNear | PassJudged)) == PassNear)
+                    {
+                        nearMiss |= JudgeNearMiss(i, tick);
+                    }
+
+                    _treePass[i] = PassNone;
+                    continue;
+                }
+
+                Fix64 distance = PathDistance(from.X, from.Z, pathX, pathZ, pathLengthSquared, _treeX[i], _treeZ[i]);
+                Fix64 gap = distance - _trunkReach[i];
+                if (gap <= Fix64.Zero)
+                {
+                    CrashIntoTree(i, from, tick);
+                    return nearMiss;
+                }
+
+                if (distance < _branchReach[i])
+                {
+                    if ((pass & PassBranches) == 0)
+                    {
+                        pass |= PassBranches;
+                        ClipBranches(i, tick);
+                    }
+                }
+                else
+                {
+                    pass &= ~PassBranches;
+                }
+
+                if (gap <= _tuning.NearMissDistance)
+                {
+                    if ((pass & PassNear) == 0)
+                    {
+                        pass = (pass | PassNear) & ~PassJudged;
+                        _treeMinGap[i] = gap;
+                    }
+                    else if ((pass & PassJudged) == 0)
+                    {
+                        if (gap > _treeMinGap[i])
+                        {
+                            pass |= PassJudged;
+                            nearMiss |= JudgeNearMiss(i, tick);
+                        }
+                        else
+                        {
+                            _treeMinGap[i] = gap;
+                        }
+                    }
+                }
+                else
+                {
+                    if ((pass & (PassNear | PassJudged)) == PassNear)
+                    {
+                        nearMiss |= JudgeNearMiss(i, tick);
+                    }
+
+                    pass &= ~(PassNear | PassJudged);
+                }
+
+                _treePass[i] = pass;
+            }
+
+            return nearMiss;
+        }
+
+        /// <summary>
+        /// Judges tree <paramref name="tree"/>'s pass at its smallest gap: fast enough, it fills Flow by closeness and
+        /// raises <see cref="SimEventKind.NearMiss"/>. Returns true if it did.
+        /// </summary>
+        private bool JudgeNearMiss(int tree, int tick)
+        {
+            Fix64 speed = Fix64.Sqrt(Vec3.Dot(_state.Velocity, _state.Velocity));
+            if (speed < _tuning.NearMissMinSpeed)
+            {
+                return false;
+            }
+
+            // The smallest gap is above zero and at most NearMissDistance, which Validate keeps positive.
+            Fix64 gap = _treeMinGap[tree];
+            Fix64 closeness = Fix64.One - gap / _tuning.NearMissDistance;
+            Fix64 gain = _tuning.NearMissFlowGainFar + (_tuning.NearMissFlowGainClose - _tuning.NearMissFlowGainFar) * closeness;
+            _state.Flow = Fix64.Min(Fix64.One, _state.Flow + gain);
+            _events.Add(SimEvent.NearMiss(tick, tree, gap, speed));
+            return true;
+        }
+
+        /// <summary>Clips tree <paramref name="tree"/>'s branches: costs speed and Flow, raises <see cref="SimEventKind.BranchHit"/>.</summary>
+        private void ClipBranches(int tree, int tick)
+        {
+            Fix64 speed = Fix64.Sqrt(Vec3.Dot(_state.Velocity, _state.Velocity));
+            _state.Velocity = _state.Velocity * (Fix64.One - _tuning.BranchSpeedLoss);
+            _state.Flow = Fix64.Max(Fix64.Zero, _state.Flow - _tuning.BranchFlowCost);
+            _events.Add(SimEvent.BranchHit(tick, tree, speed));
+        }
+
+        /// <summary>
+        /// A trunk hit: the rider stops on the snow where the step began (<paramref name="from"/>, clear of every trunk),
+        /// crashes with <see cref="CrashCause.Tree"/> and loses all Flow.
+        /// </summary>
+        private void CrashIntoTree(int tree, Vec3 from, int tick)
+        {
+            Fix64 speed = Fix64.Sqrt(Vec3.Dot(_state.Velocity, _state.Velocity));
+            _heightmap.Sample(from.X, from.Z, out Fix64 height, out _);
+            _state.Position = new Vec3(from.X, height, from.Z);
+            _state.Velocity = Vec3.Zero;
+            _state.Snow = _snowMap.TypeAt(from.X, from.Z);
+            _state.Skidding = false;
+            _state.SlipAngle = Fix64.Zero;
+            _state.Airborne = false;
+            _state.PopLoadTicks = 0;
+            ClearAir();
+            _state.Crashed = true;
+            _state.CrashTicks = 0;
+            _state.Flow = Fix64.Zero;
+            _events.Add(SimEvent.TreeCrash(tick, tree, speed));
+        }
+
+        /// <summary>
+        /// Sets every tree's pass flags for a rider standing at <paramref name="at"/>: inside a ring counts as a pass
+        /// already judged, so it raises nothing until the rider leaves it.
+        /// </summary>
+        private void PrimeTrees(Vec3 at)
+        {
+            for (int i = 0; i < _treeX.Length; i++)
+            {
+                int pass = PassNone;
+                Fix64 reach = _ringReach[i];
+                if (_treeX[i] >= at.X - reach && _treeX[i] <= at.X + reach && _treeZ[i] >= at.Z - reach && _treeZ[i] <= at.Z + reach)
+                {
+                    Fix64 distance = PathDistance(at.X, at.Z, Fix64.Zero, Fix64.Zero, Fix64.Zero, _treeX[i], _treeZ[i]);
+                    if (distance < _branchReach[i])
+                    {
+                        pass |= PassBranches;
+                    }
+
+                    if (distance - _trunkReach[i] <= _tuning.NearMissDistance)
+                    {
+                        pass |= PassNear | PassJudged;
+                    }
+                }
+
+                _treePass[i] = pass;
+            }
+        }
+
+        /// <summary>
+        /// Distance seen from above from (<paramref name="pointX"/>, <paramref name="pointZ"/>) to the closest point of
+        /// the path that starts at (<paramref name="fromX"/>, <paramref name="fromZ"/>) and runs (<paramref name="pathX"/>,
+        /// <paramref name="pathZ"/>), whose squared length is <paramref name="pathLengthSquared"/>.
+        /// </summary>
+        private static Fix64 PathDistance(Fix64 fromX, Fix64 fromZ, Fix64 pathX, Fix64 pathZ, Fix64 pathLengthSquared, Fix64 pointX, Fix64 pointZ)
+        {
+            Fix64 offsetX = pointX - fromX;
+            Fix64 offsetZ = pointZ - fromZ;
+            Fix64 along = Fix64.Zero;
+
+            // A path too short to have a squared length in Q32.32 is a point; testing first keeps the division safe.
+            if (pathLengthSquared > Fix64.Zero)
+            {
+                along = Fix64.Clamp((offsetX * pathX + offsetZ * pathZ) / pathLengthSquared, Fix64.Zero, Fix64.One);
+            }
+
+            Fix64 restX = offsetX - pathX * along;
+            Fix64 restZ = offsetZ - pathZ * along;
+            return Fix64.Sqrt(restX * restX + restZ * restZ);
+        }
+
+        /// <summary>
+        /// Counts steps since the last near miss up to <see cref="Tuning.FlowDrainDelay"/>'s worth; once there, drains
+        /// Flow by <see cref="Tuning.FlowDrainRate"/> per second, never below zero.
+        /// </summary>
+        private void UpdateFlowDrain(bool nearMiss)
+        {
+            if (nearMiss)
+            {
+                _state.FlowIdleTicks = 0;
+                return;
+            }
+
+            if (Fix64.FromInt(_state.FlowIdleTicks) < _flowDrainSteps)
+            {
+                _state.FlowIdleTicks++;
+            }
+
+            if (Fix64.FromInt(_state.FlowIdleTicks) >= _flowDrainSteps)
+            {
+                _state.Flow = Fix64.Max(Fix64.Zero, _state.Flow - _flowDrainPerStep);
+            }
         }
 
         /// <summary>Keeps the grab that just ended if it was held longer than the best so far.</summary>
@@ -483,7 +813,10 @@ namespace FirstChair.Sim
         /// Rejects tuning a ride cannot run on: values a step divides by (<see cref="Tuning.MaxEdgeAngle"/>,
         /// <see cref="Tuning.PopLoadTime"/>), gravity that would keep a flight going forever, durations whose step
         /// count overflows an int, a negative takeoff threshold (a takeoff every step), landing thresholds out of
-        /// order, and a grab threshold outside (0, 1] (no neutral grab).
+        /// order, a grab threshold outside (0, 1] (no neutral grab), and for trees and Flow (Story 005): a near-miss
+        /// distance the Flow fill cannot divide by, tree reaches whose squares overflow, negative speeds or rates, Flow
+        /// gains out of order or past 1, a drain delay that overflows an int of steps, and fractions outside [0, 1] that
+        /// would reverse the velocity or make drag push.
         /// </summary>
         private static void Validate(Tuning tuning)
         {
@@ -497,7 +830,24 @@ namespace FirstChair.Sim
                     && tuning.SolidLandingAngle <= tuning.SketchyLandingAngle,
                 "landing angles must run 0 <= Clean <= Solid <= Sketchy");
             Require(tuning.GrabSteeringThreshold > Fix64.Zero && tuning.GrabSteeringThreshold <= Fix64.One, "GrabSteeringThreshold must be in (0, 1]");
+
+            Fix64 maxReach = Fix64.FromInt(MaxTreeReachMetres);
+            Require(tuning.RiderRadius >= Fix64.Zero && tuning.RiderRadius <= maxReach, "RiderRadius must be in [0, 1000] m");
+            Require(tuning.NearMissDistance > Fix64.Zero && tuning.NearMissDistance <= maxReach, "NearMissDistance must be in (0, 1000] m");
+            Require(tuning.NearMissMinSpeed >= Fix64.Zero, "NearMissMinSpeed must be zero or more");
+            Require(
+                Fix64.Zero <= tuning.NearMissFlowGainFar && tuning.NearMissFlowGainFar <= tuning.NearMissFlowGainClose
+                    && tuning.NearMissFlowGainClose <= Fix64.One,
+                "near-miss Flow gains must run 0 <= Far <= Close <= 1");
+            Require(tuning.FlowDrainDelay >= Fix64.Zero && tuning.FlowDrainDelay < MaxTuningSeconds, "FlowDrainDelay must be zero or more and fit an int of steps");
+            Require(tuning.FlowDrainRate >= Fix64.Zero, "FlowDrainRate must be zero or more");
+            Require(IsFraction(tuning.BranchSpeedLoss), "BranchSpeedLoss must be in [0, 1]");
+            Require(IsFraction(tuning.BranchFlowCost), "BranchFlowCost must be in [0, 1]");
+            Require(IsFraction(tuning.FlowDragCut), "FlowDragCut must be in [0, 1]");
+            Require(tuning.FlowTrickBonus >= Fix64.Zero, "FlowTrickBonus must be zero or more");
         }
+
+        private static bool IsFraction(Fix64 value) => value >= Fix64.Zero && value <= Fix64.One;
 
         private static void Require(bool valid, string rule)
         {

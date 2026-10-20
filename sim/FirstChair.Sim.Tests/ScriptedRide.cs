@@ -11,7 +11,8 @@ namespace FirstChair.Sim.Tests
     /// the +Z incline over banded snow (all five types), with a fixed, varied input pattern built from integer
     /// arithmetic (no random source). It carves, skids, tucks and brakes, and since Story 004 (18 s) it pops three
     /// times: a Japan grab and a 360 that land, and a flip that crashes, with a reset tap while the rider lies
-    /// crashed. It leaves the 128 m map once.
+    /// crashed. It leaves the 128 m map once. Since Story 005 it rides among two trees (<see cref="Trees"/>): it passes
+    /// the first close (a near miss) and clips the second's branches (a branch hit, and a near miss of its trunk).
     /// </summary>
     internal static class ScriptedRide
     {
@@ -41,6 +42,16 @@ namespace FirstChair.Sim.Tests
 
         public static readonly RunSetup Setup =
             new RunSetup(Sport.Skis, 0, 0x5EED_F1A5_C0DE_0001UL, Fix64.FromInt(64), Fix64.FromInt(20));
+
+        /// <summary>
+        /// Two trees beside the line before the first pop (Story 005): tree 0, 1.7 m right of it with no branches past its
+        /// trunk (a near miss), and tree 1, 1.5 m left of it with 1.5 m branches (a branch clip, then a near miss).
+        /// </summary>
+        public static readonly Forest Trees = new Forest(new[]
+        {
+            new SlopeTree(65_200, 25_500, 200, 200),
+            new SlopeTree(62_000, 26_600, 200, 1_500),
+        });
 
         /// <summary>
         /// The input for a step: every button and the full steering range get exercised. Left and right come as
@@ -110,8 +121,8 @@ namespace FirstChair.Sim.Tests
         /// <summary>Rides the script live, recording it. Adds a snapshot after every step when a list is given.</summary>
         public static Recording Record(Heightmap heightmap, SnowMap snowMap, Tuning tuning, int steps, List<StepSnapshot> snapshots)
         {
-            var simulation = new Simulation(Setup, heightmap, snowMap, tuning);
-            var recording = new Recording(Setup, heightmap, snowMap, tuning);
+            var simulation = new Simulation(Setup, heightmap, snowMap, Trees, tuning);
+            var recording = new Recording(Setup, heightmap, snowMap, Trees, tuning);
             for (int step = 0; step < steps; step++)
             {
                 SimInput input = InputAt(step);
@@ -141,6 +152,7 @@ namespace FirstChair.Sim.Tests
                     state.SpinAngle.Raw, state.FlipAngle.Raw, (long)state.Grab, state.GrabTicks,
                     (long)state.BestGrab, state.BestGrabTicks, state.Crashed ? 1L : 0L, state.CrashTicks,
                     state.SafePosition.X.Raw, state.SafePosition.Y.Raw, state.SafePosition.Z.Raw, state.SafeHeading.Raw,
+                    state.Flow.Raw, state.FlowIdleTicks,
                     snapshot.Events.Length,
                 })
                 {
@@ -158,6 +170,7 @@ namespace FirstChair.Sim.Tests
                     {
                         simEvent.Speed.Raw, simEvent.Air.AirTicks, simEvent.Air.MaxHeight.Raw, simEvent.Air.Spin.Raw,
                         simEvent.Air.Flip.Raw, simEvent.Air.GrabTicks, simEvent.Air.LandingAngle.Raw,
+                        simEvent.Tree, simEvent.Gap.Raw,
                     })
                     {
                         AddLittleEndian(bytes, raw);

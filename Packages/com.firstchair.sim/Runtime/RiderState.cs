@@ -51,7 +51,8 @@ namespace FirstChair.Sim
     /// <para><see cref="Simulation.State"/> returns a copy: the game layer reads it and draws it, and
     /// writing to the copy changes nothing.</para>
     /// <para>On snow, <see cref="Position"/>.Y is the terrain height under the rider. In the air
-    /// (<see cref="Airborne"/>) it is the rider's own height, above the terrain. Flow arrives in a later story.</para>
+    /// (<see cref="Airborne"/>) it is the rider's own height, above the terrain. <see cref="Flow"/> is the Flow meter
+    /// (Story 005); the per-tree pass flags that gate tree events live in the <see cref="Simulation"/>, not here.</para>
     /// <para>The air fields (<see cref="AirTicks"/> to <see cref="BestGrabTicks"/>) describe the current flight and are
     /// zero on snow; the flight's totals leave in the <see cref="SimEventKind.Land"/> or <see cref="SimEventKind.Crash"/>
     /// event.</para>
@@ -168,6 +169,19 @@ namespace FirstChair.Sim
         /// <summary>The heading at <see cref="SafePosition"/>.</summary>
         public Fix64 SafeHeading;
 
+        /// <summary>
+        /// The Flow meter, 0 to 1 (Story 005): near misses fill it, branch clips cost it, it drains after
+        /// <see cref="Tuning.FlowDrainDelay"/> without a near miss, and any crash empties it. It cuts drag
+        /// (<see cref="Tuning.FlowDragCut"/>) and scales trick points (<see cref="Tuning.TrickMultiplier"/>).
+        /// </summary>
+        public Fix64 Flow;
+
+        /// <summary>
+        /// Steps since the last near miss, counted up to <see cref="Tuning.FlowDrainDelay"/>'s worth and held there;
+        /// Flow drains while it is there.
+        /// </summary>
+        public int FlowIdleTicks;
+
         /// <inheritdoc/>
         public bool Equals(RiderState other) =>
             Position == other.Position
@@ -195,7 +209,9 @@ namespace FirstChair.Sim
             && Crashed == other.Crashed
             && CrashTicks == other.CrashTicks
             && SafePosition == other.SafePosition
-            && SafeHeading == other.SafeHeading;
+            && SafeHeading == other.SafeHeading
+            && Flow == other.Flow
+            && FlowIdleTicks == other.FlowIdleTicks;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is RiderState other && Equals(other);
@@ -230,7 +246,9 @@ namespace FirstChair.Sim
                 hash = hash * 397 ^ (Crashed ? 1 : 0);
                 hash = hash * 397 ^ CrashTicks;
                 hash = hash * 397 ^ SafePosition.GetHashCode();
-                return hash * 397 ^ SafeHeading.GetHashCode();
+                hash = hash * 397 ^ SafeHeading.GetHashCode();
+                hash = hash * 397 ^ Flow.GetHashCode();
+                return hash * 397 ^ FlowIdleTicks;
             }
         }
 
@@ -242,6 +260,6 @@ namespace FirstChair.Sim
             + (PopLoadTicks > 0 ? " load " + PopLoadTicks : string.Empty)
             + (Airborne ? " AIR " + AirTicks + " max " + MaxHeight + " spin " + SpinAngle + " flip " + FlipAngle + " grab " + Grab + "/" + GrabTicks : string.Empty)
             + (Crashed ? " CRASHED " + CrashTicks : string.Empty)
-            + " safe " + SafePosition;
+            + " safe " + SafePosition + " flow " + Flow + "/" + FlowIdleTicks;
     }
 }

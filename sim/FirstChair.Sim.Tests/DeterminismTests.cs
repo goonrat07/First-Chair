@@ -13,7 +13,8 @@ namespace FirstChair.Sim.Tests
     /// </summary>
     /// <remarks>
     /// Since Story 002 the inputs steer, tuck, brake and pole, and the scripted ride crosses all five snow
-    /// types; since Story 004 it also jumps, grabs, spins, lands, crashes and resets. So these tests prove that every
+    /// types; since Story 004 it also jumps, grabs, spins, lands, crashes and resets; since Story 005 it rides among trees,
+    /// with a near miss, a branch clip and Flow. So these tests prove that every
     /// riding feature replays exactly, not only the recording path.
     /// </remarks>
     public class DeterminismTests
@@ -26,8 +27,13 @@ namespace FirstChair.Sim.Tests
         // Re-pinned for version 3 (Story 004): pops, takeoff, spins, flips, grabs, graded landings, crashes and reset
         // change the ride; the trace gained the air, crash and safe-spot fields and the event payloads; and the script
         // (18 s now) pops three times with scripted air input and taps reset once.
-        private const ushort GoldenSimVersion = 3;
-        private const string GoldenTraceSha256 = "C4AAC54ABAA63558031772E65D792F84F00F9831BE02CFF20CAEF9CA76F72657";
+        // Re-pinned for version 4 (Story 005): trees and Flow change the ride. It now runs among ScriptedRide.Trees,
+        // passing tree 0 close (a near miss that fills Flow) and clipping tree 1's branches before the first pop (a branch
+        // hit that costs 30% of the speed and Flow), so everything after it moves; and the trace gained Flow,
+        // FlowIdleTicks and the events' tree and gap. Pinned only after record/replay, interleaving and zero allocation
+        // passed with the trees in the ride.
+        private const ushort GoldenSimVersion = 4;
+        private const string GoldenTraceSha256 = "2A971E157D9FC62776DCDC2685F0D8A22E519B2020A85BF3E454E31FCCCD3ED9";
 
         [Test]
         public void ScriptedRide_RecordedThenReplayedFromBytes_MatchesBitForBitEveryStep()
@@ -42,7 +48,8 @@ namespace FirstChair.Sim.Tests
             bool read = Recording.TryRead(bytes, out Recording loaded);
             var replayed = new List<StepSnapshot>();
             Heightmap reloaded = TestTerrain.InclineDownhillPlusZ();
-            ReplayResult result = Replayer.Replay(loaded, reloaded, TestTerrain.Bands(reloaded), Tuning.Default, simulation => replayed.Add(StepSnapshot.Of(simulation)));
+            ReplayResult result = Replayer.Replay(
+                loaded, reloaded, TestTerrain.Bands(reloaded), ScriptedRide.Trees, Tuning.Default, simulation => replayed.Add(StepSnapshot.Of(simulation)));
 
             // Assert
             Assert.That(read, Is.True);
@@ -197,14 +204,14 @@ namespace FirstChair.Sim.Tests
             Heightmap heightmap = TestTerrain.InclineDownhillPlusZ();
             SnowMap snowMap = TestTerrain.Bands(heightmap);
             var solo = new List<RiderState>();
-            var soloRide = new Simulation(ScriptedRide.Setup, heightmap, snowMap, Tuning.Default);
+            var soloRide = new Simulation(ScriptedRide.Setup, heightmap, snowMap, ScriptedRide.Trees, Tuning.Default);
             for (int step = 0; step < ScriptedRide.Steps; step++)
             {
                 soloRide.Step(ScriptedRide.InputAt(step));
                 solo.Add(soloRide.State);
             }
 
-            var rideA = new Simulation(ScriptedRide.Setup, heightmap, snowMap, Tuning.Default);
+            var rideA = new Simulation(ScriptedRide.Setup, heightmap, snowMap, ScriptedRide.Trees, Tuning.Default);
             var setupB = new RunSetup(Sport.Skis, 2, 99UL, Fix64.FromInt(20), Fix64.FromInt(100));
             Heightmap heightmapB = TestTerrain.InclineDownhillMinusZ();
             var rideB = new Simulation(setupB, heightmapB, TestTerrain.Uniform(heightmapB, SnowType.Ice), Tuning.Default);
@@ -227,7 +234,7 @@ namespace FirstChair.Sim.Tests
             // Arrange
             const int warmupSteps = 10;
             Heightmap heightmap = TestTerrain.InclineDownhillPlusZ();
-            var simulation = new Simulation(ScriptedRide.Setup, heightmap, TestTerrain.Bands(heightmap), Tuning.Default);
+            var simulation = new Simulation(ScriptedRide.Setup, heightmap, TestTerrain.Bands(heightmap), ScriptedRide.Trees, Tuning.Default);
             for (int step = 0; step < warmupSteps; step++)
             {
                 simulation.Step(ScriptedRide.InputAt(step));
@@ -250,7 +257,10 @@ namespace FirstChair.Sim.Tests
 
             // Assert
             Assert.That(simulation.State.OutsideHeightmap, Is.True, "the measured steps must include the edge crossing");
-            foreach (SimEventKind kind in new[] { SimEventKind.Takeoff, SimEventKind.Land, SimEventKind.Crash, SimEventKind.Reset })
+            foreach (SimEventKind kind in new[]
+            {
+                SimEventKind.Takeoff, SimEventKind.Land, SimEventKind.Crash, SimEventKind.Reset, SimEventKind.NearMiss, SimEventKind.BranchHit,
+            })
             {
                 Assert.That(seen[(int)kind], Is.GreaterThan(0), "the measured steps must raise " + kind);
             }
@@ -302,6 +312,7 @@ namespace FirstChair.Sim.Tests
             Assert.That(snows, Is.EquivalentTo((SnowType[])Enum.GetValues(typeof(SnowType))), "the ride must cross every snow type");
             Assert.That(trace.Exists(snapshot => snapshot.State.Airborne), Is.True, "the ride must fly");
             Assert.That(trace.Exists(snapshot => snapshot.State.Crashed), Is.True, "the ride must crash");
+            Assert.That(trace.Exists(snapshot => snapshot.State.Flow > Fix64.Zero), Is.True, "the ride must build Flow");
         }
     }
 }

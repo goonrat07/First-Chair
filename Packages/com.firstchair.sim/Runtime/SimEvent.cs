@@ -18,8 +18,9 @@ namespace FirstChair.Sim
         Land = 3,
 
         /// <summary>
-        /// The rider touched down past <see cref="Tuning.SketchyLandingAngle"/> and crashed.
-        /// <see cref="SimEvent.Cause"/> says why and <see cref="SimEvent.Air"/> describes the flight.
+        /// The rider crashed: touched down past <see cref="Tuning.SketchyLandingAngle"/>, or hit a trunk.
+        /// <see cref="SimEvent.Cause"/> says why. A landing crash carries the flight in <see cref="SimEvent.Air"/>; a tree
+        /// crash carries the tree in <see cref="SimEvent.Tree"/> and the impact speed in <see cref="SimEvent.Speed"/>.
         /// </summary>
         Crash = 4,
 
@@ -28,6 +29,19 @@ namespace FirstChair.Sim
         /// or at once on a <see cref="SimButtons.Reset"/> tap. A view snaps to the new position instead of interpolating.
         /// </summary>
         Reset = 5,
+
+        /// <summary>
+        /// The rider passed a trunk inside <see cref="Tuning.NearMissDistance"/> without touching it; at most one per tree
+        /// per pass. <see cref="SimEvent.Tree"/> is the tree, <see cref="SimEvent.Gap"/> the smallest gap of the pass,
+        /// metres, and <see cref="SimEvent.Speed"/> the rider's speed when the pass was judged. Flow is already filled.
+        /// </summary>
+        NearMiss = 6,
+
+        /// <summary>
+        /// The rider clipped a tree's branches; at most one per tree per pass. <see cref="SimEvent.Tree"/> is the tree and
+        /// <see cref="SimEvent.Speed"/> the speed before the clip. The speed and Flow costs are already taken.
+        /// </summary>
+        BranchHit = 7,
     }
 
     /// <summary>How well a landing went, from the landing angle (see <see cref="Simulation"/>).</summary>
@@ -46,7 +60,7 @@ namespace FirstChair.Sim
         Sketchy = 3,
     }
 
-    /// <summary>Why a landing became a crash.</summary>
+    /// <summary>Why the rider crashed.</summary>
     public enum CrashCause : byte
     {
         /// <summary>Not a crash event.</summary>
@@ -60,6 +74,9 @@ namespace FirstChair.Sim
         /// counts here: the rider did not rotate enough to straighten out.
         /// </summary>
         UnderRotation = 2,
+
+        /// <summary>The rider hit a trunk (Story 005). <see cref="SimEvent.Tree"/> is the tree.</summary>
+        Tree = 3,
     }
 
     /// <summary>
@@ -156,9 +173,11 @@ namespace FirstChair.Sim
     /// </summary>
     /// <remarks>
     /// <para>One flat value type for every kind, so raising an event allocates nothing. Fields a kind does not use are
-    /// zero: <see cref="Speed"/> belongs to <see cref="SimEventKind.Takeoff"/>, <see cref="Grade"/> to
-    /// <see cref="SimEventKind.Land"/>, <see cref="Cause"/> to <see cref="SimEventKind.Crash"/>, and <see cref="Air"/>
-    /// to both of the last two.</para>
+    /// zero: <see cref="Speed"/> belongs to <see cref="SimEventKind.Takeoff"/>, <see cref="SimEventKind.NearMiss"/>,
+    /// <see cref="SimEventKind.BranchHit"/> and a tree crash; <see cref="Grade"/> to <see cref="SimEventKind.Land"/>;
+    /// <see cref="Cause"/> to <see cref="SimEventKind.Crash"/>; <see cref="Air"/> to a landing and a landing crash;
+    /// <see cref="Tree"/> to near misses, branch hits and tree crashes; and <see cref="Gap"/> to near misses. Tree 0
+    /// is a real tree, so read <see cref="Tree"/> only for those kinds.</para>
     /// <para>Immutable and thread-safe.</para>
     /// </remarks>
     /// <example>
@@ -169,6 +188,7 @@ namespace FirstChair.Sim
     /// {
     ///     SimEvent e = simulation.Events[i];
     ///     if (e.Kind == SimEventKind.Land) { /* score e.Air, show e.Grade */ }
+    ///     if (e.Kind == SimEventKind.NearMiss) { /* flash the tree e.Tree, show e.Gap */ }
     /// }
     /// </code>
     /// </example>
@@ -180,7 +200,10 @@ namespace FirstChair.Sim
         /// <summary>What happened.</summary>
         public readonly SimEventKind Kind;
 
-        /// <summary><see cref="SimEventKind.Takeoff"/>: the rider's speed leaving the snow, m/s. Zero otherwise.</summary>
+        /// <summary>
+        /// The rider's speed, m/s: leaving the snow (<see cref="SimEventKind.Takeoff"/>), when a near miss was judged,
+        /// before a branch clip, or at a trunk impact. Zero otherwise.
+        /// </summary>
         public readonly Fix64 Speed;
 
         /// <summary><see cref="SimEventKind.Land"/>: the landing grade. <see cref="LandingGrade.None"/> otherwise.</summary>
@@ -189,18 +212,30 @@ namespace FirstChair.Sim
         /// <summary><see cref="SimEventKind.Crash"/>: the cause. <see cref="CrashCause.None"/> otherwise.</summary>
         public readonly CrashCause Cause;
 
-        /// <summary><see cref="SimEventKind.Land"/> and <see cref="SimEventKind.Crash"/>: the flight. Default otherwise.</summary>
+        /// <summary><see cref="SimEventKind.Land"/> and a landing crash: the flight. Default otherwise.</summary>
         public readonly AirSummary Air;
+
+        /// <summary>
+        /// <see cref="SimEventKind.NearMiss"/>, <see cref="SimEventKind.BranchHit"/> and a <see cref="CrashCause.Tree"/>
+        /// crash: the tree's index in the <see cref="Forest"/>. Zero otherwise.
+        /// </summary>
+        public readonly int Tree;
+
+        /// <summary>
+        /// <see cref="SimEventKind.NearMiss"/>: the smallest gap of the pass between the rider and the trunk, metres
+        /// (above zero, at most <see cref="Tuning.NearMissDistance"/>). Zero otherwise.
+        /// </summary>
+        public readonly Fix64 Gap;
 
         /// <summary>Creates an event with no payload.</summary>
         /// <param name="tick">Tick after the step that raised it.</param>
         /// <param name="kind">What happened.</param>
         public SimEvent(int tick, SimEventKind kind)
-            : this(tick, kind, Fix64.Zero, LandingGrade.None, CrashCause.None, default(AirSummary))
+            : this(tick, kind, Fix64.Zero, LandingGrade.None, CrashCause.None, default(AirSummary), 0, Fix64.Zero)
         {
         }
 
-        private SimEvent(int tick, SimEventKind kind, Fix64 speed, LandingGrade grade, CrashCause cause, AirSummary air)
+        private SimEvent(int tick, SimEventKind kind, Fix64 speed, LandingGrade grade, CrashCause cause, AirSummary air, int tree, Fix64 gap)
         {
             Tick = tick;
             Kind = kind;
@@ -208,32 +243,56 @@ namespace FirstChair.Sim
             Grade = grade;
             Cause = cause;
             Air = air;
+            Tree = tree;
+            Gap = gap;
         }
 
         /// <summary>A <see cref="SimEventKind.Takeoff"/> event.</summary>
         /// <param name="tick">Tick after the step that raised it.</param>
         /// <param name="speed">Speed leaving the snow, m/s.</param>
         public static SimEvent Takeoff(int tick, Fix64 speed) =>
-            new SimEvent(tick, SimEventKind.Takeoff, speed, LandingGrade.None, CrashCause.None, default(AirSummary));
+            new SimEvent(tick, SimEventKind.Takeoff, speed, LandingGrade.None, CrashCause.None, default(AirSummary), 0, Fix64.Zero);
 
         /// <summary>A <see cref="SimEventKind.Land"/> event.</summary>
         /// <param name="tick">Tick after the step that raised it.</param>
         /// <param name="grade">The landing grade.</param>
         /// <param name="air">The flight.</param>
         public static SimEvent Land(int tick, LandingGrade grade, AirSummary air) =>
-            new SimEvent(tick, SimEventKind.Land, Fix64.Zero, grade, CrashCause.None, air);
+            new SimEvent(tick, SimEventKind.Land, Fix64.Zero, grade, CrashCause.None, air, 0, Fix64.Zero);
 
-        /// <summary>A <see cref="SimEventKind.Crash"/> event.</summary>
+        /// <summary>A <see cref="SimEventKind.Crash"/> event for a landing.</summary>
         /// <param name="tick">Tick after the step that raised it.</param>
         /// <param name="cause">Why the landing failed.</param>
         /// <param name="air">The flight.</param>
         public static SimEvent Crash(int tick, CrashCause cause, AirSummary air) =>
-            new SimEvent(tick, SimEventKind.Crash, Fix64.Zero, LandingGrade.None, cause, air);
+            new SimEvent(tick, SimEventKind.Crash, Fix64.Zero, LandingGrade.None, cause, air, 0, Fix64.Zero);
+
+        /// <summary>A <see cref="SimEventKind.Crash"/> event with cause <see cref="CrashCause.Tree"/>.</summary>
+        /// <param name="tick">Tick after the step that raised it.</param>
+        /// <param name="tree">The tree's index in the forest.</param>
+        /// <param name="speed">Speed at impact, m/s.</param>
+        public static SimEvent TreeCrash(int tick, int tree, Fix64 speed) =>
+            new SimEvent(tick, SimEventKind.Crash, speed, LandingGrade.None, CrashCause.Tree, default(AirSummary), tree, Fix64.Zero);
+
+        /// <summary>A <see cref="SimEventKind.NearMiss"/> event.</summary>
+        /// <param name="tick">Tick after the step that raised it.</param>
+        /// <param name="tree">The tree's index in the forest.</param>
+        /// <param name="gap">The smallest gap of the pass, metres.</param>
+        /// <param name="speed">The rider's speed, m/s.</param>
+        public static SimEvent NearMiss(int tick, int tree, Fix64 gap, Fix64 speed) =>
+            new SimEvent(tick, SimEventKind.NearMiss, speed, LandingGrade.None, CrashCause.None, default(AirSummary), tree, gap);
+
+        /// <summary>A <see cref="SimEventKind.BranchHit"/> event.</summary>
+        /// <param name="tick">Tick after the step that raised it.</param>
+        /// <param name="tree">The tree's index in the forest.</param>
+        /// <param name="speed">The rider's speed before the clip, m/s.</param>
+        public static SimEvent BranchHit(int tick, int tree, Fix64 speed) =>
+            new SimEvent(tick, SimEventKind.BranchHit, speed, LandingGrade.None, CrashCause.None, default(AirSummary), tree, Fix64.Zero);
 
         /// <inheritdoc/>
         public bool Equals(SimEvent other) =>
             Tick == other.Tick && Kind == other.Kind && Speed == other.Speed && Grade == other.Grade && Cause == other.Cause
-            && Air.Equals(other.Air);
+            && Air.Equals(other.Air) && Tree == other.Tree && Gap == other.Gap;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is SimEvent other && Equals(other);
@@ -247,7 +306,9 @@ namespace FirstChair.Sim
                 hash = hash * 397 ^ Speed.GetHashCode();
                 hash = hash * 397 ^ (int)Grade;
                 hash = hash * 397 ^ (int)Cause;
-                return hash * 397 ^ Air.GetHashCode();
+                hash = hash * 397 ^ Air.GetHashCode();
+                hash = hash * 397 ^ Tree;
+                return hash * 397 ^ Gap.GetHashCode();
             }
         }
 
@@ -256,7 +317,10 @@ namespace FirstChair.Sim
         {
             SimEventKind.Takeoff => Kind + "@" + Tick + " speed " + Speed,
             SimEventKind.Land => Kind + "@" + Tick + " " + Grade + " " + Air,
+            SimEventKind.Crash when Cause == CrashCause.Tree => Kind + "@" + Tick + " Tree " + Tree + " speed " + Speed,
             SimEventKind.Crash => Kind + "@" + Tick + " " + Cause + " " + Air,
+            SimEventKind.NearMiss => Kind + "@" + Tick + " tree " + Tree + " gap " + Gap + " speed " + Speed,
+            SimEventKind.BranchHit => Kind + "@" + Tick + " tree " + Tree + " speed " + Speed,
             _ => Kind + "@" + Tick,
         };
     }

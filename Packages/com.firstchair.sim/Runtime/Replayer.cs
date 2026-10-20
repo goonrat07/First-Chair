@@ -2,7 +2,7 @@ using System;
 
 namespace FirstChair.Sim
 {
-    /// <summary>The outcome of <see cref="Replayer.Replay"/>.</summary>
+    /// <summary>The outcome of <see cref="Replayer.Replay(Recording, Heightmap, SnowMap, Forest, Tuning, Action{Simulation})"/>.</summary>
     public enum ReplayStatus
     {
         /// <summary>The recording replayed.</summary>
@@ -19,13 +19,16 @@ namespace FirstChair.Sim
 
         /// <summary>The recording was made on another snow map; nothing was replayed.</summary>
         SnowMapMismatch = 4,
+
+        /// <summary>The recording was made among other trees; nothing was replayed.</summary>
+        ForestMismatch = 5,
     }
 
     /// <summary>What a replay did.</summary>
     /// <remarks>Immutable and thread-safe.</remarks>
     /// <example>
     /// <code>
-    /// ReplayResult result = Replayer.Replay(recording, heightmap, snowMap, tuning);
+    /// ReplayResult result = Replayer.Replay(recording, heightmap, snowMap, forest, tuning);
     /// if (result.Status != ReplayStatus.Ok) { /* tell the player the recording is from another version */ }
     /// </code>
     /// </example>
@@ -53,26 +56,37 @@ namespace FirstChair.Sim
     }
 
     /// <summary>
-    /// Replays a <see cref="Recording"/>: checks that its sim version, tuning hash, heightmap hash and snow map
-    /// hash match the ones given, then rebuilds the ride from its header and inputs with a fresh <see cref="Simulation"/>.
-    /// A mismatch runs no step at all.
+    /// Replays a <see cref="Recording"/>: checks that its sim version, tuning hash, heightmap hash, snow map hash and
+    /// forest hash match the ones given, then rebuilds the ride from its header and inputs with a fresh
+    /// <see cref="Simulation"/>. A mismatch runs no step at all.
     /// </summary>
     /// <remarks>Thread-safe as long as each call gets its own <see cref="Recording"/> or nobody appends to it.</remarks>
     /// <example>
     /// <code>
-    /// ReplayResult result = Replayer.Replay(recording, heightmap, snowMap, tuning,
+    /// ReplayResult result = Replayer.Replay(recording, heightmap, snowMap, forest, tuning,
     ///     simulation => ghost.Draw(simulation.State));
     /// </code>
     /// </example>
     public static class Replayer
     {
-        /// <summary>Replays a recording.</summary>
+        /// <summary>Replays a recording made with no trees (<see cref="Forest.Empty"/>).</summary>
         /// <param name="recording">The recording.</param>
         /// <param name="heightmap">The terrain; must have the recorded hash.</param>
         /// <param name="snowMap">The snow types; must have the recorded hash.</param>
         /// <param name="tuning">The tuning; must have the recorded hash.</param>
         /// <param name="onStep">Optional callback after each step, given the simulation.</param>
-        public static ReplayResult Replay(Recording recording, Heightmap heightmap, SnowMap snowMap, Tuning tuning, Action<Simulation> onStep = null)
+        public static ReplayResult Replay(Recording recording, Heightmap heightmap, SnowMap snowMap, Tuning tuning, Action<Simulation> onStep = null) =>
+            Replay(recording, heightmap, snowMap, Forest.Empty, tuning, onStep);
+
+        /// <summary>Replays a recording.</summary>
+        /// <param name="recording">The recording.</param>
+        /// <param name="heightmap">The terrain; must have the recorded hash.</param>
+        /// <param name="snowMap">The snow types; must have the recorded hash.</param>
+        /// <param name="forest">The trees; must have the recorded hash.</param>
+        /// <param name="tuning">The tuning; must have the recorded hash.</param>
+        /// <param name="onStep">Optional callback after each step, given the simulation.</param>
+        public static ReplayResult Replay(
+            Recording recording, Heightmap heightmap, SnowMap snowMap, Forest forest, Tuning tuning, Action<Simulation> onStep = null)
         {
             if (recording.Setup.SimVersion != Simulation.Version)
             {
@@ -94,7 +108,12 @@ namespace FirstChair.Sim
                 return new ReplayResult(ReplayStatus.SnowMapMismatch, 0, default);
             }
 
-            var simulation = new Simulation(recording.Setup, heightmap, snowMap, tuning);
+            if (recording.ForestHash != forest.Hash)
+            {
+                return new ReplayResult(ReplayStatus.ForestMismatch, 0, default);
+            }
+
+            var simulation = new Simulation(recording.Setup, heightmap, snowMap, forest, tuning);
             var inputs = recording.Inputs;
             for (int i = 0; i < inputs.Count; i++)
             {

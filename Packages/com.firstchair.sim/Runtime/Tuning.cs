@@ -143,6 +143,54 @@ namespace FirstChair.Sim
         /// <summary>Seconds from a crash to the reset to the last safe spot.</summary>
         public Fix64 CrashResetDelay;
 
+        /// <summary>
+        /// The rider's radius seen from above, metres: trunks, branches and near-miss gaps are measured to this circle
+        /// around the rider's position.
+        /// </summary>
+        public Fix64 RiderRadius;
+
+        /// <summary>
+        /// Near-miss distance, metres: a pass whose smallest gap between the rider and a trunk is above zero and at most
+        /// this is a near miss. Must be positive (the Flow fill divides by it).
+        /// </summary>
+        public Fix64 NearMissDistance;
+
+        /// <summary>Slowest speed, m/s, at which a near miss counts; slower passes raise nothing.</summary>
+        public Fix64 NearMissMinSpeed;
+
+        /// <summary>Flow a near miss adds at a gap of <see cref="NearMissDistance"/> (the farthest that counts).</summary>
+        public Fix64 NearMissFlowGainFar;
+
+        /// <summary>
+        /// Flow a near miss would add at a gap of zero. Between, the gain runs linearly with closeness,
+        /// 1 - gap / <see cref="NearMissDistance"/>: a closer pass fills more.
+        /// </summary>
+        public Fix64 NearMissFlowGainClose;
+
+        /// <summary>Seconds without a near miss before Flow starts to drain.</summary>
+        public Fix64 FlowDrainDelay;
+
+        /// <summary>Flow lost per second while draining.</summary>
+        public Fix64 FlowDrainRate;
+
+        /// <summary>Fraction of the rider's velocity a branch clip takes, 0 to 1.</summary>
+        public Fix64 BranchSpeedLoss;
+
+        /// <summary>Flow a branch clip takes (an amount of the 0 to 1 meter, not a fraction of what is left).</summary>
+        public Fix64 BranchFlowCost;
+
+        /// <summary>
+        /// Fraction of snow and air drag that full Flow cuts, 0 to 1. It scales with Flow: drag is multiplied by
+        /// 1 - FlowDragCut * Flow.
+        /// </summary>
+        public Fix64 FlowDragCut;
+
+        /// <summary>
+        /// Extra trick points at full Flow, as a fraction: <see cref="TrickMultiplier"/> is 1 + FlowTrickBonus * Flow.
+        /// Story 006 applies it.
+        /// </summary>
+        public Fix64 FlowTrickBonus;
+
         /// <summary>The default tuning.</summary>
         public static Tuning Default => new Tuning
         {
@@ -179,6 +227,21 @@ namespace FirstChair.Sim
             SolidLandingAngle = Fix64.Pi / Fix64.FromInt(6),
             SketchyLandingAngle = Fix64.Pi / Fix64.FromInt(4),
             CrashResetDelay = Fix64.One,
+
+            // Story 005 starting values (design/reference/bluebird-spec.md, Flow and the trees): near misses inside
+            // 2.4 m, a branch clip costs 25% of Flow, drain 0.22 per second after 1.4 s, full Flow cuts drag 30% and adds
+            // 50% to trick points. A branch clip keeps 70% of speed, as the spec's other stumble (tree wells) does.
+            RiderRadius = Fix64.FromRatio(3, 10),
+            NearMissDistance = Fix64.FromRatio(24, 10),
+            NearMissMinSpeed = Fix64.FromInt(3),
+            NearMissFlowGainFar = Fix64.FromRatio(5, 100),
+            NearMissFlowGainClose = Fix64.FromRatio(25, 100),
+            FlowDrainDelay = Fix64.FromRatio(14, 10),
+            FlowDrainRate = Fix64.FromRatio(22, 100),
+            BranchSpeedLoss = Fix64.FromRatio(3, 10),
+            BranchFlowCost = Fix64.FromRatio(25, 100),
+            FlowDragCut = Fix64.FromRatio(3, 10),
+            FlowTrickBonus = Fix64.FromRatio(1, 2),
         };
 
         /// <summary>The grip of a snow type, m/s^2.</summary>
@@ -204,6 +267,10 @@ namespace FirstChair.Sim
             SnowType.Slush => SlushDrag,
             _ => throw new ArgumentOutOfRangeException(nameof(snow)),
         };
+
+        /// <summary>The trick-point multiplier at a Flow level: 1 + <see cref="FlowTrickBonus"/> * flow.</summary>
+        /// <param name="flow">The Flow meter, 0 to 1 (<see cref="RiderState.Flow"/>).</param>
+        public readonly Fix64 TrickMultiplier(Fix64 flow) => Fix64.One + FlowTrickBonus * flow;
 
         /// <summary>A 64-bit FNV-1a hash of every field's raw bits, in declaration order.</summary>
         public ulong ComputeHash()
@@ -242,6 +309,17 @@ namespace FirstChair.Sim
             hash = Fnv1a64.AddInt64(hash, SolidLandingAngle.Raw);
             hash = Fnv1a64.AddInt64(hash, SketchyLandingAngle.Raw);
             hash = Fnv1a64.AddInt64(hash, CrashResetDelay.Raw);
+            hash = Fnv1a64.AddInt64(hash, RiderRadius.Raw);
+            hash = Fnv1a64.AddInt64(hash, NearMissDistance.Raw);
+            hash = Fnv1a64.AddInt64(hash, NearMissMinSpeed.Raw);
+            hash = Fnv1a64.AddInt64(hash, NearMissFlowGainFar.Raw);
+            hash = Fnv1a64.AddInt64(hash, NearMissFlowGainClose.Raw);
+            hash = Fnv1a64.AddInt64(hash, FlowDrainDelay.Raw);
+            hash = Fnv1a64.AddInt64(hash, FlowDrainRate.Raw);
+            hash = Fnv1a64.AddInt64(hash, BranchSpeedLoss.Raw);
+            hash = Fnv1a64.AddInt64(hash, BranchFlowCost.Raw);
+            hash = Fnv1a64.AddInt64(hash, FlowDragCut.Raw);
+            hash = Fnv1a64.AddInt64(hash, FlowTrickBonus.Raw);
             return hash;
         }
     }

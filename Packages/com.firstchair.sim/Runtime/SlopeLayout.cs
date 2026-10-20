@@ -130,7 +130,12 @@ namespace FirstChair.Sim
         /// <summary>Branch radius, millimetres. Never below <see cref="TrunkRadiusMm"/>.</summary>
         public readonly int BranchRadiusMm;
 
-        internal SlopeTree(int xMm, int zMm, int trunkRadiusMm, int branchRadiusMm)
+        /// <summary>Creates a tree. <see cref="Forest"/> checks the radii when it takes the tree.</summary>
+        /// <param name="xMm">X of the trunk's centre, millimetres.</param>
+        /// <param name="zMm">Z of the trunk's centre, millimetres.</param>
+        /// <param name="trunkRadiusMm">Trunk radius, millimetres; positive.</param>
+        /// <param name="branchRadiusMm">Branch radius, millimetres; not below the trunk radius.</param>
+        public SlopeTree(int xMm, int zMm, int trunkRadiusMm, int branchRadiusMm)
         {
             XMm = xMm;
             ZMm = zMm;
