@@ -192,21 +192,27 @@ namespace FirstChair.Sim.Tests
     /// <summary>The rider state and the events of one step, compared bit for bit.</summary>
     internal sealed class StepSnapshot : IEquatable<StepSnapshot>
     {
-        public StepSnapshot(RiderState state, SimEvent[] events)
+        public StepSnapshot(RiderState state, SimEvent[] events, ulong treePassHash)
         {
             State = state;
             Events = events;
+            TreePassHash = treePassHash;
         }
 
         public RiderState State { get; }
 
         public SimEvent[] Events { get; }
 
-        public static StepSnapshot Of(Simulation simulation) => new StepSnapshot(simulation.State, simulation.Events.ToArray());
+        /// <summary>Simulation.TreePassHash: per-tree pass state that lives outside RiderState.</summary>
+        public ulong TreePassHash { get; }
+
+        public static StepSnapshot Of(Simulation simulation) =>
+            new StepSnapshot(simulation.State, simulation.Events.ToArray(), simulation.TreePassHash);
 
         /// <summary>
         /// Position and velocity compare raw Q32.32 bits; the rest of the state (heading, edge, skid, snow,
-        /// stance, tick, off-map flag, last input, random generator) and the event list must match too.
+        /// stance, tick, off-map flag, last input, random generator), the event list and the per-tree pass state
+        /// must match too. The golden trace (TraceBytes) reads the state and events only.
         /// </summary>
         public bool Equals(StepSnapshot other) =>
             other != null
@@ -217,12 +223,14 @@ namespace FirstChair.Sim.Tests
             && State.Velocity.Y.Raw == other.State.Velocity.Y.Raw
             && State.Velocity.Z.Raw == other.State.Velocity.Z.Raw
             && State.Equals(other.State)
-            && Events.SequenceEqual(other.Events);
+            && Events.SequenceEqual(other.Events)
+            && TreePassHash == other.TreePassHash;
 
         public override bool Equals(object obj) => Equals(obj as StepSnapshot);
 
         public override int GetHashCode() => State.GetHashCode();
 
-        public override string ToString() => State + " events [" + string.Join(", ", Events) + "]";
+        public override string ToString() =>
+            State + " events [" + string.Join(", ", Events) + "] tree pass " + TreePassHash.ToString("X16");
     }
 }

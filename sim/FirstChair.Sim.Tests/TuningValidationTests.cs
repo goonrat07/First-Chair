@@ -32,6 +32,7 @@ namespace FirstChair.Sim.Tests
         [TestCase("Sketchy below Solid")]
         [TestCase("GrabSteeringThreshold zero")]
         [TestCase("GrabSteeringThreshold above one")]
+        [TestCase("FlowTrickBonus above 1000")]
         public void NewRun_TuningARideCannotRunOn_ThrowsArgumentException(string badValue)
         {
             // Arrange
@@ -51,11 +52,34 @@ namespace FirstChair.Sim.Tests
                 case "Sketchy below Solid": tuning.SketchyLandingAngle = tuning.SolidLandingAngle - Fix64.FromRaw(1); break;
                 case "GrabSteeringThreshold zero": tuning.GrabSteeringThreshold = Fix64.Zero; break;
                 case "GrabSteeringThreshold above one": tuning.GrabSteeringThreshold = Fix64.One + Fix64.FromRaw(1); break;
+                case "FlowTrickBonus above 1000": tuning.FlowTrickBonus = Fix64.FromInt(1000) + Fix64.FromRaw(1); break;
                 default: throw new ArgumentOutOfRangeException(nameof(badValue), badValue, "no such case");
             }
 
             // Act and Assert
             Assert.That(() => Start(tuning), Throws.ArgumentException);
+        }
+
+        [Test]
+        public void NewRun_StartInsideATrunk_ThrowsArgumentException()
+        {
+            // Arrange: a tree whose trunk covers the start; the reset spot would be the start, so it would crash forever.
+            var forest = new Forest(new[] { new SlopeTree(StartMm + 100, StartMm, 400, 2_000) });
+
+            // Act and Assert
+            Assert.That(() => Start(Tuning.Default, forest), Throws.ArgumentException);
+        }
+
+        [Test]
+        public void NewRun_StartJustOutsideTheTrunkAndRider_IsAccepted()
+        {
+            // Arrange: the gap between the start and the trunk centre is exactly trunk radius plus rider radius.
+            Tuning tuning = Tuning.Default;
+            int reachMm = 400 + (int)(tuning.RiderRadius.Raw * 1000 >> Fix64.FractionalBits);
+            var forest = new Forest(new[] { new SlopeTree(StartMm + reachMm, StartMm, 400, 2_000) });
+
+            // Act and Assert: inside the branches is fine; only the trunk matters.
+            Assert.That(() => Start(tuning, forest), Throws.Nothing);
         }
 
         [Test]
@@ -71,13 +95,18 @@ namespace FirstChair.Sim.Tests
             Assert.That(text, Is.EqualTo("-2147483648.000000000"));
         }
 
-        private static Simulation Start(Tuning tuning)
+        private const int StartMm = 64_000;
+
+        private static Simulation Start(Tuning tuning) => Start(tuning, Forest.Empty);
+
+        private static Simulation Start(Tuning tuning, Forest forest)
         {
             Heightmap heightmap = TestTerrain.Flat();
             return new Simulation(
-                new RunSetup(Sport.Skis, 0, 1UL, Fix64.FromInt(64), Fix64.FromInt(64)),
+                new RunSetup(Sport.Skis, 0, 1UL, Fix64.FromRatio(StartMm, 1000), Fix64.FromRatio(StartMm, 1000)),
                 heightmap,
                 TestTerrain.Uniform(heightmap, SnowType.Groomed),
+                forest,
                 tuning);
         }
     }

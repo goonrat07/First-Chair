@@ -124,6 +124,25 @@ namespace FirstChair.Sim.Tests
         }
 
         [Test]
+        public void TreePassHash_WhilePassingATree_TracksThePassState()
+        {
+            // Arrange: per-tree pass state lives outside RiderState; replay tests compare it through this hash, so the
+            // hash must move with the pass (closest gap so far, then judged).
+            Simulation simulation = OnIncline(new Forest(new[] { Tree(LineXMm + 900, 30_000) }), Tuning.Default);
+            var hashes = new HashSet<ulong> { simulation.TreePassHash };
+
+            // Act
+            for (int step = 0; step < RideSteps && simulation.State.Position.Z < Metres(35_000); step++)
+            {
+                simulation.Step(NoInput);
+                hashes.Add(simulation.TreePassHash);
+            }
+
+            // Assert
+            Assert.That(hashes.Count, Is.GreaterThan(2));
+        }
+
+        [Test]
         public void LongPassInsideTheRing_RaisesExactlyOneNearMissPerTree()
         {
             // Arrange: two trunks 1 m off the line; the rider spends many steps inside each one's near-miss ring.

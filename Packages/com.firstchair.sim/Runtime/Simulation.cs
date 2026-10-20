@@ -131,6 +131,9 @@ namespace FirstChair.Sim
         /// <summary>The longest a tuning duration may be, seconds: its step count must fit an int.</summary>
         private static readonly Fix64 MaxTuningSeconds = Fix64.FromInt(int.MaxValue / StepsPerSecond);
 
+        /// <summary>The largest Flow trick bonus: far above any sane value, and far below where the multiplier wraps.</summary>
+        private static readonly Fix64 MaxFlowTrickBonus = Fix64.FromInt(1000);
+
         /// <summary>Events one step can raise without trees; each tree adds at most a near miss and a branch hit.</summary>
         private const int BaseEventCapacity = 8;
 
@@ -232,6 +235,15 @@ namespace FirstChair.Sim
                 _trunkReach[i] = tree.TrunkRadius + tuning.RiderRadius;
                 _branchReach[i] = tree.BranchRadius + tuning.RiderRadius;
                 _ringReach[i] = Fix64.Max(_branchReach[i], _trunkReach[i] + tuning.NearMissDistance);
+
+                // A run that starts inside a trunk would crash and reset there forever: the reset spot is the start.
+                // Box test first, so the squares stay small however far apart the start and the tree are.
+                Fix64 dx = Fix64.Abs(setup.StartX - _treeX[i]);
+                Fix64 dz = Fix64.Abs(setup.StartZ - _treeZ[i]);
+                if (dx < _trunkReach[i] && dz < _trunkReach[i] && dx * dx + dz * dz < _trunkReach[i] * _trunkReach[i])
+                {
+                    throw new System.ArgumentException("The run starts inside the trunk of tree " + i + ".", nameof(setup));
+                }
             }
 
             heightmap.Sample(setup.StartX, setup.StartZ, out Fix64 height, out Vec3 normal);
@@ -251,6 +263,27 @@ namespace FirstChair.Sim
 
         /// <summary>The trees this simulation rides among.</summary>
         public Forest Forest { get; }
+
+        /// <summary>
+        /// A 64-bit FNV-1a hash of the per-tree pass state: which trees the rider is passing and the closest gap so
+        /// far. That state lives here, not in <see cref="State"/>, so two equal states can still ride differently
+        /// among trees, and <see cref="State"/> alone cannot restore a ride. Replay tests compare this every step.
+        /// Allocates nothing.
+        /// </summary>
+        public ulong TreePassHash
+        {
+            get
+            {
+                ulong hash = Fnv1a64.OffsetBasis;
+                for (int i = 0; i < _treePass.Length; i++)
+                {
+                    hash = Fnv1a64.AddInt32(hash, _treePass[i]);
+                    hash = Fnv1a64.AddInt64(hash, _treeMinGap[i].Raw);
+                }
+
+                return hash;
+            }
+        }
 
         /// <summary>A copy of the current state.</summary>
         public RiderState State => _state;
@@ -844,7 +877,7 @@ namespace FirstChair.Sim
             Require(IsFraction(tuning.BranchSpeedLoss), "BranchSpeedLoss must be in [0, 1]");
             Require(IsFraction(tuning.BranchFlowCost), "BranchFlowCost must be in [0, 1]");
             Require(IsFraction(tuning.FlowDragCut), "FlowDragCut must be in [0, 1]");
-            Require(tuning.FlowTrickBonus >= Fix64.Zero, "FlowTrickBonus must be zero or more");
+            Require(tuning.FlowTrickBonus >= Fix64.Zero && tuning.FlowTrickBonus <= MaxFlowTrickBonus, "FlowTrickBonus must be in [0, 1000]");
         }
 
         private static bool IsFraction(Fix64 value) => value >= Fix64.Zero && value <= Fix64.One;
