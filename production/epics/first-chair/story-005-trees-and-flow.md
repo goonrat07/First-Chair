@@ -1,7 +1,7 @@
 # Story 005: Trees and Flow
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: M
@@ -88,3 +88,16 @@
 
 - Depends on: `production/epics/first-chair/story-003-test-slope-unity-view.md` (tree positions), `production/epics/first-chair/story-004-air-landings-crashes.md` (crash and reset)
 - Unlocks: `production/epics/first-chair/story-006-rails-and-trick-scoring.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-20
+**Criteria**: 7/7 passing (none deferred). Each is covered by a test that ran, in `TreesFlowTests` and `DeterminismTests`; 277 tests pass. Input-free lines across the committed glade both thread gaps and hit trunks.
+**Deviations**: ADVISORY:
+- Built while Story 003 was still In Progress; it used only 003's finished tree data.
+- Open design question: trees have no height, so a rider in the air hits them at any height. See `production/sleep-mode/questions.md` #1.
+- The engine review's follow-ups are fixed (`1c880ae`): a start inside a trunk is rejected, `TreePassHash` is checked in the replay tests, and the Flow bonus is capped.
+- Feel is untuned, and nothing is verified in Unity. The Unity driver must pass `Forest.FromLayout(layout)`; the old constructors ride with no trees.
+**Test Evidence**: waived at qa.level minimal; unit tests in `sim/FirstChair.Sim.Tests/TreesFlowTests.cs` exist anyway, as `.claude/rules/sim-code.md` requires
+**Reviewed by**: self, no independent review (solo mode; a unity-specialist engine review ran during `/dev-story`)
