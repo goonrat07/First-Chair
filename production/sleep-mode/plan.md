@@ -12,7 +12,7 @@ Started: 2026-10-20T11:05:45Z · Until: none · Branch: claude/beautiful-gates-8
 | 6 | story-004-air-landings-crashes | story-done | done | 6636874 |
 | 7 | story-005-trees-and-flow (needs item 4's tree data and story 004) | dev-story | done | c5b5e6c |
 | 8 | story-005-trees-and-flow | story-done | done | 87e86fc |
-| 9 | story-006-rails-and-trick-scoring | dev-story | queued | |
+| 9 | story-006-rails-and-trick-scoring | dev-story | running | |
 | 10 | story-006-rails-and-trick-scoring | story-done | queued | |
 
 Story 003 stays In Progress after item 4: its Unity half is left for the PC, so it gets

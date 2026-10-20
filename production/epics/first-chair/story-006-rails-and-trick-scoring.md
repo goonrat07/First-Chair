@@ -1,12 +1,12 @@
 # Story 006: Rails, boxes and single-trick scoring
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Feature
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-10-20
 
 ## Context
 
