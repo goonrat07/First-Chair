@@ -17,3 +17,7 @@ Questions only you can answer. Each says whether it stopped an item; nothing was
   - (b) **Add a rail-exit bonus,** or let a grind run into the next jump as one trick ("Boardslide to Backside 180" in the old spec). That is combo territory, which the brief keeps out of the MVP.
   - (c) **Score no air under a minimum air time.** This also covers the short hops off sharp crests that Story 004 flagged.
 - **Recommendation:** (c) after the first playtest, because it fixes both cases with one tuning value. Nothing waits on this.
+
+## Answers (2026-10-20)
+1. **Trees always block.** Kept as built; revisit after the first playtest. No code change.
+2. **Minimum air time.** Air shorter than a tuned minimum scores nothing. That covers short rail exits and the tiny hops off sharp crests. To be added after the first playtest, when the threshold can be picked by feel.
