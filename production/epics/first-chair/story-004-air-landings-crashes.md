@@ -1,7 +1,7 @@
 # Story 004: Air: jumps, spins, flips, grabs, landings, crashes, reset
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
@@ -87,3 +87,16 @@
 
 - Depends on: `production/epics/first-chair/story-002-skiing-on-snow.md`, `production/epics/first-chair/story-003-test-slope-unity-view.md` (kicker positions in the slope data)
 - Unlocks: `production/epics/first-chair/story-006-rails-and-trick-scoring.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-20
+**Criteria**: 9/9 passing (none deferred). Each is covered by a test that ran, in `AirTests` and `DeterminismTests`; 243 tests pass. All three committed test-slope kickers launch at their lips and land clean.
+**Deviations**: ADVISORY:
+- This story was built while Story 003 was still In Progress. It used only 003's finished slope data; 003's Unity half is open.
+- Feel is untuned. The playtest flags: sharp crests at high speed can give very short hops (Story 006 may want a minimum air time), and the safe spot is often a kicker lip.
+- The engine review's tuning notes are fixed (`19e292a`).
+- Not verified in Unity or IL2CPP.
+**Test Evidence**: waived at qa.level minimal; unit tests in `sim/FirstChair.Sim.Tests/AirTests.cs` exist anyway, as `.claude/rules/sim-code.md` requires
+**Reviewed by**: self, no independent review (solo mode; a unity-specialist engine review ran during `/dev-story`)
