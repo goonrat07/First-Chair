@@ -8,7 +8,7 @@ Started: 2026-10-20T11:05:45Z · Until: none · Branch: claude/beautiful-gates-8
 | 2 | story-002-skiing-on-snow | dev-story | done | 77371d7 |
 | 3 | story-002-skiing-on-snow | story-done | done | 919ce3a |
 | 4 | story-003-test-slope-unity-view, sim half only: slope generator, snow-type map, feature data (kickers, trees), sim-side height checks | dev-story | done | 5d9a50a |
-| 5 | story-004-air-landings-crashes (needs item 4's kicker data; goes ahead of 003's Unity half) | dev-story | queued | |
+| 5 | story-004-air-landings-crashes (needs item 4's kicker data; goes ahead of 003's Unity half) | dev-story | running | |
 | 6 | story-004-air-landings-crashes | story-done | queued | |
 | 7 | story-005-trees-and-flow (needs item 4's tree data and story 004) | dev-story | queued | |
 | 8 | story-005-trees-and-flow | story-done | queued | |
