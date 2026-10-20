@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Builds the riding sim from the Unity package's own sources, so `dotnet test sim/` tests exactly
+    what Unity compiles. netstandard2.1 and C# 9 match what Unity 6.3 compiles; nothing newer may
+    slip in here. No UnityEngine reference exists or may be added (.claude/rules/sim-code.md).
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <RootNamespace>FirstChair.Sim</RootNamespace>
+    <AssemblyName>FirstChair.Sim</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Packages/com.firstchair.sim/Runtime/**/*.cs" />
+  </ItemGroup>
+
+</Project>

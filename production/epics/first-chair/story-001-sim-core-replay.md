@@ -61,15 +61,38 @@
 
 ## Files
 
-- `Packages/com.firstchair.sim/package.json`
-- `Packages/com.firstchair.sim/Runtime/FirstChair.Sim.asmdef`
-- `Packages/com.firstchair.sim/Runtime/` (sim step, RunSetup, input packing, recorder, heightmap, tuning)
-- `sim/FirstChair.Sim/FirstChair.Sim.csproj` (compiles the package sources)
-- `sim/FirstChair.Sim.Tests/FirstChair.Sim.Tests.csproj`
-- `sim/FirstChair.Sim.Tests/DeterminismTests.cs`
 - `.github/workflows/sim-tests.yml`
-
----
+- `Packages/com.firstchair.sim/Runtime/FirstChair.Sim.asmdef`
+- `Packages/com.firstchair.sim/Runtime/Fix64.cs`
+- `Packages/com.firstchair.sim/Runtime/Fnv1a64.cs`
+- `Packages/com.firstchair.sim/Runtime/Heightmap.cs`
+- `Packages/com.firstchair.sim/Runtime/HeightmapSpec.cs`
+- `Packages/com.firstchair.sim/Runtime/Recording.cs`
+- `Packages/com.firstchair.sim/Runtime/Replayer.cs`
+- `Packages/com.firstchair.sim/Runtime/RiderState.cs`
+- `Packages/com.firstchair.sim/Runtime/RunSetup.cs`
+- `Packages/com.firstchair.sim/Runtime/SimEvent.cs`
+- `Packages/com.firstchair.sim/Runtime/SimInput.cs`
+- `Packages/com.firstchair.sim/Runtime/SimRandom.cs`
+- `Packages/com.firstchair.sim/Runtime/Simulation.cs`
+- `Packages/com.firstchair.sim/Runtime/Tuning.cs`
+- `Packages/com.firstchair.sim/Runtime/Vec3.cs`
+- `Packages/com.firstchair.sim/package.json`
+- `sim/FirstChair.Sim.Tests/DeterminismTests.cs`
+- `sim/FirstChair.Sim.Tests/FirstChair.Sim.Tests.csproj`
+- `sim/FirstChair.Sim.Tests/Fix64Tests.cs`
+- `sim/FirstChair.Sim.Tests/GravitySlideTests.cs`
+- `sim/FirstChair.Sim.Tests/HeightmapTests.cs`
+- `sim/FirstChair.Sim.Tests/PackageLayoutTests.cs`
+- `sim/FirstChair.Sim.Tests/RecordingTests.cs`
+- `sim/FirstChair.Sim.Tests/ScriptedRide.cs`
+- `sim/FirstChair.Sim.Tests/SimAssemblyRulesTests.cs`
+- `sim/FirstChair.Sim.Tests/SimInputTests.cs`
+- `sim/FirstChair.Sim.Tests/SimRandomTests.cs`
+- `sim/FirstChair.Sim.Tests/TestTerrain.cs`
+- `sim/FirstChair.Sim.Tests/TuningTests.cs`
+- `sim/FirstChair.Sim.sln`
+- `sim/FirstChair.Sim/FirstChair.Sim.csproj`
 
 ## QA Test Cases
 

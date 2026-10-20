@@ -1,0 +1,7 @@
+{
+  "name": "com.firstchair.sim",
+  "version": "0.1.0",
+  "displayName": "First Chair Riding Sim",
+  "description": "Deterministic fixed-point (Q32.32) riding sim for First Chair. Pure C#, no UnityEngine references; the same sources build and test with the .NET SDK under sim/.",
+  "unity": "6000.3"
+}
