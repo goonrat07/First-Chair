@@ -77,6 +77,8 @@ export_presets.cfg
 [Tt]emp/
 [Oo]bj/
 [Bb]uild/
+# ...but each Blender asset keeps its build scripts in art/source/<ASSET>/build/ (.claude/rules/blender-assets.md).
+!art/source/*/build/
 [Bb]uilds/
 [Ll]ogs/
 [Uu]ser[Ss]ettings/
