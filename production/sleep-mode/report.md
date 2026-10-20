@@ -112,3 +112,25 @@ Engine follow-up from item 2 (`41e4a12`): the sim now rejects a `Tuning` with `M
 - Verdict: COMPLETE WITH NOTES. Status set to Complete (`6636874`).
 - Engine review (unity-specialist): nothing blocking. Its RISK (gravity of 0 or less kept a flight going forever) and its tuning notes are fixed in `19e292a`. The sim now checks the whole `Tuning` when a ride starts. 243 tests pass, and rides are unchanged.
 - Decisions made for you: closed it (the recommended option), although Story 003 is still In Progress. Story 004 needed only 003's finished slope data.
+
+The usage limit hit during item 7 (about 13:00 UTC). Sleep mode's own wake-up for one minute after the reset fired at 15:51, and work picked up from the partial changes still on disk. Nothing was lost.
+
+## Item 7: story-005-trees-and-flow, /dev-story
+- Result: implemented (`c5b5e6c`). Sim version 3 to 4; recording format 3 adds a tree hash, and replays on different trees report `ForestMismatch`.
+  - Near misses: passing a trunk inside 2.4 m fills Flow (0 to 1), more the closer you pass, with one event per tree per pass.
+  - Drain: Flow drains at 0.22/s after 1.4 s without a near miss.
+  - Payoff: Flow cuts snow and air drag up to 30% at full Flow, and exposes a trick multiplier of up to ×1.5 for Story 006.
+  - Branches: a clip costs 0.25 Flow and 30% speed.
+  - Trunks: a hit is a crash (cause Tree) that empties Flow and resets you.
+- Changed: new `Forest.cs`; `Simulation.cs`, `SimEvent.cs` (`NearMiss`, `BranchHit`), `RiderState.cs`, `Tuning.cs` (11 new numbers), `Recording.cs`, `Replayer.cs` and `SlopeLayout.cs`; the new `TreesFlowTests.cs`, plus updated determinism, recording and scripted-ride tests.
+- Tests: `dotnet test sim/`, 273 passed. Seven breaks were watched failing. Input-free lines across the committed glade both thread gaps and hit trunks.
+- Decisions made for you:
+  - Trees are passed as a `Forest`. The old constructors still work but mean "no trees", so the Unity driver must pass `Forest.FromLayout(layout)`.
+  - Trunk hits are checked along the whole step's path, so a fast rider can't pass through a trunk between steps.
+  - A near miss counts at the closest approach.
+  - The drag cut scales with Flow, rather than only kicking in at full.
+  - A branch clip costs 0.25 of the meter.
+  - Any crash empties Flow.
+  - New numbers: rider radius 0.3 m, no near miss below 3 m/s, Flow gain 0.05 at 2.4 m rising to 0.25 at 0 m.
+- Not covered by tests yet: a second pass of the same tree, and hitting a trunk in the air.
+- Not verified: feel, and anything in Unity.
