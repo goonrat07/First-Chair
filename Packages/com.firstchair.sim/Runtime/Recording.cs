@@ -3,12 +3,12 @@ using System.Collections.Generic;
 namespace FirstChair.Sim
 {
     /// <summary>
-    /// A ride as data: a header (the <see cref="RunSetup"/> plus tuning, heightmap, snow map and forest hashes)
-    /// followed by one packed input per step. Replaying it with the same heightmap, snow map, forest and tuning
+    /// A ride as data: a header (the <see cref="RunSetup"/> plus tuning, heightmap, snow map, forest and rail hashes)
+    /// followed by one packed input per step. Replaying it with the same heightmap, snow map, forest, rails and tuning
     /// rebuilds the ride bit for bit.
     /// </summary>
     /// <remarks>
-    /// <para><b>Byte layout</b> (all little-endian, <see cref="HeaderSize"/> = 70 bytes of header):</para>
+    /// <para><b>Byte layout</b> (all little-endian, <see cref="HeaderSize"/> = 78 bytes of header):</para>
     /// <list type="table">
     /// <item><term>0, 4 bytes</term><description>magic "FCRC"</description></item>
     /// <item><term>4, 2</term><description>format version (<see cref="FormatVersion"/>)</description></item>
@@ -22,8 +22,9 @@ namespace FirstChair.Sim
     /// <item><term>42, 8</term><description>heightmap hash</description></item>
     /// <item><term>50, 8</term><description>snow map hash (added in format version 2)</description></item>
     /// <item><term>58, 8</term><description>forest hash (added in format version 3)</description></item>
-    /// <item><term>66, 4</term><description>input count</description></item>
-    /// <item><term>70, 4 each</term><description>packed inputs, one per step</description></item>
+    /// <item><term>66, 8</term><description>rail set hash (added in format version 4)</description></item>
+    /// <item><term>74, 4</term><description>input count</description></item>
+    /// <item><term>78, 4 each</term><description>packed inputs, one per step</description></item>
     /// </list>
     /// <para>The format version describes this container; the sim version describes riding behaviour.
     /// A recording with another sim version still reads, and the <see cref="Replayer"/> refuses it. A recording
@@ -44,10 +45,10 @@ namespace FirstChair.Sim
     public sealed class Recording
     {
         /// <summary>Version of this byte layout.</summary>
-        public const ushort FormatVersion = 3;
+        public const ushort FormatVersion = 4;
 
         /// <summary>Header size in bytes; the inputs start here.</summary>
-        public const int HeaderSize = 70;
+        public const int HeaderSize = 78;
 
         private const uint MagicValue = 0x43524346u; // "FCRC" read as a little-endian uint32
         private const int InputSize = 4;
@@ -72,18 +73,34 @@ namespace FirstChair.Sim
         /// <param name="tuning">The tuning; its hash goes in the header.</param>
         /// <exception cref="System.ArgumentNullException"><paramref name="forest"/> is null.</exception>
         public Recording(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Forest forest, Tuning tuning)
+            : this(setup, heightmap, snowMap, forest, RailSet.Empty, tuning)
+        {
+        }
+
+        /// <summary>Starts an empty recording of a run among trees, rails and boxes.</summary>
+        /// <param name="setup">The run setup, copied into the header.</param>
+        /// <param name="heightmap">The terrain; its hash goes in the header.</param>
+        /// <param name="snowMap">The snow types; their hash goes in the header.</param>
+        /// <param name="forest">The trees; their hash goes in the header.</param>
+        /// <param name="rails">The rails and boxes; their hash goes in the header.</param>
+        /// <param name="tuning">The tuning; its hash goes in the header.</param>
+        /// <exception cref="System.ArgumentNullException"><paramref name="forest"/> or <paramref name="rails"/> is null.</exception>
+        public Recording(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Forest forest, RailSet rails, Tuning tuning)
             : this(
                 setup,
                 tuning.ComputeHash(),
                 heightmap.Hash,
                 snowMap.Hash,
                 (forest ?? throw new System.ArgumentNullException(nameof(forest))).Hash,
+                (rails ?? throw new System.ArgumentNullException(nameof(rails))).Hash,
                 new List<SimInput>())
         {
         }
 
-        private Recording(RunSetup setup, ulong tuningHash, ulong heightmapHash, ulong snowMapHash, ulong forestHash, List<SimInput> inputs)
+        private Recording(
+            RunSetup setup, ulong tuningHash, ulong heightmapHash, ulong snowMapHash, ulong forestHash, ulong railsHash, List<SimInput> inputs)
         {
+            RailsHash = railsHash;
             Setup = setup;
             TuningHash = tuningHash;
             HeightmapHash = heightmapHash;
@@ -106,6 +123,9 @@ namespace FirstChair.Sim
 
         /// <summary>Hash of the trees the ride was made among (<see cref="Forest.Hash"/>).</summary>
         public ulong ForestHash { get; }
+
+        /// <summary>Hash of the rails and boxes the ride was made on (<see cref="RailSet.Hash"/>).</summary>
+        public ulong RailsHash { get; }
 
         /// <summary>The recorded inputs, one per step.</summary>
         public IReadOnlyList<SimInput> Inputs => _inputs;
@@ -131,6 +151,7 @@ namespace FirstChair.Sim
             Write(bytes, ref offset, HeightmapHash, 8);
             Write(bytes, ref offset, SnowMapHash, 8);
             Write(bytes, ref offset, ForestHash, 8);
+            Write(bytes, ref offset, RailsHash, 8);
             Write(bytes, ref offset, (uint)_inputs.Count, 4);
             for (int i = 0; i < _inputs.Count; i++)
             {
@@ -170,6 +191,7 @@ namespace FirstChair.Sim
             ulong heightmapHash = Read(data, ref offset, 8);
             ulong snowMapHash = Read(data, ref offset, 8);
             ulong forestHash = Read(data, ref offset, 8);
+            ulong railsHash = Read(data, ref offset, 8);
             ulong count = Read(data, ref offset, 4);
             if ((ulong)data.Length != HeaderSize + InputSize * count)
             {
@@ -183,7 +205,7 @@ namespace FirstChair.Sim
             }
 
             var setup = new RunSetup(simVersion, sport, assistLevel, seed, Fix64.FromRaw(startX), Fix64.FromRaw(startZ));
-            recording = new Recording(setup, tuningHash, heightmapHash, snowMapHash, forestHash, inputs);
+            recording = new Recording(setup, tuningHash, heightmapHash, snowMapHash, forestHash, railsHash, inputs);
             return true;
         }
 

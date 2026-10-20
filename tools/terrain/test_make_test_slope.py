@@ -27,7 +27,7 @@ RAMP_STEPS = 8
 
 
 def read_layout(path: Path) -> dict:
-    layout = {"zones": [], "kickers": [], "trees": []}
+    layout = {"zones": [], "kickers": [], "trees": [], "rails": []}
     for line in path.read_text(encoding="ascii").splitlines():
         fields = line.split()
         if not fields or fields[0].startswith("#"):
@@ -45,6 +45,8 @@ def read_layout(path: Path) -> dict:
             layout["kickers"].append(tuple(int(value) for value in values))
         elif key == "tree":
             layout["trees"].append(tuple(int(value) for value in values))
+        elif key in ("rail", "box"):
+            layout["rails"].append((key,) + tuple(int(value) for value in values))
     return layout
 
 
@@ -174,6 +176,23 @@ def test_each_tree_canopy_is_inside_the_glade(layout):
     for x, z, trunk, branch in layout["trees"]:
         assert 0 < trunk <= branch
         assert inside(glade, x - branch, z - branch) and inside(glade, x + branch, z + branch)
+
+
+def test_each_rail_and_box_is_on_the_kicker_line_clear_of_every_ramp_and_landing(layout):
+    """Story 006: rails and boxes stand on the park's kicker line, never on a ramp or in a landing."""
+    assert {rail[0] for rail in layout["rails"]} == {"rail", "box"}
+    park = next(rect for name, _snow, rect in layout["zones"] if name == "park")
+    line_xs = {kicker[0] for kicker in layout["kickers"]}
+    for kind, x0, z0, x1, z1, height, width in layout["rails"]:
+        assert height > 0 and width > 0 and (x0, z0) != (x1, z1)
+        for x, z in ((x0, z0), (x1, z1)):
+            assert park[0] <= x <= park[2] and park[1] <= z <= park[3], (kind, x, z)
+            assert x in line_xs, (kind, x)
+        for lip_x, lip_z, facing, length, _width, _height in layout["kickers"]:
+            assert facing == 0  # every kicker launches down +Z, so z alone orders ramp, lip and landing
+            ramp_start = lip_z - length
+            landing_end = lip_z + slope.LANDING_CLEARANCE_MM
+            assert max(z0, z1) < ramp_start or min(z0, z1) > landing_end, (kind, z0, z1, lip_z)
 
 
 def test_runout_is_level(layout, heights_mm, resolution):

@@ -53,7 +53,7 @@ namespace FirstChair.Sim
     /// <para>On snow, <see cref="Position"/>.Y is the terrain height under the rider. In the air
     /// (<see cref="Airborne"/>) it is the rider's own height, above the terrain. <see cref="Flow"/> is the Flow meter
     /// (Story 005); the per-tree pass flags that gate tree events live in the <see cref="Simulation"/>, not here.</para>
-    /// <para>The air fields (<see cref="AirTicks"/> to <see cref="BestGrabTicks"/>) describe the current flight and are
+    /// <para>The air fields (<see cref="AirTicks"/> to <see cref="SwitchTakeoff"/>) describe the current flight and are
     /// zero on snow; the flight's totals leave in the <see cref="SimEventKind.Land"/> or <see cref="SimEventKind.Crash"/>
     /// event.</para>
     /// <para><b>Angles</b> are radians. <see cref="Heading"/> 0 faces +Z and pi/2 faces +X, the yaw a Y-up,
@@ -154,6 +154,12 @@ namespace FirstChair.Sim
         /// <summary>Steps <see cref="BestGrab"/> was held.</summary>
         public int BestGrabTicks;
 
+        /// <summary>
+        /// True when the current flight took off riding switch: the velocity ran against the skis' heading (its dot with
+        /// the heading's direction on the surface was below zero). Story 006 names such tricks "Switch ...".
+        /// </summary>
+        public bool SwitchTakeoff;
+
         /// <summary>True from a crash landing until the reset; riding input is ignored meanwhile.</summary>
         public bool Crashed;
 
@@ -182,6 +188,24 @@ namespace FirstChair.Sim
         /// </summary>
         public int FlowIdleTicks;
 
+        /// <summary>True while the rider grinds a rail or box (Story 006); <see cref="Airborne"/> is false meanwhile.</summary>
+        public bool Grinding;
+
+        /// <summary>The rail being ground, an index in the <see cref="RailSet"/>; read it only while <see cref="Grinding"/>.</summary>
+        public int GrindRail;
+
+        /// <summary>Steps on the current rail.</summary>
+        public int GrindTicks;
+
+        /// <summary>
+        /// The lean on the rail, -1 to 1: negative is to the rider's left. It grows by itself, steering pushes it, and
+        /// at 1 either way the rider falls off. Zero off rails. A view tilts the rider by it.
+        /// </summary>
+        public Fix64 Balance;
+
+        /// <summary>The sum of |<see cref="Balance"/>| over the current grind's steps: its mean grades the grind.</summary>
+        public Fix64 GrindLeanSum;
+
         /// <inheritdoc/>
         public bool Equals(RiderState other) =>
             Position == other.Position
@@ -206,12 +230,18 @@ namespace FirstChair.Sim
             && GrabTicks == other.GrabTicks
             && BestGrab == other.BestGrab
             && BestGrabTicks == other.BestGrabTicks
+            && SwitchTakeoff == other.SwitchTakeoff
             && Crashed == other.Crashed
             && CrashTicks == other.CrashTicks
             && SafePosition == other.SafePosition
             && SafeHeading == other.SafeHeading
             && Flow == other.Flow
-            && FlowIdleTicks == other.FlowIdleTicks;
+            && FlowIdleTicks == other.FlowIdleTicks
+            && Grinding == other.Grinding
+            && GrindRail == other.GrindRail
+            && GrindTicks == other.GrindTicks
+            && Balance == other.Balance
+            && GrindLeanSum == other.GrindLeanSum;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is RiderState other && Equals(other);
@@ -243,12 +273,18 @@ namespace FirstChair.Sim
                 hash = hash * 397 ^ GrabTicks;
                 hash = hash * 397 ^ (int)BestGrab;
                 hash = hash * 397 ^ BestGrabTicks;
+                hash = hash * 397 ^ (SwitchTakeoff ? 1 : 0);
                 hash = hash * 397 ^ (Crashed ? 1 : 0);
                 hash = hash * 397 ^ CrashTicks;
                 hash = hash * 397 ^ SafePosition.GetHashCode();
                 hash = hash * 397 ^ SafeHeading.GetHashCode();
                 hash = hash * 397 ^ Flow.GetHashCode();
-                return hash * 397 ^ FlowIdleTicks;
+                hash = hash * 397 ^ FlowIdleTicks;
+                hash = hash * 397 ^ (Grinding ? 1 : 0);
+                hash = hash * 397 ^ GrindRail;
+                hash = hash * 397 ^ GrindTicks;
+                hash = hash * 397 ^ Balance.GetHashCode();
+                return hash * 397 ^ GrindLeanSum.GetHashCode();
             }
         }
 
@@ -258,8 +294,9 @@ namespace FirstChair.Sim
             + (Skidding ? " skid " + SlipAngle : string.Empty) + " " + Snow + " " + Stance
             + (OutsideHeightmap ? " outside" : string.Empty) + " input " + LastInput
             + (PopLoadTicks > 0 ? " load " + PopLoadTicks : string.Empty)
-            + (Airborne ? " AIR " + AirTicks + " max " + MaxHeight + " spin " + SpinAngle + " flip " + FlipAngle + " grab " + Grab + "/" + GrabTicks : string.Empty)
+            + (Airborne ? " AIR " + AirTicks + " max " + MaxHeight + " spin " + SpinAngle + " flip " + FlipAngle + " grab " + Grab + "/" + GrabTicks + (SwitchTakeoff ? " switch" : string.Empty) : string.Empty)
             + (Crashed ? " CRASHED " + CrashTicks : string.Empty)
-            + " safe " + SafePosition + " flow " + Flow + "/" + FlowIdleTicks;
+            + " safe " + SafePosition + " flow " + Flow + "/" + FlowIdleTicks
+            + (Grinding ? " GRIND " + GrindRail + "/" + GrindTicks + " balance " + Balance + " lean " + GrindLeanSum : string.Empty);
     }
 }

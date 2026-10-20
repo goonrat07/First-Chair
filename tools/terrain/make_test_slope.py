@@ -15,7 +15,8 @@ TestSlopeSnow.raw
     in the heightmap's order, each a SnowType value: 0 groomed, 1 powder, 2 crud, 3 ice, 4 slush.
 TestSlope.txt
     The layout (SlopeLayout.Parse in the sim): the HeightmapSpec, the snow zones, the start
-    point, the kickers and the trees, one plain-text record per line. Its header documents it.
+    point, the kickers, the trees and the rails and boxes, one plain-text record per line. Its
+    header documents it.
 
 The fall line runs toward +Z. The terrain is a level run-out at the bottom, a main slope with
 a steeper pitch, a powder bowl carved into it and kickers shaped onto it. Every shape is built
@@ -84,6 +85,17 @@ KICKERS = (
     (200_000, 230_000, 0, 5_000, 6_000, 1_200),
     (200_000, 310_000, 0, 6_000, 7_000, 1_600),
 )
+# --- Rails and boxes on the kicker line (millimetres; Story 006) -------------------------------
+RAILS = (
+    # kind, x0, z0, x1, z1, height, width. A straight run seen from above whose top follows the snow `height` above
+    # it. Each sits on the park's kicker line, behind one kicker's landing and before the next kicker's ramp: boxes
+    # low enough to ride onto (the sim's GrindStepUpHeight is 0.4 m), the rail high enough to need a pop.
+    ("box", 200_000, 185_000, 200_000, 200_000, 300, 600),
+    ("rail", 200_000, 265_000, 200_000, 283_000, 500, 80),
+    ("box", 200_000, 345_000, 200_000, 365_000, 300, 600),
+)
+LANDING_CLEARANCE_MM = 30_000  # a kicker's landing runs this far past its lip; rails and boxes stay out of it
+
 KICKER_SHOULDER_M = 1.0  # the sides fall back to the slope over this distance
 KICKER_BACK_PER_HEIGHT = 2.0  # behind the lip, the kicker falls to the slope over this many heights
 
@@ -279,6 +291,11 @@ def layout_text(trees) -> str:
     lines += ["kicker " + " ".join(str(value) for value in kicker) for kicker in KICKERS]
     lines += ["# tree <x> <z> <trunkRadius> <branchRadius>"]
     lines += [f"tree {x} {z} {trunk} {branch}" for x, z, trunk, branch in trees]
+    lines += [
+        "# rail|box <x0> <z0> <x1> <z1> <height> <width>: a straight run from (x0, z0) to (x1, z1) whose top is <height>",
+        "# above the snow and <width> wide",
+    ]
+    lines += [" ".join(str(value) for value in rail) for rail in RAILS]
     return "\n".join(lines) + "\n"
 
 

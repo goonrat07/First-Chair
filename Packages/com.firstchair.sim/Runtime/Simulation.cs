@@ -5,8 +5,8 @@ namespace FirstChair.Sim
     /// <summary>
     /// The deterministic riding sim. It advances only in fixed steps of 1/120 s, and the state after a step
     /// depends only on the previous state, that step's <see cref="SimInput"/>, the <see cref="RunSetup"/>,
-    /// the <see cref="Heightmap"/>, the <see cref="SnowMap"/>, the <see cref="Forest"/> and the <see cref="Tuning"/>. It
-    /// reads no clock.
+    /// the <see cref="Heightmap"/>, the <see cref="SnowMap"/>, the <see cref="Forest"/>, the <see cref="RailSet"/> and the
+    /// <see cref="Tuning"/>. It reads no clock.
     /// </summary>
     /// <remarks>
     /// <para><b>Input on snow.</b> Steering is <see cref="SimInput.CombinedSteering"/>: the analog value plus full lock
@@ -65,6 +65,10 @@ namespace FirstChair.Sim
     /// <see cref="SimEventKind.Land"/> is raised. Past the sketchy limit it is a crash, raising
     /// <see cref="SimEventKind.Crash"/>: over-rotation when the larger residual points the way that axis was rotating,
     /// under-rotation otherwise.</para>
+    /// <para><b>Switch.</b> At takeoff the rider is riding switch when the velocity runs against the skis (its dot with the
+    /// heading's direction on the surface is below zero). <see cref="RiderState.SwitchTakeoff"/> keeps it for the flight
+    /// and <see cref="AirSummary.Switch"/> reports it with the Flow at touchdown (<see cref="AirSummary.Flow"/>); trick
+    /// names and points are built from the event outside the step (<see cref="TrickScoring"/>, <see cref="RunScore"/>).</para>
     /// <para><b>Crashed:</b> the rider lies still and riding input is ignored; after
     /// <see cref="Tuning.CrashResetDelay"/> the rider is reset as above.</para>
     /// <para><b>Trees.</b> After every step that moves the rider, on snow or in the air, and does not end in a landing
@@ -88,7 +92,24 @@ namespace FirstChair.Sim
     /// <para><b>Flow</b> (<see cref="RiderState.Flow"/>, 0 to 1) starts empty. Once <see cref="Tuning.FlowDrainDelay"/>
     /// has passed since the last near miss it drains at <see cref="Tuning.FlowDrainRate"/> per second. On snow it
     /// multiplies snow and air drag by 1 - <see cref="Tuning.FlowDragCut"/> * Flow, and any crash empties it. Trick
-    /// points scale by <see cref="Tuning.TrickMultiplier"/> (Story 006 applies it).</para>
+    /// points scale by <see cref="Tuning.TrickMultiplier"/> of the Flow at touchdown (<see cref="TrickScoring"/>).</para>
+    /// <para><b>Rails and boxes</b> (Story 006, <see cref="RailSet"/>). A rail is a straight line seen from above whose top
+    /// follows the terrain at its height; the rider is on it within half its width plus
+    /// <see cref="Tuning.GrindCaptureDistance"/> of the line. A grind starts (<see cref="SimEventKind.GrindStart"/>) when a
+    /// rider in the air comes down through the top over the rail (the touchdown is graded as any landing and raises
+    /// <see cref="SimEventKind.Land"/> first; past sketchy it is a crash), or when a rider on snow enters the footprint of a
+    /// rail no higher than <see cref="Tuning.GrindStepUpHeight"/> moving along it at <see cref="Tuning.GrindMinSpeed"/> or
+    /// more. Higher rails are not obstacles from the side. Entering at an angle sets the lean
+    /// (<see cref="RiderState.Balance"/>) to <see cref="Tuning.GrindEntryLean"/> times the share of the level speed that
+    /// crosses the rail.</para>
+    /// <para><b>One step on a rail:</b> the lean changes by (<see cref="Tuning.GrindTipRate"/> * lean +
+    /// <see cref="Tuning.GrindBalanceRate"/> * steering / 127 + <see cref="Tuning.GrindWobble"/> * r) * step, r from the run's
+    /// random generator in [-1, 1); at 1 either way the rider falls off: <see cref="SimEventKind.GrindEnd"/>, then a
+    /// <see cref="CrashCause.RailFall"/> crash on the snow below. Otherwise the rider slides along the rail's direction on the
+    /// surface: gravity along it, slowed by <see cref="Tuning.GrindDrag"/> * gravity * cos slope and air drag, never past a
+    /// stop. Past either end the grind ends (<see cref="SimEventKind.GrindEnd"/>): from a rail no higher than the step-up
+    /// height the rider steps down onto the snow, from a higher one they fly (<see cref="SimEventKind.Takeoff"/>). Steering
+    /// does not turn the skis on a rail, and no safe spot is sampled there.</para>
     /// <para>The per-tree pass flags are kept here, one entry per tree, sized when the simulation is built. The start and
     /// every reset re-read them at the rider's new position, so a rider put down inside a ring starts a pass already
     /// judged: no clip and no near miss until they leave it.</para>
@@ -118,9 +139,10 @@ namespace FirstChair.Sim
         /// The sim version. Bump it whenever riding behaviour changes. Version 2: carving, skidding, tuck,
         /// brake, poling and snow types (Story 002). Version 3: pops, takeoff, spins, flips, grabs, graded landings,
         /// crashes and reset (Story 004). Version 4: trees (trunk crashes, branch clips, near misses) and Flow
-        /// (Story 005).
+        /// (Story 005). Version 5: rails, boxes and grinds, and the switch flag and touchdown Flow in the flight summary
+        /// (Story 006).
         /// </summary>
-        public const ushort Version = 4;
+        public const ushort Version = 5;
 
         /// <summary>Fixed steps per simulated second.</summary>
         public const int StepsPerSecond = 120;
@@ -134,6 +156,12 @@ namespace FirstChair.Sim
         /// <summary>The largest Flow trick bonus: far above any sane value, and far below where the multiplier wraps.</summary>
         private static readonly Fix64 MaxFlowTrickBonus = Fix64.FromInt(1000);
 
+        /// <summary>The largest points coefficient (per half turn, flip, second, grab): far below where a score wraps.</summary>
+        private static readonly Fix64 MaxPointsCoefficient = Fix64.FromInt(1_000_000);
+
+        /// <summary>The largest landing-quality factor: far above any sane value.</summary>
+        private static readonly Fix64 MaxTrickFactor = Fix64.FromInt(1000);
+
         /// <summary>Events one step can raise without trees; each tree adds at most a near miss and a branch hit.</summary>
         private const int BaseEventCapacity = 8;
 
@@ -142,6 +170,9 @@ namespace FirstChair.Sim
         /// distances to trees fit Q32.32.
         /// </summary>
         private const int MaxTreeReachMetres = 1000;
+
+        /// <summary>The largest grind rate, drag or lean factor: far above any sane value, far below where a step wraps.</summary>
+        private const int MaxGrindRate = 1000;
 
         // Per-tree pass flags (see the class remarks).
         private const int PassNone = 0;
@@ -169,6 +200,17 @@ namespace FirstChair.Sim
         private readonly Fix64[] _ringReach;
         private readonly int[] _treePass;
         private readonly Fix64[] _treeMinGap;
+
+        // One entry per rail, by index: start, unit direction seen from above, length, height, reach (half width plus
+        // the capture distance) and whether it is a box.
+        private readonly Fix64[] _railX0;
+        private readonly Fix64[] _railZ0;
+        private readonly Fix64[] _railDirX;
+        private readonly Fix64[] _railDirZ;
+        private readonly Fix64[] _railLength;
+        private readonly Fix64[] _railHeight;
+        private readonly Fix64[] _railReach;
+        private readonly bool[] _railBox;
         private RiderState _state;
 
         /// <summary>
@@ -201,6 +243,24 @@ namespace FirstChair.Sim
         /// <exception cref="System.ArgumentException"><paramref name="tuning"/> holds a value a ride cannot run on; the
         /// message names it. See <see cref="Validate"/>.</exception>
         public Simulation(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Forest forest, Tuning tuning)
+            : this(setup, heightmap, snowMap, forest, RailSet.Empty, tuning)
+        {
+        }
+
+        /// <summary>
+        /// Starts a run among trees, rails and boxes: as the constructor with a forest, with <paramref name="rails"/> on the
+        /// slope (see the class remarks).
+        /// </summary>
+        /// <param name="setup">The run setup, copied once.</param>
+        /// <param name="heightmap">The terrain.</param>
+        /// <param name="snowMap">The snow types, loaded for <paramref name="heightmap"/>.</param>
+        /// <param name="forest">The trees; <see cref="Forest.Empty"/> for none.</param>
+        /// <param name="rails">The rails and boxes; <see cref="RailSet.Empty"/> for none.</param>
+        /// <param name="tuning">The riding numbers, copied once.</param>
+        /// <exception cref="System.ArgumentNullException"><paramref name="forest"/> or <paramref name="rails"/> is null.</exception>
+        /// <exception cref="System.ArgumentException"><paramref name="tuning"/> holds a value a ride cannot run on; the
+        /// message names it. See <see cref="Validate"/>.</exception>
+        public Simulation(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Forest forest, RailSet rails, Tuning tuning)
         {
             Validate(tuning);
             if (forest == null)
@@ -208,8 +268,14 @@ namespace FirstChair.Sim
                 throw new System.ArgumentNullException(nameof(forest));
             }
 
+            if (rails == null)
+            {
+                throw new System.ArgumentNullException(nameof(rails));
+            }
+
             Setup = setup;
             Forest = forest;
+            Rails = rails;
             _heightmap = heightmap;
             _snowMap = snowMap;
             _tuning = tuning;
@@ -246,6 +312,33 @@ namespace FirstChair.Sim
                 }
             }
 
+            int railCount = rails.Count;
+            _railX0 = new Fix64[railCount];
+            _railZ0 = new Fix64[railCount];
+            _railDirX = new Fix64[railCount];
+            _railDirZ = new Fix64[railCount];
+            _railLength = new Fix64[railCount];
+            _railHeight = new Fix64[railCount];
+            _railReach = new Fix64[railCount];
+            _railBox = new bool[railCount];
+            for (int i = 0; i < railCount; i++)
+            {
+                SlopeRail rail = rails[i];
+                Fix64 dx = rail.X1 - rail.X0;
+                Fix64 dz = rail.Z1 - rail.Z0;
+
+                // RailSet keeps every rail at least RailSet.MinLengthMm long, so the length is never zero.
+                Fix64 length = Fix64.Sqrt(dx * dx + dz * dz);
+                _railX0[i] = rail.X0;
+                _railZ0[i] = rail.Z0;
+                _railDirX[i] = dx / length;
+                _railDirZ[i] = dz / length;
+                _railLength[i] = length;
+                _railHeight[i] = rail.Height;
+                _railReach[i] = rail.Width * Half + tuning.GrindCaptureDistance;
+                _railBox[i] = rail.Box;
+            }
+
             heightmap.Sample(setup.StartX, setup.StartZ, out Fix64 height, out Vec3 normal);
             _state.Position = new Vec3(setup.StartX, height, setup.StartZ);
             _state.Velocity = Vec3.Zero;
@@ -263,6 +356,9 @@ namespace FirstChair.Sim
 
         /// <summary>The trees this simulation rides among.</summary>
         public Forest Forest { get; }
+
+        /// <summary>The rails and boxes on this simulation's slope.</summary>
+        public RailSet Rails { get; }
 
         /// <summary>
         /// A 64-bit FNV-1a hash of the per-tree pass state: which trees the rider is passing and the closest gap so
@@ -311,7 +407,11 @@ namespace FirstChair.Sim
             else
             {
                 Vec3 from = _state.Position;
-                if (_state.Airborne)
+                if (_state.Grinding)
+                {
+                    StepGrind(input, tick);
+                }
+                else if (_state.Airborne)
                 {
                     StepAir(input, tick);
                 }
@@ -337,7 +437,7 @@ namespace FirstChair.Sim
             }
 
             _state.OutsideHeightmap = outside;
-            if (!_state.Airborne && !_state.Crashed && !outside)
+            if (!_state.Airborne && !_state.Crashed && !_state.Grinding && !outside)
             {
                 _state.SafePosition = _state.Position;
                 _state.SafeHeading = _state.Heading;
@@ -448,6 +548,7 @@ namespace FirstChair.Sim
             Fix64 flightY = _state.Position.Y + velocity.Y * dt;
             bool takeoff = popped || flightY - height > _tuning.TakeoffDropSpeed * dt;
 
+            Vec3 previous = _state.Position;
             _state.Position = new Vec3(x, takeoff ? Fix64.Max(flightY, height) : height, z);
             _state.Velocity = velocity;
             _state.Heading = heading;
@@ -462,7 +563,16 @@ namespace FirstChair.Sim
                 ClearAir();
                 _state.Airborne = true;
                 _state.PopLoadTicks = 0;
+                _state.SwitchTakeoff = Vec3.Dot(velocity, forward) < Fix64.Zero;
                 _events.Add(SimEvent.Takeoff(tick, Fix64.Sqrt(Vec3.Dot(velocity, velocity))));
+            }
+            else
+            {
+                int rail = RideOntoRail(previous, _state.Position, velocity);
+                if (rail >= 0)
+                {
+                    StartGrind(rail, tick);
+                }
             }
         }
 
@@ -516,6 +626,17 @@ namespace FirstChair.Sim
             _state.Skidding = false;
             _state.SlipAngle = Fix64.Zero;
 
+            // Coming down through the top of a rail or box lands on it.
+            if (velocity.Y < Fix64.Zero)
+            {
+                int rail = CatchRail(_state.Position, position, out Vec3 railTop);
+                if (rail >= 0)
+                {
+                    Touchdown(railTop, velocity, normal, tick, rail);
+                    return;
+                }
+            }
+
             if (position.Y > height)
             {
                 _state.Position = position;
@@ -527,8 +648,11 @@ namespace FirstChair.Sim
             Touchdown(new Vec3(position.X, height, position.Z), velocity, normal, tick);
         }
 
-        /// <summary>Grades the landing on the terrain at <paramref name="position"/>; rides on or crashes.</summary>
-        private void Touchdown(Vec3 position, Vec3 velocity, Vec3 normal, int tick)
+        /// <summary>
+        /// Grades the landing at <paramref name="position"/>: on the terrain, or on top of rail <paramref name="rail"/> when it
+        /// is not negative. Rides on, starts the grind, or crashes (onto the snow below a rail).
+        /// </summary>
+        private void Touchdown(Vec3 position, Vec3 velocity, Vec3 normal, int tick, int rail = -1)
         {
             EndGrab();
 
@@ -539,7 +663,8 @@ namespace FirstChair.Sim
             Fix64 rotation = flipWorse ? _state.FlipAngle : _state.SpinAngle;
             Fix64 angle = Fix64.Abs(residual);
             var air = new AirSummary(
-                _state.AirTicks, _state.MaxHeight, _state.SpinAngle, _state.FlipAngle, _state.BestGrab, _state.BestGrabTicks, angle);
+                _state.AirTicks, _state.MaxHeight, _state.SpinAngle, _state.FlipAngle, _state.BestGrab, _state.BestGrabTicks, angle,
+                _state.SwitchTakeoff, _state.Flow);
 
             _state.Position = position;
             _state.Airborne = false;
@@ -550,6 +675,12 @@ namespace FirstChair.Sim
             {
                 // A residual is non-zero only when its rotation is, so the signs always compare.
                 CrashCause cause = (residual > Fix64.Zero) == (rotation > Fix64.Zero) ? CrashCause.OverRotation : CrashCause.UnderRotation;
+                if (rail >= 0)
+                {
+                    _heightmap.Sample(position.X, position.Z, out Fix64 ground, out _);
+                    _state.Position = new Vec3(position.X, ground, position.Z);
+                }
+
                 _state.Velocity = Vec3.Zero;
                 _state.Crashed = true;
                 _state.CrashTicks = 0;
@@ -558,13 +689,227 @@ namespace FirstChair.Sim
                 return;
             }
 
-            // The snow absorbs the velocity into the slope; what runs along it rides on.
-            Fix64 into = Vec3.Dot(velocity, normal);
-            _state.Velocity = into < Fix64.Zero ? velocity - normal * into : velocity;
             LandingGrade grade = angle <= _tuning.CleanLandingAngle ? LandingGrade.Clean
                 : angle <= _tuning.SolidLandingAngle ? LandingGrade.Solid
                 : LandingGrade.Sketchy;
+            if (rail >= 0)
+            {
+                // Onto a rail or box: graded as any landing, then the grind takes the velocity along the rail.
+                _state.Velocity = velocity;
+                _events.Add(SimEvent.Land(tick, grade, air));
+                StartGrind(rail, tick);
+                return;
+            }
+
+            // The snow absorbs the velocity into the slope; what runs along it rides on.
+            Fix64 into = Vec3.Dot(velocity, normal);
+            _state.Velocity = into < Fix64.Zero ? velocity - normal * into : velocity;
             _events.Add(SimEvent.Land(tick, grade, air));
+        }
+
+        /// <summary>One step on a rail or box: balance, slide along it, and leave past an end or fall off.</summary>
+        private void StepGrind(SimInput input, int tick)
+        {
+            Fix64 dt = StepSeconds;
+            int rail = _state.GrindRail;
+
+            // The lean grows by itself, steering pushes it its way, and the run's random generator wobbles it.
+            Fix64 steering = Fix64.FromRatio(input.CombinedSteering, SimInput.SteeringMax);
+            Fix64 wobble = Fix64.FromRaw(unchecked((long)(_state.Rng.NextU64() >> 31))) - Fix64.One;
+            Fix64 balance = _state.Balance
+                + (_tuning.GrindTipRate * _state.Balance + _tuning.GrindBalanceRate * steering + _tuning.GrindWobble * wobble) * dt;
+            _state.Balance = balance;
+            _state.GrindTicks++;
+            _state.GrindLeanSum = _state.GrindLeanSum + Fix64.Min(Fix64.Abs(balance), Fix64.One);
+            _state.Skidding = false;
+            _state.SlipAngle = Fix64.Zero;
+            if (Fix64.Abs(balance) >= Fix64.One)
+            {
+                FallOffRail(tick);
+                return;
+            }
+
+            // Slide along the rail's direction on the surface under it: gravity along it, rail and air drag against it.
+            _heightmap.Sample(_state.Position.X, _state.Position.Z, out _, out Vec3 normal);
+            Vec3 tangent = RailTangent(rail, normal);
+            Fix64 along = Vec3.Dot(_state.Velocity, tangent) - _tuning.Gravity * tangent.Y * dt;
+            Fix64 loss = (_tuning.GrindDrag * _tuning.Gravity * normal.Y + _tuning.AirDrag * along * along) * dt;
+            along = Fix64.Abs(along) <= loss ? Fix64.Zero : (along > Fix64.Zero ? along - loss : along + loss);
+            Vec3 velocity = tangent * along;
+            Fix64 x = _state.Position.X + velocity.X * dt;
+            Fix64 z = _state.Position.Z + velocity.Z * dt;
+            Fix64 s = (x - _railX0[rail]) * _railDirX[rail] + (z - _railZ0[rail]) * _railDirZ[rail];
+            _state.Velocity = velocity;
+            if (s >= Fix64.Zero && s <= _railLength[rail])
+            {
+                _state.Position = RailTop(rail, s);
+                return;
+            }
+
+            // Past an end: step down onto the snow from a low rail, fly from a high one.
+            EndGrind(tick, false);
+            _heightmap.Sample(x, z, out Fix64 ground, out _);
+            if (_railHeight[rail] <= _tuning.GrindStepUpHeight)
+            {
+                _state.Position = new Vec3(x, ground, z);
+                _state.Snow = _snowMap.TypeAt(x, z);
+                return;
+            }
+
+            _state.Position = new Vec3(x, Fix64.Max(_state.Position.Y + velocity.Y * dt, ground), z);
+            ClearAir();
+            _state.Airborne = true;
+            var facing = new Vec3(Fix64.Sin(_state.Heading), Fix64.Zero, Fix64.Cos(_state.Heading));
+            _state.SwitchTakeoff = Vec3.Dot(velocity, facing) < Fix64.Zero;
+            _events.Add(SimEvent.Takeoff(tick, Fix64.Abs(along)));
+        }
+
+        /// <summary>
+        /// Puts the rider on rail <paramref name="rail"/> at the point nearest their position, keeps the velocity along it,
+        /// sets the entry lean and raises <see cref="SimEventKind.GrindStart"/>.
+        /// </summary>
+        private void StartGrind(int rail, int tick)
+        {
+            Vec3 position = _state.Position;
+            Fix64 s = Fix64.Clamp(
+                (position.X - _railX0[rail]) * _railDirX[rail] + (position.Z - _railZ0[rail]) * _railDirZ[rail], Fix64.Zero, _railLength[rail]);
+            Vec3 top = RailTop(rail, s);
+            _heightmap.Sample(top.X, top.Z, out _, out Vec3 normal);
+            Vec3 tangent = RailTangent(rail, normal);
+            Vec3 velocity = _state.Velocity;
+            Fix64 along = Vec3.Dot(velocity, tangent);
+
+            // The entry lean: the share of the level speed that crosses the rail toward the rider's right, times GrindEntryLean.
+            Fix64 across = velocity.X * _railDirZ[rail] - velocity.Z * _railDirX[rail];
+            across = along < Fix64.Zero ? -across : across;
+            Fix64 level = Fix64.Sqrt(velocity.X * velocity.X + velocity.Z * velocity.Z);
+            Fix64 lean = level > Fix64.Zero ? Fix64.Clamp(_tuning.GrindEntryLean * (across / level), -Fix64.One, Fix64.One) : Fix64.Zero;
+
+            _state.Position = top;
+            _state.Velocity = tangent * along;
+            _state.Airborne = false;
+            _state.Skidding = false;
+            _state.SlipAngle = Fix64.Zero;
+            _state.PopLoadTicks = 0;
+            _state.Grinding = true;
+            _state.GrindRail = rail;
+            _state.GrindTicks = 0;
+            _state.GrindLeanSum = Fix64.Zero;
+            _state.Balance = lean;
+            _events.Add(SimEvent.GrindStart(tick, rail));
+        }
+
+        /// <summary>Raises <see cref="SimEventKind.GrindEnd"/> with the grind's summary and leaves the rail.</summary>
+        private void EndGrind(int tick, bool fell)
+        {
+            int rail = _state.GrindRail;
+            int ticks = _state.GrindTicks;
+
+            // One minus the mean lean; a grind that ends before any step on the rail counts as balanced.
+            Fix64 balance = ticks > 0 ? Fix64.Max(Fix64.Zero, Fix64.One - _state.GrindLeanSum / Fix64.FromInt(ticks)) : Fix64.One;
+            _events.Add(SimEvent.GrindEnd(tick, rail, new GrindSummary(ticks, balance, fell, _railBox[rail])));
+            ClearGrind();
+        }
+
+        /// <summary>The lean reached 1: the grind ends and the rider crashes onto the snow below the rail.</summary>
+        private void FallOffRail(int tick)
+        {
+            int rail = _state.GrindRail;
+            Fix64 speed = Fix64.Sqrt(Vec3.Dot(_state.Velocity, _state.Velocity));
+            EndGrind(tick, true);
+            Vec3 position = _state.Position;
+            _heightmap.Sample(position.X, position.Z, out Fix64 ground, out _);
+            _state.Position = new Vec3(position.X, ground, position.Z);
+            _state.Snow = _snowMap.TypeAt(position.X, position.Z);
+            _state.Velocity = Vec3.Zero;
+            _state.Crashed = true;
+            _state.CrashTicks = 0;
+            _state.Flow = Fix64.Zero;
+            _events.Add(SimEvent.RailCrash(tick, rail, speed));
+        }
+
+        /// <summary>Zeroes the grind fields.</summary>
+        private void ClearGrind()
+        {
+            _state.Grinding = false;
+            _state.GrindRail = 0;
+            _state.GrindTicks = 0;
+            _state.Balance = Fix64.Zero;
+            _state.GrindLeanSum = Fix64.Zero;
+        }
+
+        /// <summary>
+        /// The first rail, in index order, whose top the path from <paramref name="from"/> to <paramref name="to"/> comes down
+        /// through over its footprint, or -1. <paramref name="top"/> is the point on its top under <paramref name="to"/>.
+        /// </summary>
+        private int CatchRail(Vec3 from, Vec3 to, out Vec3 top)
+        {
+            for (int i = 0; i < _railLength.Length; i++)
+            {
+                if (OnRail(i, to.X, to.Z, out Fix64 s))
+                {
+                    Vec3 point = RailTop(i, s);
+                    if (from.Y >= point.Y && to.Y <= point.Y)
+                    {
+                        top = point;
+                        return i;
+                    }
+                }
+            }
+
+            top = Vec3.Zero;
+            return -1;
+        }
+
+        /// <summary>
+        /// The first rail, in index order, no higher than <see cref="Tuning.GrindStepUpHeight"/> whose footprint the rider
+        /// entered this step (from <paramref name="previous"/> to <paramref name="now"/>) moving along it at
+        /// <see cref="Tuning.GrindMinSpeed"/> or more; -1 for none.
+        /// </summary>
+        private int RideOntoRail(Vec3 previous, Vec3 now, Vec3 velocity)
+        {
+            for (int i = 0; i < _railLength.Length; i++)
+            {
+                if (_railHeight[i] <= _tuning.GrindStepUpHeight && OnRail(i, now.X, now.Z, out _) && !OnRail(i, previous.X, previous.Z, out _)
+                    && Fix64.Abs(velocity.X * _railDirX[i] + velocity.Z * _railDirZ[i]) >= _tuning.GrindMinSpeed)
+                {
+                    return i;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>
+        /// True when (<paramref name="x"/>, <paramref name="z"/>) lies over rail <paramref name="rail"/>'s footprint seen from
+        /// above; <paramref name="s"/> is the distance along it from its start.
+        /// </summary>
+        private bool OnRail(int rail, Fix64 x, Fix64 z, out Fix64 s)
+        {
+            Fix64 offsetX = x - _railX0[rail];
+            Fix64 offsetZ = z - _railZ0[rail];
+            s = offsetX * _railDirX[rail] + offsetZ * _railDirZ[rail];
+            Fix64 across = offsetX * _railDirZ[rail] - offsetZ * _railDirX[rail];
+            return s >= Fix64.Zero && s <= _railLength[rail] && Fix64.Abs(across) <= _railReach[rail];
+        }
+
+        /// <summary>The point on rail <paramref name="rail"/>'s top at distance <paramref name="s"/> from its start.</summary>
+        private Vec3 RailTop(int rail, Fix64 s)
+        {
+            Fix64 x = _railX0[rail] + _railDirX[rail] * s;
+            Fix64 z = _railZ0[rail] + _railDirZ[rail] * s;
+            _heightmap.Sample(x, z, out Fix64 ground, out _);
+            return new Vec3(x, ground + _railHeight[rail], z);
+        }
+
+        /// <summary>Rail <paramref name="rail"/>'s direction on the surface whose normal is <paramref name="normal"/>, unit length.</summary>
+        private Vec3 RailTangent(int rail, Vec3 normal)
+        {
+            var level = new Vec3(_railDirX[rail], Fix64.Zero, _railDirZ[rail]);
+
+            // The heightmap's normal always points up, so a level direction never lies along it and the length is not zero.
+            Vec3 tangent = level - normal * Vec3.Dot(level, normal);
+            return tangent * (Fix64.One / Fix64.Sqrt(Vec3.Dot(tangent, tangent)));
         }
 
         /// <summary>One crashed step: lie still, and reset once <see cref="Tuning.CrashResetDelay"/> has passed.</summary>
@@ -593,6 +938,7 @@ namespace FirstChair.Sim
             _state.CrashTicks = 0;
             _state.PopLoadTicks = 0;
             ClearAir();
+            ClearGrind();
             PrimeTrees(_state.Position);
             _events.Add(new SimEvent(tick, SimEventKind.Reset));
         }
@@ -721,6 +1067,11 @@ namespace FirstChair.Sim
         /// </summary>
         private void CrashIntoTree(int tree, Vec3 from, int tick)
         {
+            if (_state.Grinding)
+            {
+                EndGrind(tick, true);
+            }
+
             Fix64 speed = Fix64.Sqrt(Vec3.Dot(_state.Velocity, _state.Velocity));
             _heightmap.Sample(from.X, from.Z, out Fix64 height, out _);
             _state.Position = new Vec3(from.X, height, from.Z);
@@ -831,6 +1182,7 @@ namespace FirstChair.Sim
             _state.GrabTicks = 0;
             _state.BestGrab = GrabKind.None;
             _state.BestGrabTicks = 0;
+            _state.SwitchTakeoff = false;
         }
 
         /// <summary>
@@ -849,9 +1201,13 @@ namespace FirstChair.Sim
         /// order, a grab threshold outside (0, 1] (no neutral grab), and for trees and Flow (Story 005): a near-miss
         /// distance the Flow fill cannot divide by, tree reaches whose squares overflow, negative speeds or rates, Flow
         /// gains out of order or past 1, a drain delay that overflows an int of steps, and fractions outside [0, 1] that
-        /// would reverse the velocity or make drag push.
+        /// would reverse the velocity or make drag push; and for trick scoring (Story 006): points coefficients outside
+        /// [0, 1000000], landing-quality factors outside [0, 1000], a grab minimum that is negative or overflows an int of
+        /// steps, and a repeat factor outside [0, 1]; and for rails: a capture distance or step-up height outside [0, 1000] m,
+        /// negative speeds, drag or balance rates past [0, 1000], grind points outside [0, 1000000] and a fall factor outside
+        /// [0, 1]. <see cref="RunScore"/> checks its tuning here too.
         /// </summary>
-        private static void Validate(Tuning tuning)
+        internal static void Validate(Tuning tuning)
         {
             Require(tuning.Gravity > Fix64.Zero, "Gravity must be positive");
             Require(tuning.MaxEdgeAngle > Fix64.Zero, "MaxEdgeAngle must be positive");
@@ -878,9 +1234,35 @@ namespace FirstChair.Sim
             Require(IsFraction(tuning.BranchFlowCost), "BranchFlowCost must be in [0, 1]");
             Require(IsFraction(tuning.FlowDragCut), "FlowDragCut must be in [0, 1]");
             Require(tuning.FlowTrickBonus >= Fix64.Zero && tuning.FlowTrickBonus <= MaxFlowTrickBonus, "FlowTrickBonus must be in [0, 1000]");
+
+            Require(IsWithin(tuning.TrickPointsPerHalfTurn, MaxPointsCoefficient), "TrickPointsPerHalfTurn must be in [0, 1000000]");
+            Require(IsWithin(tuning.TrickPointsPerFlip, MaxPointsCoefficient), "TrickPointsPerFlip must be in [0, 1000000]");
+            Require(IsWithin(tuning.TrickPointsPerAirSecond, MaxPointsCoefficient), "TrickPointsPerAirSecond must be in [0, 1000000]");
+            Require(IsWithin(tuning.GrabBasePoints, MaxPointsCoefficient), "GrabBasePoints must be in [0, 1000000]");
+            Require(IsWithin(tuning.GrabPointsPerSecond, MaxPointsCoefficient), "GrabPointsPerSecond must be in [0, 1000000]");
+            Require(IsWithin(tuning.GrabPointsCap, MaxPointsCoefficient), "GrabPointsCap must be in [0, 1000000]");
+            Require(tuning.GrabMinTime >= Fix64.Zero && tuning.GrabMinTime < MaxTuningSeconds, "GrabMinTime must be zero or more and fit an int of steps");
+            Require(IsWithin(tuning.CleanTrickFactor, MaxTrickFactor), "CleanTrickFactor must be in [0, 1000]");
+            Require(IsWithin(tuning.SolidTrickFactor, MaxTrickFactor), "SolidTrickFactor must be in [0, 1000]");
+            Require(IsWithin(tuning.SketchyTrickFactor, MaxTrickFactor), "SketchyTrickFactor must be in [0, 1000]");
+            Require(IsFraction(tuning.TrickRepeatFactor), "TrickRepeatFactor must be in [0, 1]");
+
+            Fix64 maxRate = Fix64.FromInt(MaxGrindRate);
+            Require(IsWithin(tuning.GrindCaptureDistance, maxReach), "GrindCaptureDistance must be in [0, 1000] m");
+            Require(IsWithin(tuning.GrindStepUpHeight, maxReach), "GrindStepUpHeight must be in [0, 1000] m");
+            Require(tuning.GrindMinSpeed >= Fix64.Zero, "GrindMinSpeed must be zero or more");
+            Require(IsWithin(tuning.GrindDrag, maxRate), "GrindDrag must be in [0, 1000]");
+            Require(IsWithin(tuning.GrindTipRate, maxRate), "GrindTipRate must be in [0, 1000]");
+            Require(IsWithin(tuning.GrindBalanceRate, maxRate), "GrindBalanceRate must be in [0, 1000]");
+            Require(IsWithin(tuning.GrindWobble, maxRate), "GrindWobble must be in [0, 1000]");
+            Require(IsWithin(tuning.GrindEntryLean, maxRate), "GrindEntryLean must be in [0, 1000]");
+            Require(IsWithin(tuning.GrindPointsPerSecond, MaxPointsCoefficient), "GrindPointsPerSecond must be in [0, 1000000]");
+            Require(IsFraction(tuning.GrindFallFactor), "GrindFallFactor must be in [0, 1]");
         }
 
         private static bool IsFraction(Fix64 value) => value >= Fix64.Zero && value <= Fix64.One;
+
+        private static bool IsWithin(Fix64 value, Fix64 max) => value >= Fix64.Zero && value <= max;
 
         private static void Require(bool valid, string rule)
         {

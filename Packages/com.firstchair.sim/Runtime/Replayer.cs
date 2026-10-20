@@ -22,6 +22,9 @@ namespace FirstChair.Sim
 
         /// <summary>The recording was made among other trees; nothing was replayed.</summary>
         ForestMismatch = 5,
+
+        /// <summary>The recording was made on other rails and boxes; nothing was replayed.</summary>
+        RailsMismatch = 6,
     }
 
     /// <summary>What a replay did.</summary>
@@ -43,12 +46,29 @@ namespace FirstChair.Sim
         /// <summary>The state after the last step; default on any mismatch.</summary>
         public readonly RiderState FinalState;
 
+        /// <summary>
+        /// The run total the replayed events fold to (<see cref="RunScore.Total"/>); zero on any mismatch. A replay
+        /// rebuilds the score as well as the ride, so comparing it with the live run's total checks the scoring too.
+        /// </summary>
+        public readonly long TotalScore;
+
         /// <summary>Creates a result.</summary>
         /// <param name="status">The outcome.</param>
         /// <param name="stepsRun">Steps run.</param>
         /// <param name="finalState">State after the last step.</param>
         public ReplayResult(ReplayStatus status, int stepsRun, RiderState finalState)
+            : this(status, stepsRun, finalState, 0L)
         {
+        }
+
+        /// <summary>Creates a result with a run total.</summary>
+        /// <param name="status">The outcome.</param>
+        /// <param name="stepsRun">Steps run.</param>
+        /// <param name="finalState">State after the last step.</param>
+        /// <param name="totalScore">The replayed run's total points.</param>
+        public ReplayResult(ReplayStatus status, int stepsRun, RiderState finalState, long totalScore)
+        {
+            TotalScore = totalScore;
             Status = status;
             StepsRun = stepsRun;
             FinalState = finalState;
@@ -56,8 +76,8 @@ namespace FirstChair.Sim
     }
 
     /// <summary>
-    /// Replays a <see cref="Recording"/>: checks that its sim version, tuning hash, heightmap hash, snow map hash and
-    /// forest hash match the ones given, then rebuilds the ride from its header and inputs with a fresh
+    /// Replays a <see cref="Recording"/>: checks that its sim version, tuning hash, heightmap hash, snow map hash, forest
+    /// hash and rail set hash match the ones given, then rebuilds the ride from its header and inputs with a fresh
     /// <see cref="Simulation"/>. A mismatch runs no step at all.
     /// </summary>
     /// <remarks>Thread-safe as long as each call gets its own <see cref="Recording"/> or nobody appends to it.</remarks>
@@ -86,7 +106,19 @@ namespace FirstChair.Sim
         /// <param name="tuning">The tuning; must have the recorded hash.</param>
         /// <param name="onStep">Optional callback after each step, given the simulation.</param>
         public static ReplayResult Replay(
-            Recording recording, Heightmap heightmap, SnowMap snowMap, Forest forest, Tuning tuning, Action<Simulation> onStep = null)
+            Recording recording, Heightmap heightmap, SnowMap snowMap, Forest forest, Tuning tuning, Action<Simulation> onStep = null) =>
+            Replay(recording, heightmap, snowMap, forest, RailSet.Empty, tuning, onStep);
+
+        /// <summary>Replays a recording made among trees, rails and boxes.</summary>
+        /// <param name="recording">The recording.</param>
+        /// <param name="heightmap">The terrain; must have the recorded hash.</param>
+        /// <param name="snowMap">The snow types; must have the recorded hash.</param>
+        /// <param name="forest">The trees; must have the recorded hash.</param>
+        /// <param name="rails">The rails and boxes; must have the recorded hash.</param>
+        /// <param name="tuning">The tuning; must have the recorded hash.</param>
+        /// <param name="onStep">Optional callback after each step, given the simulation.</param>
+        public static ReplayResult Replay(
+            Recording recording, Heightmap heightmap, SnowMap snowMap, Forest forest, RailSet rails, Tuning tuning, Action<Simulation> onStep = null)
         {
             if (recording.Setup.SimVersion != Simulation.Version)
             {
@@ -113,15 +145,22 @@ namespace FirstChair.Sim
                 return new ReplayResult(ReplayStatus.ForestMismatch, 0, default);
             }
 
-            var simulation = new Simulation(recording.Setup, heightmap, snowMap, forest, tuning);
+            if (recording.RailsHash != rails.Hash)
+            {
+                return new ReplayResult(ReplayStatus.RailsMismatch, 0, default);
+            }
+
+            var simulation = new Simulation(recording.Setup, heightmap, snowMap, forest, rails, tuning);
+            var score = new RunScore(tuning);
             var inputs = recording.Inputs;
             for (int i = 0; i < inputs.Count; i++)
             {
                 simulation.Step(inputs[i]);
+                score.AddAll(simulation.Events);
                 onStep?.Invoke(simulation);
             }
 
-            return new ReplayResult(ReplayStatus.Ok, inputs.Count, simulation.State);
+            return new ReplayResult(ReplayStatus.Ok, inputs.Count, simulation.State, score.Total);
         }
     }
 }

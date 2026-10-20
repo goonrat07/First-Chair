@@ -77,3 +77,8 @@ tree 365676 440385 335 2011
 tree 387353 440918 162 1480
 tree 401337 442229 299 1711
 tree 413510 441795 223 2148
+# rail|box <x0> <z0> <x1> <z1> <height> <width>: a straight run from (x0, z0) to (x1, z1) whose top is <height>
+# above the snow and <width> wide
+box 200000 185000 200000 200000 300 600
+rail 200000 265000 200000 283000 500 80
+box 200000 345000 200000 365000 300 600

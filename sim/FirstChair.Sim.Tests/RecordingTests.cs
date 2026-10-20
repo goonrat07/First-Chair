@@ -39,9 +39,10 @@ namespace FirstChair.Sim.Tests
                 Assert.That(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(42)), Is.EqualTo(heightmap.Hash));
                 Assert.That(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(50)), Is.EqualTo(snowMap.Hash));
                 Assert.That(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(58)), Is.EqualTo(Forest.Empty.Hash));
-                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(66)), Is.EqualTo(2u));
-                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(70)), Is.EqualTo(0xAABBCCDDu));
-                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(74)), Is.EqualTo(7u));
+                Assert.That(BinaryPrimitives.ReadUInt64LittleEndian(bytes.AsSpan(66)), Is.EqualTo(RailSet.Empty.Hash));
+                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(74)), Is.EqualTo(2u));
+                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(Recording.HeaderSize)), Is.EqualTo(0xAABBCCDDu));
+                Assert.That(BinaryPrimitives.ReadUInt32LittleEndian(bytes.AsSpan(Recording.HeaderSize + 4)), Is.EqualTo(7u));
             });
         }
 

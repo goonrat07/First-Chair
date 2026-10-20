@@ -14,7 +14,7 @@ namespace FirstChair.Sim.Tests
     /// <remarks>
     /// Since Story 002 the inputs steer, tuck, brake and pole, and the scripted ride crosses all five snow
     /// types; since Story 004 it also jumps, grabs, spins, lands, crashes and resets; since Story 005 it rides among trees,
-    /// with a near miss, a branch clip and Flow. So these tests prove that every
+    /// with a near miss, a branch clip and Flow; since Story 006 it grinds a box and scores tricks. So these tests prove that every
     /// riding feature replays exactly, not only the recording path.
     /// </remarks>
     public class DeterminismTests
@@ -32,8 +32,13 @@ namespace FirstChair.Sim.Tests
         // hit that costs 30% of the speed and Flow), so everything after it moves; and the trace gained Flow,
         // FlowIdleTicks and the events' tree and gap. Pinned only after record/replay, interleaving and zero allocation
         // passed with the trees in the ride.
-        private const ushort GoldenSimVersion = 4;
-        private const string GoldenTraceSha256 = "2A971E157D9FC62776DCDC2685F0D8A22E519B2020A85BF3E454E31FCCCD3ED9";
+        // Re-pinned for version 5 (Story 006): rails and grinds change the ride. After the reset it now rides onto
+        // ScriptedRide.Rails' box, grinds it (the run's random generator wobbles the lean, so the generator's state moves)
+        // and leaves it; the trace gained the switch flag, the grind state and the events' touchdown Flow, rail and grind
+        // summary. Pinned only after record/replay (with the run score folded from the replayed events), interleaving and
+        // zero allocation passed with the box in the ride.
+        private const ushort GoldenSimVersion = 5;
+        private const string GoldenTraceSha256 = "B03A28E0EF44098C3FC097D8373C8F4216A430ABC5E1BE3771244FEF33644E89";
 
         [Test]
         public void ScriptedRide_RecordedThenReplayedFromBytes_MatchesBitForBitEveryStep()
@@ -49,7 +54,7 @@ namespace FirstChair.Sim.Tests
             var replayed = new List<StepSnapshot>();
             Heightmap reloaded = TestTerrain.InclineDownhillPlusZ();
             ReplayResult result = Replayer.Replay(
-                loaded, reloaded, TestTerrain.Bands(reloaded), ScriptedRide.Trees, Tuning.Default, simulation => replayed.Add(StepSnapshot.Of(simulation)));
+                loaded, reloaded, TestTerrain.Bands(reloaded), ScriptedRide.Trees, ScriptedRide.Rails, Tuning.Default, simulation => replayed.Add(StepSnapshot.Of(simulation)));
 
             // Assert
             Assert.That(read, Is.True);
@@ -67,6 +72,18 @@ namespace FirstChair.Sim.Tests
             }
 
             Assert.That(result.FinalState, Is.EqualTo(live[live.Count - 1].State));
+
+            // Story 006: the run total is a fold over the events, and the replay rebuilds it.
+            var liveScore = new RunScore(Tuning.Default);
+            foreach (StepSnapshot snapshot in live)
+            {
+                liveScore.AddAll(snapshot.Events);
+            }
+
+            Assert.That(liveScore.Tricks, Has.Some.Matches<ScoredTrick>(t => t.Kind == ScoredTrickKind.Jump && t.Points > 0), "the ride must score a trick");
+            Assert.That(liveScore.Tricks, Has.Some.Matches<ScoredTrick>(t => t.Kind == ScoredTrickKind.Grind), "the ride must score a grind");
+            Assert.That(liveScore.Total, Is.GreaterThan(0L));
+            Assert.That(result.TotalScore, Is.EqualTo(liveScore.Total));
         }
 
         [Test]
@@ -204,14 +221,14 @@ namespace FirstChair.Sim.Tests
             Heightmap heightmap = TestTerrain.InclineDownhillPlusZ();
             SnowMap snowMap = TestTerrain.Bands(heightmap);
             var solo = new List<RiderState>();
-            var soloRide = new Simulation(ScriptedRide.Setup, heightmap, snowMap, ScriptedRide.Trees, Tuning.Default);
+            var soloRide = new Simulation(ScriptedRide.Setup, heightmap, snowMap, ScriptedRide.Trees, ScriptedRide.Rails, Tuning.Default);
             for (int step = 0; step < ScriptedRide.Steps; step++)
             {
                 soloRide.Step(ScriptedRide.InputAt(step));
                 solo.Add(soloRide.State);
             }
 
-            var rideA = new Simulation(ScriptedRide.Setup, heightmap, snowMap, ScriptedRide.Trees, Tuning.Default);
+            var rideA = new Simulation(ScriptedRide.Setup, heightmap, snowMap, ScriptedRide.Trees, ScriptedRide.Rails, Tuning.Default);
             var setupB = new RunSetup(Sport.Skis, 2, 99UL, Fix64.FromInt(20), Fix64.FromInt(100));
             Heightmap heightmapB = TestTerrain.InclineDownhillMinusZ();
             var rideB = new Simulation(setupB, heightmapB, TestTerrain.Uniform(heightmapB, SnowType.Ice), Tuning.Default);
@@ -234,7 +251,7 @@ namespace FirstChair.Sim.Tests
             // Arrange
             const int warmupSteps = 10;
             Heightmap heightmap = TestTerrain.InclineDownhillPlusZ();
-            var simulation = new Simulation(ScriptedRide.Setup, heightmap, TestTerrain.Bands(heightmap), ScriptedRide.Trees, Tuning.Default);
+            var simulation = new Simulation(ScriptedRide.Setup, heightmap, TestTerrain.Bands(heightmap), ScriptedRide.Trees, ScriptedRide.Rails, Tuning.Default);
             for (int step = 0; step < warmupSteps; step++)
             {
                 simulation.Step(ScriptedRide.InputAt(step));
@@ -242,7 +259,7 @@ namespace FirstChair.Sim.Tests
 
             // Act: the rest of the ride, including skids, pops, landings, the crash, both resets and the step that
             // raises LeftHeightmap. Event kinds are counted by index, which allocates nothing.
-            var seen = new int[8];
+            var seen = new int[16];
             long before = GC.GetAllocatedBytesForCurrentThread();
             for (int step = warmupSteps; step < ScriptedRide.Steps; step++)
             {
@@ -260,6 +277,7 @@ namespace FirstChair.Sim.Tests
             foreach (SimEventKind kind in new[]
             {
                 SimEventKind.Takeoff, SimEventKind.Land, SimEventKind.Crash, SimEventKind.Reset, SimEventKind.NearMiss, SimEventKind.BranchHit,
+                SimEventKind.GrindStart, SimEventKind.GrindEnd,
             })
             {
                 Assert.That(seen[(int)kind], Is.GreaterThan(0), "the measured steps must raise " + kind);

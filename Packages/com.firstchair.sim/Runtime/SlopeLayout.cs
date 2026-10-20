@@ -157,6 +157,72 @@ namespace FirstChair.Sim
     }
 
     /// <summary>
+    /// A rail or a box on the slope (Story 006): a straight run from (<see cref="X0Mm"/>, <see cref="Z0Mm"/>) to
+    /// (<see cref="X1Mm"/>, <see cref="Z1Mm"/>) seen from above, whose top follows the snow <see cref="HeightMm"/> above it.
+    /// </summary>
+    /// <remarks>Immutable. Rails are not in the heightmap; <see cref="RailSet"/> checks the sizes when it takes a rail.</remarks>
+    public readonly struct SlopeRail
+    {
+        /// <summary>X of the start, millimetres.</summary>
+        public readonly int X0Mm;
+
+        /// <summary>Z of the start, millimetres.</summary>
+        public readonly int Z0Mm;
+
+        /// <summary>X of the end, millimetres.</summary>
+        public readonly int X1Mm;
+
+        /// <summary>Z of the end, millimetres.</summary>
+        public readonly int Z1Mm;
+
+        /// <summary>Height of the top above the snow, millimetres. Positive.</summary>
+        public readonly int HeightMm;
+
+        /// <summary>Width of the top, millimetres. Positive.</summary>
+        public readonly int WidthMm;
+
+        /// <summary>True for a box, false for a rail. Scored and named apart; they ride the same.</summary>
+        public readonly bool Box;
+
+        /// <summary>Creates a rail or box.</summary>
+        /// <param name="x0Mm">X of the start, millimetres.</param>
+        /// <param name="z0Mm">Z of the start, millimetres.</param>
+        /// <param name="x1Mm">X of the end, millimetres.</param>
+        /// <param name="z1Mm">Z of the end, millimetres.</param>
+        /// <param name="heightMm">Height of the top above the snow, millimetres.</param>
+        /// <param name="widthMm">Width of the top, millimetres.</param>
+        /// <param name="box">True for a box.</param>
+        public SlopeRail(int x0Mm, int z0Mm, int x1Mm, int z1Mm, int heightMm, int widthMm, bool box)
+        {
+            X0Mm = x0Mm;
+            Z0Mm = z0Mm;
+            X1Mm = x1Mm;
+            Z1Mm = z1Mm;
+            HeightMm = heightMm;
+            WidthMm = widthMm;
+            Box = box;
+        }
+
+        /// <summary>X of the start, metres.</summary>
+        public Fix64 X0 => SlopeLayout.Metres(X0Mm);
+
+        /// <summary>Z of the start, metres.</summary>
+        public Fix64 Z0 => SlopeLayout.Metres(Z0Mm);
+
+        /// <summary>X of the end, metres.</summary>
+        public Fix64 X1 => SlopeLayout.Metres(X1Mm);
+
+        /// <summary>Z of the end, metres.</summary>
+        public Fix64 Z1 => SlopeLayout.Metres(Z1Mm);
+
+        /// <summary>Height of the top above the snow, metres.</summary>
+        public Fix64 Height => SlopeLayout.Metres(HeightMm);
+
+        /// <summary>Width of the top, metres.</summary>
+        public Fix64 Width => SlopeLayout.Metres(WidthMm);
+    }
+
+    /// <summary>
     /// What a slope holds besides its heightmap and snow map: the <see cref="HeightmapSpec"/>, the snow zones, the
     /// start point, the kickers and the trees. Read from the layout text file a slope generator writes next to its
     /// heightmap (<c>tools/terrain/make_test_slope.py</c> for the test slope).
@@ -174,10 +240,12 @@ namespace FirstChair.Sim
     /// start &lt;x&gt; &lt;z&gt;                                     exactly once
     /// kicker &lt;lipX&gt; &lt;lipZ&gt; &lt;facing&gt; &lt;length&gt; &lt;width&gt; &lt;height&gt;   any number
     /// tree &lt;x&gt; &lt;z&gt; &lt;trunkRadius&gt; &lt;branchRadius&gt;            any number
+    /// rail &lt;x0&gt; &lt;z0&gt; &lt;x1&gt; &lt;z1&gt; &lt;height&gt; &lt;width&gt;      any number (Story 006)
+    /// box &lt;x0&gt; &lt;z0&gt; &lt;x1&gt; &lt;z1&gt; &lt;height&gt; &lt;width&gt;       any number (Story 006)
     /// </code>
     /// <para>A snow name is one of <c>groomed powder crud ice slush</c>. Every position must lie on the map. Sizes,
     /// lengths, widths, heights and radii must be positive; a zone's minimum must be below its maximum; a facing runs
-    /// from 0 to 359999; a branch radius may not be below its trunk radius.</para>
+    /// from 0 to 359999; a branch radius may not be below its trunk radius; a rail's or box's two ends must differ.</para>
     /// <para>The sim never reads files: the caller passes the text. Anything malformed throws
     /// <see cref="ArgumentException"/> naming the line. Immutable after parsing, so one instance may be shared by any
     /// number of simulations and threads.</para>
@@ -209,10 +277,13 @@ namespace FirstChair.Sim
         private readonly SlopeZone[] _zones;
         private readonly SlopeKicker[] _kickers;
         private readonly SlopeTree[] _trees;
+        private readonly SlopeRail[] _rails;
 
         private SlopeLayout(
-            HeightmapSpec spec, SnowType background, int startXMm, int startZMm, SlopeZone[] zones, SlopeKicker[] kickers, SlopeTree[] trees)
+            HeightmapSpec spec, SnowType background, int startXMm, int startZMm, SlopeZone[] zones, SlopeKicker[] kickers, SlopeTree[] trees,
+            SlopeRail[] rails)
         {
+            _rails = rails;
             Spec = spec;
             Background = background;
             StartXMm = startXMm;
@@ -248,6 +319,9 @@ namespace FirstChair.Sim
 
         /// <summary>The trees, in file order.</summary>
         public IReadOnlyList<SlopeTree> Trees => Array.AsReadOnly(_trees);
+
+        /// <summary>The rails and boxes, in file order.</summary>
+        public IReadOnlyList<SlopeRail> Rails => Array.AsReadOnly(_rails);
 
         /// <summary>Finds a zone by name (ordinal, case-sensitive).</summary>
         /// <param name="name">The zone's name.</param>
@@ -291,6 +365,7 @@ namespace FirstChair.Sim
             var zones = new List<SlopeZone>();
             var kickers = new List<SlopeKicker>();
             var trees = new List<SlopeTree>();
+            var rails = new List<SlopeRail>();
 
             string[] lines = text.Split('\n');
             for (int index = 0; index < lines.Length; index++)
@@ -402,6 +477,27 @@ namespace FirstChair.Sim
 
                     trees.Add(tree);
                 }
+                else if (Is(keyword, "rail") || Is(keyword, "box"))
+                {
+                    ExpectFields(fields, 7, line);
+                    RequireSpec(specSeen, keyword, line);
+                    var rail = new SlopeRail(
+                        ParseInt(fields[1], line), ParseInt(fields[2], line), ParseInt(fields[3], line), ParseInt(fields[4], line), ParseInt(fields[5], line),
+                        ParseInt(fields[6], line), Is(keyword, "box"));
+                    RequireOnMap(spec, rail.X0Mm, rail.Z0Mm, line);
+                    RequireOnMap(spec, rail.X1Mm, rail.Z1Mm, line);
+                    if (rail.HeightMm <= 0 || rail.WidthMm <= 0)
+                    {
+                        throw Error(line, "a rail's or box's height and width must be positive");
+                    }
+
+                    if (rail.X0Mm == rail.X1Mm && rail.Z0Mm == rail.Z1Mm)
+                    {
+                        throw Error(line, "a rail's or box's two ends must differ");
+                    }
+
+                    rails.Add(rail);
+                }
                 else
                 {
                     throw Error(line, "unknown record '" + keyword + "'");
@@ -418,7 +514,7 @@ namespace FirstChair.Sim
                 throw new ArgumentException("A slope layout needs one 'spec', one 'background' and one 'start' record.", TextParameter);
             }
 
-            return new SlopeLayout(spec, background, startX, startZ, zones.ToArray(), kickers.ToArray(), trees.ToArray());
+            return new SlopeLayout(spec, background, startX, startZ, zones.ToArray(), kickers.ToArray(), trees.ToArray(), rails.ToArray());
         }
 
         internal static Fix64 Metres(int millimetres) => Fix64.FromRatio(millimetres, MillimetresPerMetre);

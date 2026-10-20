@@ -187,9 +187,75 @@ namespace FirstChair.Sim
 
         /// <summary>
         /// Extra trick points at full Flow, as a fraction: <see cref="TrickMultiplier"/> is 1 + FlowTrickBonus * Flow.
-        /// Story 006 applies it.
+        /// <see cref="TrickScoring"/> applies it with the Flow at touchdown.
         /// </summary>
         public Fix64 FlowTrickBonus;
+
+        /// <summary>Points per half turn of spin in a landed jump: h in the trick formula (<see cref="TrickScoring"/>).</summary>
+        public Fix64 TrickPointsPerHalfTurn;
+
+        /// <summary>Points per full flip in a landed jump: f in the trick formula.</summary>
+        public Fix64 TrickPointsPerFlip;
+
+        /// <summary>Points per second of air time in a landed jump: t in the trick formula.</summary>
+        public Fix64 TrickPointsPerAirSecond;
+
+        /// <summary>The grab bonus's fixed part, earned by a grab held at least <see cref="GrabMinTime"/>.</summary>
+        public Fix64 GrabBasePoints;
+
+        /// <summary>The grab bonus per second the grab was held in one go.</summary>
+        public Fix64 GrabPointsPerSecond;
+
+        /// <summary>The most grab bonus one jump can earn.</summary>
+        public Fix64 GrabPointsCap;
+
+        /// <summary>Shortest grab, seconds, that counts: shorter earns no bonus and does not name the trick.</summary>
+        public Fix64 GrabMinTime;
+
+        /// <summary>Landing-quality factor q of a clean landing.</summary>
+        public Fix64 CleanTrickFactor;
+
+        /// <summary>Landing-quality factor q of a solid landing.</summary>
+        public Fix64 SolidTrickFactor;
+
+        /// <summary>Landing-quality factor q of a sketchy landing.</summary>
+        public Fix64 SketchyTrickFactor;
+
+        /// <summary>
+        /// Repeat decay, 0 to 1: a trick name already landed n times in the run scores its points times this to the
+        /// power n.
+        /// </summary>
+        public Fix64 TrickRepeatFactor;
+
+        /// <summary>How far past half a rail's width, metres, the rider still lands on or rides onto it.</summary>
+        public Fix64 GrindCaptureDistance;
+
+        /// <summary>The highest rail or box, metres, a rider on snow rides onto, and steps down from at its end.</summary>
+        public Fix64 GrindStepUpHeight;
+
+        /// <summary>Slowest speed along a low rail, m/s, at which riding onto it starts a grind.</summary>
+        public Fix64 GrindMinSpeed;
+
+        /// <summary>Sliding-friction coefficient on a rail or box: it slows the rider by GrindDrag * gravity * cos slope.</summary>
+        public Fix64 GrindDrag;
+
+        /// <summary>How fast the lean grows by itself, per second: the lean changes by GrindTipRate * lean per second.</summary>
+        public Fix64 GrindTipRate;
+
+        /// <summary>Lean change per second at full steering: steering pushes the lean its way.</summary>
+        public Fix64 GrindBalanceRate;
+
+        /// <summary>The largest random lean change per second (the run's random generator picks it each step).</summary>
+        public Fix64 GrindWobble;
+
+        /// <summary>Entry lean per share of the level speed that crosses the rail: entering at an angle starts off balance.</summary>
+        public Fix64 GrindEntryLean;
+
+        /// <summary>Grind points per second on the rail at perfect balance.</summary>
+        public Fix64 GrindPointsPerSecond;
+
+        /// <summary>Fraction of its points a grind that ends in a fall keeps, 0 to 1.</summary>
+        public Fix64 GrindFallFactor;
 
         /// <summary>The default tuning.</summary>
         public static Tuning Default => new Tuning
@@ -242,6 +308,35 @@ namespace FirstChair.Sim
             BranchFlowCost = Fix64.FromRatio(25, 100),
             FlowDragCut = Fix64.FromRatio(3, 10),
             FlowTrickBonus = Fix64.FromRatio(1, 2),
+
+            // Story 006 starting values (design/reference/bluebird-spec.md, Single tricks): air =
+            // (100 h + 450 f + g + 60 t) * q * (1 + FlowTrickBonus * Flow); g = 150 + 300 per second held, capped at 600,
+            // only from 0.15 s; q = 1.5 clean, 1.0 solid, 0.6 sketchy; each repeat of a name scores half.
+            TrickPointsPerHalfTurn = Fix64.FromInt(100),
+            TrickPointsPerFlip = Fix64.FromInt(450),
+            TrickPointsPerAirSecond = Fix64.FromInt(60),
+            GrabBasePoints = Fix64.FromInt(150),
+            GrabPointsPerSecond = Fix64.FromInt(300),
+            GrabPointsCap = Fix64.FromInt(600),
+            GrabMinTime = Fix64.FromRatio(15, 100),
+            CleanTrickFactor = Fix64.FromRatio(3, 2),
+            SolidTrickFactor = Fix64.One,
+            SketchyTrickFactor = Fix64.FromRatio(6, 10),
+            TrickRepeatFactor = Fix64.FromRatio(1, 2),
+
+            // Story 006 starting values for rails, to be tuned by playtest: a quarter metre of catch, boxes up to 0.4 m
+            // ride on, steel-on-base friction below groomed snow's, a lean that doubles in under a second unless steered,
+            // and 200 points per balanced second; a fall keeps half.
+            GrindCaptureDistance = Fix64.FromRatio(1, 4),
+            GrindStepUpHeight = Fix64.FromRatio(4, 10),
+            GrindMinSpeed = Fix64.FromInt(2),
+            GrindDrag = Fix64.FromRatio(4, 100),
+            GrindTipRate = Fix64.FromRatio(12, 10),
+            GrindBalanceRate = Fix64.FromInt(3),
+            GrindWobble = Fix64.FromRatio(8, 10),
+            GrindEntryLean = Fix64.One,
+            GrindPointsPerSecond = Fix64.FromInt(200),
+            GrindFallFactor = Fix64.FromRatio(1, 2),
         };
 
         /// <summary>The grip of a snow type, m/s^2.</summary>
@@ -320,6 +415,27 @@ namespace FirstChair.Sim
             hash = Fnv1a64.AddInt64(hash, BranchFlowCost.Raw);
             hash = Fnv1a64.AddInt64(hash, FlowDragCut.Raw);
             hash = Fnv1a64.AddInt64(hash, FlowTrickBonus.Raw);
+            hash = Fnv1a64.AddInt64(hash, TrickPointsPerHalfTurn.Raw);
+            hash = Fnv1a64.AddInt64(hash, TrickPointsPerFlip.Raw);
+            hash = Fnv1a64.AddInt64(hash, TrickPointsPerAirSecond.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrabBasePoints.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrabPointsPerSecond.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrabPointsCap.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrabMinTime.Raw);
+            hash = Fnv1a64.AddInt64(hash, CleanTrickFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, SolidTrickFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, SketchyTrickFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, TrickRepeatFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindCaptureDistance.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindStepUpHeight.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindMinSpeed.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindTipRate.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindBalanceRate.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindWobble.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindEntryLean.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindPointsPerSecond.Raw);
+            hash = Fnv1a64.AddInt64(hash, GrindFallFactor.Raw);
             return hash;
         }
     }

@@ -42,6 +42,19 @@ namespace FirstChair.Sim
         /// <see cref="SimEvent.Speed"/> the speed before the clip. The speed and Flow costs are already taken.
         /// </summary>
         BranchHit = 7,
+
+        /// <summary>
+        /// The rider got onto a rail or box (Story 006): by landing on it from the air (a <see cref="Land"/> of the same
+        /// step comes first) or by riding onto a low one. <see cref="SimEvent.Rail"/> is its index in the
+        /// <see cref="RailSet"/>.
+        /// </summary>
+        GrindStart = 8,
+
+        /// <summary>
+        /// The grind ended: the rider rode off an end, or fell off (a <see cref="CrashCause.RailFall"/> crash of the same
+        /// step follows). <see cref="SimEvent.Rail"/> is the rail and <see cref="SimEvent.Grind"/> what scoring reads.
+        /// </summary>
+        GrindEnd = 9,
     }
 
     /// <summary>How well a landing went, from the landing angle (see <see cref="Simulation"/>).</summary>
@@ -77,6 +90,9 @@ namespace FirstChair.Sim
 
         /// <summary>The rider hit a trunk (Story 005). <see cref="SimEvent.Tree"/> is the tree.</summary>
         Tree = 3,
+
+        /// <summary>The rider lost their balance on a rail or box (Story 006). <see cref="SimEvent.Rail"/> is the rail.</summary>
+        RailFall = 4,
     }
 
     /// <summary>
@@ -113,7 +129,19 @@ namespace FirstChair.Sim
         /// </summary>
         public readonly Fix64 LandingAngle;
 
-        /// <summary>Creates a flight summary.</summary>
+        /// <summary>
+        /// True when the rider took off riding switch: the velocity ran against the skis' heading
+        /// (<see cref="RiderState.SwitchTakeoff"/>). Trick names start with "Switch" then.
+        /// </summary>
+        public readonly bool Switch;
+
+        /// <summary>
+        /// The Flow meter at touchdown, 0 to 1, before a landing crash empties it: the Flow
+        /// <see cref="TrickScoring"/> multiplies the trick's points by (<see cref="Tuning.TrickMultiplier"/>).
+        /// </summary>
+        public readonly Fix64 Flow;
+
+        /// <summary>Creates a flight summary that took off riding forward, with no Flow.</summary>
         /// <param name="airTicks">Steps in the air.</param>
         /// <param name="maxHeight">Greatest height above the terrain, metres.</param>
         /// <param name="spin">Total spin, radians.</param>
@@ -122,7 +150,25 @@ namespace FirstChair.Sim
         /// <param name="grabTicks">Steps the longest grab was held.</param>
         /// <param name="landingAngle">Landing angle, radians.</param>
         public AirSummary(int airTicks, Fix64 maxHeight, Fix64 spin, Fix64 flip, GrabKind grab, int grabTicks, Fix64 landingAngle)
+            : this(airTicks, maxHeight, spin, flip, grab, grabTicks, landingAngle, false, Fix64.Zero)
         {
+        }
+
+        /// <summary>Creates a flight summary.</summary>
+        /// <param name="airTicks">Steps in the air.</param>
+        /// <param name="maxHeight">Greatest height above the terrain, metres.</param>
+        /// <param name="spin">Total spin, radians.</param>
+        /// <param name="flip">Total flip, radians.</param>
+        /// <param name="grab">Longest grab.</param>
+        /// <param name="grabTicks">Steps the longest grab was held.</param>
+        /// <param name="landingAngle">Landing angle, radians.</param>
+        /// <param name="switchTakeoff">True when the rider took off riding switch.</param>
+        /// <param name="flow">The Flow meter at touchdown.</param>
+        public AirSummary(
+            int airTicks, Fix64 maxHeight, Fix64 spin, Fix64 flip, GrabKind grab, int grabTicks, Fix64 landingAngle, bool switchTakeoff, Fix64 flow)
+        {
+            Switch = switchTakeoff;
+            Flow = flow;
             AirTicks = airTicks;
             MaxHeight = maxHeight;
             Spin = spin;
@@ -141,7 +187,8 @@ namespace FirstChair.Sim
         /// <inheritdoc/>
         public bool Equals(AirSummary other) =>
             AirTicks == other.AirTicks && MaxHeight == other.MaxHeight && Spin == other.Spin && Flip == other.Flip
-            && Grab == other.Grab && GrabTicks == other.GrabTicks && LandingAngle == other.LandingAngle;
+            && Grab == other.Grab && GrabTicks == other.GrabTicks && LandingAngle == other.LandingAngle && Switch == other.Switch
+            && Flow == other.Flow;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is AirSummary other && Equals(other);
@@ -157,14 +204,71 @@ namespace FirstChair.Sim
                 hash = hash * 397 ^ Flip.GetHashCode();
                 hash = hash * 397 ^ (int)Grab;
                 hash = hash * 397 ^ GrabTicks;
-                return hash * 397 ^ LandingAngle.GetHashCode();
+                hash = hash * 397 ^ LandingAngle.GetHashCode();
+                hash = hash * 397 ^ (Switch ? 1 : 0);
+                return hash * 397 ^ Flow.GetHashCode();
             }
         }
 
         /// <inheritdoc/>
         public override string ToString() =>
             "air " + AirTicks + " max " + MaxHeight + " spin " + Spin + " flip " + Flip + " grab " + Grab + "/" + GrabTicks
-            + " angle " + LandingAngle;
+            + " angle " + LandingAngle + (Switch ? " switch" : string.Empty) + " flow " + Flow;
+    }
+
+    /// <summary>
+    /// What happened in one grind, carried by <see cref="SimEventKind.GrindEnd"/>: the data grind scoring reads
+    /// (<see cref="TrickScoring.GrindValue"/>).
+    /// </summary>
+    /// <remarks>Immutable and thread-safe. A value type, so raising it allocates nothing.</remarks>
+    public readonly struct GrindSummary : IEquatable<GrindSummary>
+    {
+        /// <summary>Steps on the rail, counting the step it ended.</summary>
+        public readonly int Ticks;
+
+        /// <summary>Balance quality, 0 to 1: one minus the mean lean (<see cref="RiderState.Balance"/>) over the grind.</summary>
+        public readonly Fix64 Balance;
+
+        /// <summary>True when the grind ended in a fall.</summary>
+        public readonly bool Fell;
+
+        /// <summary>True for a box, false for a rail.</summary>
+        public readonly bool Box;
+
+        /// <summary>Creates a grind summary.</summary>
+        /// <param name="ticks">Steps on the rail.</param>
+        /// <param name="balance">Balance quality, 0 to 1.</param>
+        /// <param name="fell">True when it ended in a fall.</param>
+        /// <param name="box">True for a box.</param>
+        public GrindSummary(int ticks, Fix64 balance, bool fell, bool box)
+        {
+            Ticks = ticks;
+            Balance = balance;
+            Fell = fell;
+            Box = box;
+        }
+
+        /// <summary>Time on the rail, seconds: <see cref="Ticks"/> / <see cref="Simulation.StepsPerSecond"/>.</summary>
+        public Fix64 Seconds => Fix64.FromRatio(Ticks, Simulation.StepsPerSecond);
+
+        /// <inheritdoc/>
+        public bool Equals(GrindSummary other) => Ticks == other.Ticks && Balance == other.Balance && Fell == other.Fell && Box == other.Box;
+
+        /// <inheritdoc/>
+        public override bool Equals(object obj) => obj is GrindSummary other && Equals(other);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                int hash = Ticks * 397 ^ Balance.GetHashCode();
+                return (hash * 397 ^ (Fell ? 1 : 0)) * 397 ^ (Box ? 1 : 0);
+            }
+        }
+
+        /// <inheritdoc/>
+        public override string ToString() => (Box ? "box " : "rail ") + Ticks + " balance " + Balance + (Fell ? " fell" : string.Empty);
     }
 
     /// <summary>
@@ -227,6 +331,15 @@ namespace FirstChair.Sim
         /// </summary>
         public readonly Fix64 Gap;
 
+        /// <summary>
+        /// <see cref="SimEventKind.GrindStart"/>, <see cref="SimEventKind.GrindEnd"/> and a <see cref="CrashCause.RailFall"/>
+        /// crash: the rail's index in the <see cref="RailSet"/>. Zero otherwise; rail 0 is a real rail.
+        /// </summary>
+        public readonly int Rail;
+
+        /// <summary><see cref="SimEventKind.GrindEnd"/>: the grind. Default otherwise.</summary>
+        public readonly GrindSummary Grind;
+
         /// <summary>Creates an event with no payload.</summary>
         /// <param name="tick">Tick after the step that raised it.</param>
         /// <param name="kind">What happened.</param>
@@ -235,8 +348,12 @@ namespace FirstChair.Sim
         {
         }
 
-        private SimEvent(int tick, SimEventKind kind, Fix64 speed, LandingGrade grade, CrashCause cause, AirSummary air, int tree, Fix64 gap)
+        private SimEvent(
+            int tick, SimEventKind kind, Fix64 speed, LandingGrade grade, CrashCause cause, AirSummary air, int tree, Fix64 gap,
+            int rail = 0, GrindSummary grind = default)
         {
+            Rail = rail;
+            Grind = grind;
             Tick = tick;
             Kind = kind;
             Speed = speed;
@@ -289,10 +406,30 @@ namespace FirstChair.Sim
         public static SimEvent BranchHit(int tick, int tree, Fix64 speed) =>
             new SimEvent(tick, SimEventKind.BranchHit, speed, LandingGrade.None, CrashCause.None, default(AirSummary), tree, Fix64.Zero);
 
+        /// <summary>A <see cref="SimEventKind.GrindStart"/> event.</summary>
+        /// <param name="tick">Tick after the step that raised it.</param>
+        /// <param name="rail">The rail's index in the rail set.</param>
+        public static SimEvent GrindStart(int tick, int rail) =>
+            new SimEvent(tick, SimEventKind.GrindStart, Fix64.Zero, LandingGrade.None, CrashCause.None, default(AirSummary), 0, Fix64.Zero, rail);
+
+        /// <summary>A <see cref="SimEventKind.GrindEnd"/> event.</summary>
+        /// <param name="tick">Tick after the step that raised it.</param>
+        /// <param name="rail">The rail's index in the rail set.</param>
+        /// <param name="grind">The grind.</param>
+        public static SimEvent GrindEnd(int tick, int rail, GrindSummary grind) =>
+            new SimEvent(tick, SimEventKind.GrindEnd, Fix64.Zero, LandingGrade.None, CrashCause.None, default(AirSummary), 0, Fix64.Zero, rail, grind);
+
+        /// <summary>A <see cref="SimEventKind.Crash"/> event with cause <see cref="CrashCause.RailFall"/>.</summary>
+        /// <param name="tick">Tick after the step that raised it.</param>
+        /// <param name="rail">The rail's index in the rail set.</param>
+        /// <param name="speed">Speed when the rider fell, m/s.</param>
+        public static SimEvent RailCrash(int tick, int rail, Fix64 speed) =>
+            new SimEvent(tick, SimEventKind.Crash, speed, LandingGrade.None, CrashCause.RailFall, default(AirSummary), 0, Fix64.Zero, rail);
+
         /// <inheritdoc/>
         public bool Equals(SimEvent other) =>
             Tick == other.Tick && Kind == other.Kind && Speed == other.Speed && Grade == other.Grade && Cause == other.Cause
-            && Air.Equals(other.Air) && Tree == other.Tree && Gap == other.Gap;
+            && Air.Equals(other.Air) && Tree == other.Tree && Gap == other.Gap && Rail == other.Rail && Grind.Equals(other.Grind);
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is SimEvent other && Equals(other);
@@ -308,7 +445,9 @@ namespace FirstChair.Sim
                 hash = hash * 397 ^ (int)Cause;
                 hash = hash * 397 ^ Air.GetHashCode();
                 hash = hash * 397 ^ Tree;
-                return hash * 397 ^ Gap.GetHashCode();
+                hash = hash * 397 ^ Gap.GetHashCode();
+                hash = hash * 397 ^ Rail;
+                return hash * 397 ^ Grind.GetHashCode();
             }
         }
 
@@ -317,6 +456,9 @@ namespace FirstChair.Sim
         {
             SimEventKind.Takeoff => Kind + "@" + Tick + " speed " + Speed,
             SimEventKind.Land => Kind + "@" + Tick + " " + Grade + " " + Air,
+            SimEventKind.Crash when Cause == CrashCause.RailFall => Kind + "@" + Tick + " RailFall " + Rail + " speed " + Speed,
+            SimEventKind.GrindStart => Kind + "@" + Tick + " rail " + Rail,
+            SimEventKind.GrindEnd => Kind + "@" + Tick + " rail " + Rail + " " + Grind,
             SimEventKind.Crash when Cause == CrashCause.Tree => Kind + "@" + Tick + " Tree " + Tree + " speed " + Speed,
             SimEventKind.Crash => Kind + "@" + Tick + " " + Cause + " " + Air,
             SimEventKind.NearMiss => Kind + "@" + Tick + " tree " + Tree + " gap " + Gap + " speed " + Speed,
