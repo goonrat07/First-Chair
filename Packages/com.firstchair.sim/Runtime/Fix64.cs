@@ -380,7 +380,7 @@ namespace FirstChair.Sim
         /// <summary>Decimal text with nine fractional digits (truncated), for logs and test messages.</summary>
         public override string ToString()
         {
-            ulong magnitude = Raw < 0 ? unchecked((ulong)(-Raw)) : (ulong)Raw;
+            ulong magnitude = Raw < 0 ? unchecked(0UL - (ulong)Raw) : (ulong)Raw;
             ulong whole = magnitude >> FractionalBits;
             ulong billionths = ((magnitude & LowMask) * 1000000000UL) >> FractionalBits;
             return (Raw < 0 ? "-" : string.Empty)

@@ -100,6 +100,9 @@ namespace FirstChair.Sim
         /// <summary>Length of one step, seconds: 1 / <see cref="StepsPerSecond"/>.</summary>
         public static readonly Fix64 StepSeconds = Fix64.FromRatio(1, StepsPerSecond);
 
+        /// <summary>The longest a tuning duration may be, seconds: its step count must fit an int.</summary>
+        private static readonly Fix64 MaxTuningSeconds = Fix64.FromInt(int.MaxValue / StepsPerSecond);
+
         private const int EventCapacity = 8;
 
         private static readonly Fix64 Half = Fix64.FromRatio(1, 2);
@@ -121,26 +124,17 @@ namespace FirstChair.Sim
         /// <param name="heightmap">The terrain.</param>
         /// <param name="snowMap">The snow types, loaded for <paramref name="heightmap"/>.</param>
         /// <param name="tuning">The riding numbers, copied once.</param>
-        /// <exception cref="System.ArgumentException"><see cref="Tuning.MaxEdgeAngle"/> or <see cref="Tuning.PopLoadTime"/>
-        /// is not positive; steps divide by them.</exception>
+        /// <exception cref="System.ArgumentException"><paramref name="tuning"/> holds a value a ride cannot run on; the
+        /// message names it. See <see cref="Validate"/>.</exception>
         public Simulation(RunSetup setup, Heightmap heightmap, SnowMap snowMap, Tuning tuning)
         {
-            if (tuning.MaxEdgeAngle <= Fix64.Zero)
-            {
-                throw new System.ArgumentException("Tuning.MaxEdgeAngle must be positive.", nameof(tuning));
-            }
-
-            Fix64 popLoadSteps = tuning.PopLoadTime * Fix64.FromInt(StepsPerSecond);
-            if (tuning.PopLoadTime <= Fix64.Zero || popLoadSteps <= Fix64.Zero)
-            {
-                throw new System.ArgumentException("Tuning.PopLoadTime must be positive.", nameof(tuning));
-            }
+            Validate(tuning);
 
             Setup = setup;
             _heightmap = heightmap;
             _snowMap = snowMap;
             _tuning = tuning;
-            _popLoadSteps = popLoadSteps;
+            _popLoadSteps = tuning.PopLoadTime * Fix64.FromInt(StepsPerSecond);
             _crashResetSteps = tuning.CrashResetDelay * Fix64.FromInt(StepsPerSecond);
 
             heightmap.Sample(setup.StartX, setup.StartZ, out Fix64 height, out Vec3 normal);
@@ -483,6 +477,34 @@ namespace FirstChair.Sim
         {
             int turns = ((angle + period * Half) / period).FloorToInt();
             return angle - period * Fix64.FromInt(turns);
+        }
+
+        /// <summary>
+        /// Rejects tuning a ride cannot run on: values a step divides by (<see cref="Tuning.MaxEdgeAngle"/>,
+        /// <see cref="Tuning.PopLoadTime"/>), gravity that would keep a flight going forever, durations whose step
+        /// count overflows an int, a negative takeoff threshold (a takeoff every step), landing thresholds out of
+        /// order, and a grab threshold outside (0, 1] (no neutral grab).
+        /// </summary>
+        private static void Validate(Tuning tuning)
+        {
+            Require(tuning.Gravity > Fix64.Zero, "Gravity must be positive");
+            Require(tuning.MaxEdgeAngle > Fix64.Zero, "MaxEdgeAngle must be positive");
+            Require(tuning.PopLoadTime > Fix64.Zero && tuning.PopLoadTime < MaxTuningSeconds, "PopLoadTime must be positive and fit an int of steps");
+            Require(tuning.CrashResetDelay >= Fix64.Zero && tuning.CrashResetDelay < MaxTuningSeconds, "CrashResetDelay must be zero or more and fit an int of steps");
+            Require(tuning.TakeoffDropSpeed >= Fix64.Zero, "TakeoffDropSpeed must be zero or more");
+            Require(
+                Fix64.Zero <= tuning.CleanLandingAngle && tuning.CleanLandingAngle <= tuning.SolidLandingAngle
+                    && tuning.SolidLandingAngle <= tuning.SketchyLandingAngle,
+                "landing angles must run 0 <= Clean <= Solid <= Sketchy");
+            Require(tuning.GrabSteeringThreshold > Fix64.Zero && tuning.GrabSteeringThreshold <= Fix64.One, "GrabSteeringThreshold must be in (0, 1]");
+        }
+
+        private static void Require(bool valid, string rule)
+        {
+            if (!valid)
+            {
+                throw new System.ArgumentException("Tuning: " + rule + ".", "tuning");
+            }
         }
     }
 }
