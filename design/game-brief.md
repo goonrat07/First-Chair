@@ -35,7 +35,7 @@ after this MVP. What the user says in session overrides both. -->
 ## Build order
 1. Sim skeleton and the replay determinism test, running under `dotnet test` and CI.
 2. Glide and carve on the test slope. This is the core fun, so prove turning feels good first.
-3. Unity view: terrain from the same heightmap, placeholder skier, chase camera and input, playable on the PC.
+3. Unity view: terrain from the same heightmap, placeholder skier, GMA2-style follow camera and input, playable on the PC.
 4. Snow types, jumps, air tricks, landings, crashes and reset.
 5. Trees and Flow, then rails and trick scoring.
 6. Art pass toward the target look.

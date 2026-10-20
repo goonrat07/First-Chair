@@ -1,0 +1,87 @@
+# Story 007: First art pass toward the target look
+
+> **Epic**: First Chair MVP (base skiing system)
+> **Status**: Ready
+> **Layer**: Presentation
+> **Type**: Visual/Feel
+> **Estimate**: L
+> **Manifest Version**: N/A (minimal — no control manifest)
+> **Last Updated**: [set by /dev-story when implementation begins]
+
+## Context
+
+**GDD**: `design/game-brief.md`
+**Requirement**: `Brief MVP feature 7`: "First real art toward the target look: skier, skis, poles, trees, snow trails and lighting."
+
+**ADR Governing Implementation**: N/A (minimal — no ADRs)
+**ADR Decision Summary**: N/A (minimal — no ADRs)
+**ADR Version**: N/A (minimal — no ADRs)
+
+**Engine**: Unity 6.3 | **Risk**: HIGH
+**Engine Notes**: none (no ADR engine-compatibility analysis at minimal)
+
+**Control Manifest Rules (this layer)**: N/A (minimal — no control manifest)
+
+---
+
+## Acceptance Criteria
+
+*From `design/game-brief.md` (MVP feature 7; Art direction: "realistic-leaning light and snow with clean, low-detail models and flat colors, after Grand Mountain Adventure 2"):*
+
+- [ ] A rigged skier (`CH_Skier`) is built with the blender-image-to-3d skill within the First Chair budget (5k to 10k tris at LOD0). It wears `PR_Ski` and `PR_SkiPole` on its foot and hand sockets.
+- [ ] The skier's pose is driven from sim state (lean from edge angle, crouch from tuck and pop load), with authored clips for tuck, grabs and crashes. The pose never feeds back into the sim.
+- [ ] Glade conifers come from a new tree skill in the same gated format: 300 to 1,500 tris, a flat far version (billboard), and GPU instancing in Unity.
+- [ ] Snow trails: a render texture is stamped where skis touch, and a URP snow shader reads it as bump and detail. The trails are display only.
+- [ ] A bluebird-day lighting preset gives soft shadows, blue-tinted shadows on snow and snow sparkle.
+- [ ] Equipment colours are chosen against snow, so the poles read at the follow camera. They currently almost vanish (`.claude/skills/blender-image-to-3d/FIRST-CHAIR.md`, Lessons).
+- [ ] Retained screenshots from the follow camera, plus sign-off, are in `production/qa/evidence/`.
+
+---
+
+## Implementation Notes
+
+*From `docs/research/engine-and-pipeline.md` §4 and §6, `.claude/rules/blender-assets.md`, and `.claude/skills/blender-image-to-3d/FIRST-CHAIR.md`:*
+
+- Skis and poles already exist (`Assets/Art/Equipment/`). This story recolours them if needed; it doesn't rebuild them.
+- The skier is the first rigged asset. Its FBX keeps Blender's default axes on the armature (the documented Unity export rule). Check the first import in the Unity editor.
+- An art bible (`/art-bible`) before this story would settle the palette. It isn't required at `minimal`.
+
+---
+
+## Out of Scope
+
+- Snowboard and its rider: out of the MVP (brief).
+- Crowds, buildings and lifts: later design.
+
+---
+
+## Files
+
+- `art/source/CH_Skier/` (brief, build scripts, master `.blend`)
+- `.claude/skills/tree-kit/` (new skill) and `art/source/EN_Conifer/`
+- `Assets/Art/Characters/CH_Skier/`, `Assets/Art/Environment/EN_Conifer/`
+- `Assets/Shaders/Snow/` (trail render texture, snow shader)
+- `Assets/Settings/Lighting/` (bluebird preset)
+- `production/qa/evidence/story-007-first-art-pass-evidence.md`
+
+---
+
+## QA Test Cases
+
+*N/A — no qa-lead specs at this tier; implement against the Acceptance Criteria above*
+
+---
+
+## Test Evidence
+
+**Story Type**: Visual/Feel
+**Required evidence**: a retained screenshot in `production/qa/evidence/` and sign-off in `production/qa/evidence/story-007-first-art-pass-evidence.md`. These are not waived at `qa.level: minimal`.
+
+**Status**: [ ] Not yet created
+
+---
+
+## Dependencies
+
+- Depends on: `production/epics/first-chair/story-003-test-slope-unity-view.md` (scene, camera, rider view)
+- Unlocks: None
