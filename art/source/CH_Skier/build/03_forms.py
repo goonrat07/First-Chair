@@ -34,7 +34,7 @@ C = "HIGH"
 
 # FORMS CHOICES (metres). Jacket sections (z, half width, half depth): a puffy chest and a slight hem flare.
 JACKET = [(0.82, .245, .162), (0.87, .245, .162), (0.93, .232, .152), (1.02, .232, .152), (1.15, .238, .157),
-          (1.22, .238, .157), (1.30, .236, .155), (1.38, .222, .146), (1.42, .19, .125), (1.45, .14, .10)]
+          (1.22, .238, .157), (1.30, .236, .155), (1.38, .222, .146), (1.40, .15, .11), (1.42, .11, .08)]   # neckline under the band
 JACKET_YC, PUFF_P = 0.02, 2.6                 # section centre y; superellipse exponent (2 = ellipse)
 SHOULDER_PUFF = 0.095                         # front: shoulder top 1.45, width 0.55 (table 1.445, 0.53)
 SLEEVE = [(0.0, .088), (0.08, .088), (0.18, .082), (0.29, .076), (0.40, .072)]   # (from shoulder, radius)
@@ -44,6 +44,11 @@ LEG = [(0.92, .105, 0.0), (0.82, .108, 0.0), (0.72, .106, 0.0), (0.62, .102, 0.0
 FOOT = [(0.13, .10, .12), (0.10, .115, .13), (0.0, .118, .135), (-0.10, .115, .12), (-0.16, .105, .10),
         (-0.19, .09, .075)]                   # side: (y, width, height), heel to toe; sole on z 0
 KNEE_PATCH = ((0.06, 0.022, 0.075), -0.098)  # radii, and y of the centre (1 cm proud of the knee)
+# hood and collar as ONE loft: collar inside the band, hood bunched at the back above it, clear of the helmet
+# rim (>= 1 cm), the shoulders and the jaw. Rings (z, side, back, front radius) around (0, HOOD_C).
+HOOD_C = 0.03
+HOOD = [(1.39, 0.10, 0.09, 0.10), (1.425, 0.105, 0.105, 0.09), (1.445, 0.135, 0.15, 0.03),
+        (1.475, 0.14, 0.16, 0.02), (1.505, 0.11, 0.13, 0.0)]
 
 
 def hex_lin(h):
@@ -120,7 +125,9 @@ def se_ring(z, hw, hd, yc, n=12, p=PUFF_P, xc=0.0):
 def torso_ring(z, hw, hd, yc=JACKET_YC, p=PUFF_P):
     """Front points at fixed x so face columns 4 (zip) and 2 and 6 (chest stripes) line up on every section."""
     zh, sx, sh = P["zip_size"][0] / 2, P["chest_stripe_x"], P["chest_stripe_size"][0] / 2
-    xs = [-0.9 * hw, -0.7 * hw, -sx - sh, -sx + sh, -zh, zh, sx - sh, sx + sh, 0.7 * hw, 0.9 * hw]
+    o1 = max(0.7 * hw, sx + sh + 0.004)
+    o2 = max(0.9 * hw, o1 + 0.004)
+    xs = [-o2, -o1, -sx - sh, -sx + sh, -zh, zh, sx - sh, sx + sh, o1, o2]
     pts = [(x, yc - hd * max(0.0, 1 - abs(x / hw) ** p) ** (1 / p), z) for x in xs]
     for th in (0.0, 0.2 * math.pi, 0.5 * math.pi, 0.8 * math.pi, math.pi):
         c, s = math.cos(th), math.sin(th)
@@ -131,6 +138,16 @@ def torso_ring(z, hw, hd, yc=JACKET_YC, p=PUFF_P):
 def rr_ring(z, a, b, c, xc=0.0, yc=0.0):
     pts = [(a, -b + c), (a, b - c), (a - c, b), (-a + c, b), (-a, b - c), (-a, -b + c), (-a + c, -b), (a - c, -b)]
     return [(xc + x, yc + y, z) for x, y in pts]
+
+
+def hood_ring(z, rs, rb, rf, n=12):
+    """Ring around the neck: side radius rs, back radius rb (+Y), front radius rf (-Y)."""
+    out = []
+    for k in range(n):
+        th = 2 * math.pi * (k + 0.5) / n
+        c, s = math.cos(th), math.sin(th)
+        out.append((rs * c, HOOD_C + (rb if s > 0 else rf) * s, z))
+    return out
 
 
 def tube_ring(centre, axis, r, n, ref_dir):
@@ -150,7 +167,7 @@ def build(scene, args):
     s1 = P["chest_stripe_z"] + P["chest_stripe_size"][2] / 2
     for i, row in enumerate(grid):
         z0, z1 = JACKET[i][0], JACKET[i + 1][0]
-        if z1 <= 1.42 + 1e-6:
+        if z1 <= 1.40 + 1e-6:
             row[4].material_index = 1
         if z0 >= s0 - 1e-6 and z1 <= s1 + 1e-6:
             row[2].material_index = row[6].material_index = 1
@@ -158,18 +175,17 @@ def build(scene, args):
     bm = bmesh.new()
     loft(bm, [se_ring(z, hw, hd, 0.03) for z, hw, hd in SEAT])
     finish("CH_Skier_Seat_form", bm, ["trousers"])
-    # NECK: collar rim, hood bunched behind, neck warmer band
-    cc, cs = P["collar_centre"], P["collar_size"]
+    # NECK: one hood-and-collar loft (no overlapping yellow surfaces), the neck warmer band wrapping the collar
     bm = bmesh.new()
-    loft(bm, [rr_ring(z, cs[0] / 2, cs[1] / 2, 0.03, yc=cc[1]) for z in (cc[2] - cs[2] / 2, cc[2] + cs[2] / 2)])
-    finish("CH_Skier_Collar_form", bm, ["jacket"])
-    ball("CH_Skier_Hood_form", P["hood_radii"], P["hood_centre"], "jacket", u=10, v=6)
+    loft(bm, [hood_ring(z, rs, rb, rf) for z, rs, rb, rf in HOOD])
+    finish("CH_Skier_Hood_form", bm, ["jacket"])
     nc, ns = P["neck_warmer_centre"], P["neck_warmer_size"]
     bm = bmesh.new()
-    loft(bm, [se_ring(z, ns[0] / 2, ns[1] / 2, nc[1], n=12, p=2.0) for z in (nc[2] - ns[2] / 2, nc[2] + ns[2] / 2)])
+    loft(bm, [se_ring(z, ns[0] / 2, ns[1] / 2, nc[1], n=14, p=2.4) for z in (nc[2] - ns[2] / 2, nc[2] + ns[2] / 2)])
     finish("CH_Skier_NeckWarmer_form", bm, ["neck_warmer"])
     # FACE
     ball("CH_Skier_Head_form", P["head_radii"], P["head_centre"], "skin", u=12, v=8)
+    boxed("CH_Skier_Jaw_form", P["jaw_size"], P["jaw_centre"], "skin", bevel=P["jaw_r"])
     boxed("CH_Skier_Chin_form", P["chin_size"], P["chin_centre"], "skin", bevel=P["chin_r"])
     boxed("CH_Skier_Nose_form", P["nose_size"], P["nose_centre"], "skin", bevel=P["nose_r"])
     boxed("CH_Skier_Mouth_form", P["mouth_size"], P["mouth_centre"], "mouth")
@@ -180,7 +196,7 @@ def build(scene, args):
     bmesh.ops.scale(bm, vec=hr, verts=bm.verts)
     bmesh.ops.translate(bm, vec=hc, verts=bm.verts)
     bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=(0, 0, P["helmet_rim_z"]),
-                           plane_no=(0, 0, 1), clear_inner=True)
+                           plane_no=(0, P["helmet_rim_tilt"], 1), clear_inner=True)
     bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
     for f in bm.faces:
         if f.calc_center_median().z > P["helmet_panel_z"]:

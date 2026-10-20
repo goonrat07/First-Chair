@@ -30,19 +30,21 @@ HALF_W = {"front": 0.95, "side": 0.45}  # half width of each view's world window
 P = {
     "height": 1.75,
     # head: helmet, goggles, neck warmer, hood collar
-    "helmet_centre": [0.0, 0.01, 1.60], "helmet_radii": [0.13, 0.155, 0.15], "helmet_rim_z": 1.53,
+    "helmet_centre": [0.0, 0.01, 1.60], "helmet_radii": [0.13, 0.155, 0.15], "helmet_rim_z": 1.535, "helmet_rim_tilt": 0.125,
     "helmet_panel_z": 1.69,
     "goggle_centre": [0.0, -0.135, 1.60], "goggle_size": [0.22, 0.06, 0.085], "goggle_r": 0.03,
     "lens_centre": [0.0, -0.166, 1.60], "lens_size": [0.19, 0.012, 0.06], "lens_r": 0.02,
     "strap_z": [1.578, 1.622],
-    # neck warmer lowered to a band, hood bunched behind the neck, lower face showing (user, 2026-10-20)
-    "neck_warmer_centre": [0.0, 0.005, 1.44], "neck_warmer_size": [0.17, 0.18, 0.05], "neck_warmer_r": 0.02,
-    "collar_centre": [0.0, 0.05, 1.41], "collar_size": [0.30, 0.24, 0.06], "collar_r": 0.025,
-    "hood_centre": [0.0, 0.10, 1.47], "hood_radii": [0.15, 0.085, 0.08],
-    "head_centre": [0.0, -0.01, 1.54], "head_radii": [0.08, 0.09, 0.10],
-    "chin_centre": [0.0, -0.07, 1.468], "chin_size": [0.075, 0.05, 0.04], "chin_r": 0.015,
-    "nose_centre": [0.0, -0.10, 1.525], "nose_size": [0.032, 0.05, 0.05], "nose_r": 0.01,
-    "mouth_centre": [0.0, -0.092, 1.494], "mouth_size": [0.04, 0.012, 0.008],
+    # neck warmer lowered to a band around the neck and collar, hood bunched behind the neck, lower face and
+    # jaw showing under the goggles (user, 2026-10-20; second pass after the forms review)
+    "neck_warmer_centre": [0.0, 0.02, 1.4075], "neck_warmer_size": [0.26, 0.25, 0.045], "neck_warmer_r": 0.02,
+    "collar_centre": [0.0, 0.03, 1.40], "collar_size": [0.22, 0.21, 0.05], "collar_r": 0.03,
+    "hood_centre": [0.0, 0.10, 1.465], "hood_radii": [0.14, 0.09, 0.045],
+    "head_centre": [0.0, -0.02, 1.54], "head_radii": [0.088, 0.095, 0.10],
+    "jaw_centre": [0.0, -0.06, 1.47], "jaw_size": [0.13, 0.09, 0.07], "jaw_r": 0.025,
+    "chin_centre": [0.0, -0.09, 1.455], "chin_size": [0.085, 0.05, 0.045], "chin_r": 0.015,
+    "nose_centre": [0.0, -0.118, 1.525], "nose_size": [0.034, 0.05, 0.05], "nose_r": 0.01,
+    "mouth_centre": [0.0, -0.105, 1.487], "mouth_size": [0.045, 0.008, 0.009],
     # jacket
     "torso_centre": [0.0, 0.02, 1.13], "torso_size": [0.46, 0.30, 0.62], "torso_r": 0.07,
     "hem_centre": [0.0, 0.02, 0.88], "hem_size": [0.48, 0.32, 0.12], "hem_r": 0.04,
@@ -178,17 +180,20 @@ def head(view):
     collar = box(P["collar_centre"], P["collar_size"], P["collar_r"], "jacket")
     band = box(P["neck_warmer_centre"], P["neck_warmer_size"], P["neck_warmer_r"], "neck_warmer")
     face = ell(P["head_centre"], P["head_radii"], "skin")
+    jaw = box(P["jaw_centre"], P["jaw_size"], P["jaw_r"], "skin")
     chin = box(P["chin_centre"], P["chin_size"], P["chin_r"], "skin")
     nose = box(P["nose_centre"], P["nose_size"], P["nose_r"], "skin")
     mouth = box(P["mouth_centre"], P["mouth_size"], 0.0, "mouth")
     mouth["front_only"] = True
-    helmet = [ell(hc, hr, "helmet", zmin=P["helmet_rim_z"]),
+    shell = ell(hc, hr, "helmet", zmin=P["helmet_rim_z"] - P["helmet_rim_tilt"] * 0.11)  # front view: rim near the back
+    shell["tilt"] = (P["helmet_rim_tilt"], P["helmet_rim_z"])
+    helmet = [shell,
               ell(hc, strap_r, "goggle_frame", zmin=P["strap_z"][0], zmax=P["strap_z"][1]),
               ell(hc, hr, "helmet_panel", zmin=P["helmet_panel_z"])]
     goggles = [box(P["goggle_centre"], P["goggle_size"], P["goggle_r"], "goggle_frame"),
                box(P["lens_centre"], P["lens_size"], P["lens_r"], "goggle_lens")]
     # far first: hood behind the neck, collar rim, head, the band in front of the neck, chin over the band
-    return [hood, collar, face, band, chin, nose, mouth] + helmet + goggles
+    return [hood, collar, face, band, jaw, chin, nose, mouth] + helmet + goggles
 
 
 def figure(view):
@@ -245,6 +250,20 @@ def clip(poly, z0, keep_above):
     return out
 
 
+def clip_tilt(poly, k, z0):
+    """Keep the part above the line z = z0 - k * u (side view, u = world y): the rim is higher at the front."""
+    out = []
+    for i in range(len(poly)):
+        a, b = poly[i - 1], poly[i]
+        fa, fb = a[1] + k * a[0] - z0, b[1] + k * b[0] - z0
+        if (fa >= 0) != (fb >= 0):
+            t = fa / (fa - fb)
+            out.append((a[0] + t * (b[0] - a[0]), a[1] + t * (b[1] - a[1])))
+        if fb >= 0:
+            out.append(b)
+    return out
+
+
 def outline(prim, view):
     """Exact orthographic outline of a primitive as a convex polygon (sampled), in (u, z) metres."""
     if prim["kind"] == "cap":
@@ -279,8 +298,12 @@ def outline(prim, view):
         a, b = prim["radii"][0 if view == "front" else 1], prim["radii"][2]
         pts = [(c[0] + a * math.cos(2 * math.pi * i / 96), c[1] + b * math.sin(2 * math.pi * i / 96)) for i in range(96)]
     poly = hull(pts)
-    if prim["zmin"] is not None:
-        poly = clip(poly, prim["zmin"], True)
+    zmin = prim["zmin"]
+    if prim.get("tilt") and view == "side":
+        poly = clip_tilt(poly, *prim["tilt"])
+        zmin = None
+    if zmin is not None:
+        poly = clip(poly, zmin, True)
     if prim["zmax"] is not None:
         poly = clip(poly, prim["zmax"], False)
     return poly

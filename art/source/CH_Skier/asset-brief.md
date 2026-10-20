@@ -1,6 +1,7 @@
 # CH_Skier asset brief
 
-Status: Phase 0 and Phase 2 (blockout) done, waiting for the user's review of the look before forms.
+Status: Phase 3 (forms) second pass done: hood rebuilt, more of the face showing, gates re-run. The
+proportions are approved (user, 2026-10-20). Waiting for the user's review before Phase 4 (topology and LODs).
 Story: `production/epics/first-chair/story-007-first-art-pass.md`.
 
 ```text
@@ -16,18 +17,20 @@ VIEWS      ref/front.png and ref/front_matte.png: front, orthographic (az 0, cam
            ref/sheet.png: both views with a metre ruler and key heights, for review only.
            All drawn by ref/make_refs.py from the proportion table in ref/refs.json: our own reference sheet,
              not a photo or a screenshot. Simple shapes (tapered capsules, flat-ended cylinders, rounded boxes,
-             ellipsoids), projected exactly, so front and side agree. Mattes drawn at 4x, box-filtered,
-             thresholded at 50 percent (FIRST-CHAIR.md, Lessons).
-           Look source: art/reference/style-notes-gma2.md (our notes on the user's GMA2 screenshots). The
-             screenshots are copyrighted, not in the repo, and were not used directly.
+             ellipsoids, a tilted helmet rim), projected exactly, so front and side agree. Mattes are drawn at
+             4x, box-filtered and thresholded at 50 percent (FIRST-CHAIR.md, Lessons).
+           Look source: art/reference/style-notes-gma2.md, our notes on the user's GMA2 screenshots, including
+             "Second skier" (face, puffy shoulders, hood bunched at the neck). The screenshots are copyrighted,
+             not in the repo, and were used only to judge forms, never traced or measured.
            Game camera (FIRST-CHAIR.md estimate): az 30, el 45, 35 mm, 18 m. Review renders call it the
              "ref" view (--ref-cam 30 45 35), with an 80 px gameplay strip.
 SCALE      1.75 m from sole to helmet top, in boots (user brief: an adult about 1.75 m tall in boots).
            1 unit = 1 m, Z up, faces -Y, origin on the ground between the feet. Every other dimension comes
-           from our proportion table (see INFERRED).
+           from our proportion table (see INFERRED). Proportions approved by the user, 2026-10-20.
 PROPORTIONS checked at blockout (5 percent) and forms (2 percent); H = 1.75 m
             1 helmet width / H           0.149 (0.26 m; depth 0.31 m), about 15 percent over a real 0.22 m helmet
-            2 helmet rim to top / H      0.126 (rim at 1.53 m, top 1.75 m)
+            2 helmet rim to top / H      0.123 (rim plane z = 1.535 - 0.125 y: 1.554 at the front, 1.514 at
+                                          the back, about 7 deg up at the front; top 1.75 m)
             3 goggle line / H            0.914 (1.60 m); goggles 0.22 x 0.085 m
             4 shoulder width / H         0.303 (0.53 m across the sleeve caps)
             5 shoulder top / H           0.826 (1.445 m)
@@ -39,44 +42,53 @@ PROPORTIONS checked at blockout (5 percent) and forms (2 percent); H = 1.75 m
            11 fingertip span / H         0.875 (1.53 m) with the arms 40 deg below horizontal
            12 mitten length / H          0.109 (0.19 m; 0.12 wide, 0.085 thick), about 15 percent oversized
            13 boot length / H            0.183 (0.32 m; 0.115 wide); boot centres 0.26 m apart (hip width)
-           14 depth / H                  0.211 (0.37 m, boot toe -0.19 to helmet back +0.18)
+           14 depth / H                  0.214 (0.375 m, boot toe -0.19 to hood back +0.185)
+           15 visible face / H           0.071 (about 0.125 m at the front, from the band top 1.43 to the
+                                          goggle bottom 1.5575)
 PARTS      in construction and overlap order; (S) = separate object in the export
            1 body, one skinned mesh, deforming:
-             trouser legs and seat (baggy, flat hem over the boot cuff); jacket body with a flared hem;
-             hood collar; sleeves (baggy, flat-ended) with dark cuffs; mittens with a forward thumb; neck
-             warmer. The goggles and neck warmer cover the whole face, so no face is modelled. From Phase 3
-             the master keeps a simple head and neck under the gear, per the skill.
-           2 helmet (S): shell, lighter top panel, goggle strap. Rigid, one bone (head).
-           3 goggles (S): dark frame and yellow lens. Rigid, head bone; may merge into the helmet object at
-             export (same bone, same budget line).
-           4 boot L and R (S): lower shell rigid to the foot bone, cuff rigid to the shin bone, hinged at
-             the ankle rivet (how real ski boots are built), rust band on the cuff. The trouser hem
-             overlaps the cuff.
+             trouser legs and seat (baggy, rounded knee, flat hem over the boot cuff); jacket body (puffy,
+             slight hem flare, neckline under the band); puffy round shoulders; sleeves (16-sided, flat-ended)
+             with navy cuffs; mittens with a forward thumb; hood and collar as ONE loft (collar inside the
+             band, hood bunched at the back of the neck above it); neck warmer lowered to a band around the
+             neck and collar (user, 2026-10-20); lower face: head, jaw, chin, nose in skin, mouth as a small
+             darker piece, all on the head bone.
+           2 helmet (S): shell cut by a rim plane tilted 7 deg up at the front, lighter top panel (material
+             split), goggle strap ring. Rigid, one bone (head).
+           3 goggles (S): dark frame and pink lens, curved to the helmet front. Rigid, head bone; may merge into
+             the helmet object at export (same bone, same budget line).
+           4 boot L and R (S): lower shell (foot loft and lower shaft) rigid to the foot bone; cuff rigid to
+             the shin bone, hinged at the ankle rivet (how real ski boots are built), red band on the cuff as a
+             material split. The trouser hem overlaps the cuff.
            5 not in this asset: PR_Ski and PR_SkiPole, attached at the sockets below.
-           Surface detail for forms and materials, not in the blockout: centre zip, two short chest stripes,
-           one stripe down the outside of each upper sleeve, darker olive knee patches (separate faceted
-           pieces on the trousers), goggle strap.
-SILHOUETTE 1 big rounded helmet with a wide yellow goggle
-           2 boxy oversized jacket with a hood collar and a flared hem
-           3 baggy straight trousers over chunky dark boots
-           4 chunky yellow mittens
+           Surface detail: centre zip, two short chest stripes and one stripe down the outside of each upper
+           sleeve are material splits on the jacket and sleeve faces; knee patches are separate faceted
+           pieces on the trousers. Stripes only on the jacket, no pattern (user).
+SILHOUETTE 1 big rounded helmet with wide dark goggles and a pink lens, the lower face and jaw showing below
+           2 puffy, boxy jacket with round shoulders, the hood bunched behind the neck and a slight hem flare
+           3 baggy navy trousers with rounded knees over chunky dark boots with red cuff bands
+           4 chunky red mittens
            5 in game: the athletic ski stance from the rig (knees forward, hips back, hands low and forward)
-MATERIALS  one material per colour role, flat colour, no normal or detail maps; AO bake later (FIRST-CHAIR.md)
-           jacket          woven cloth, roughness 0.7 to 0.9    #D4512C (notes)
-           stripes, zip    cloth / tape                          #F2F2EE *
-           cuffs           elastic cloth                         #2E2F36 *
-           mittens         padded cloth                          #E3CF3A (notes)
-           trousers        woven cloth, 0.7 to 0.9               #C3B45C (notes)
-           knee patches    reinforced cloth                      #8E8440 *
-           boots           plastic shell, 0.4 to 0.6             #3C434C *
-           boot band       plastic or strap                      #B5562A *
-           helmet          plastic shell, 0.4 to 0.6             #8A929C *, top panel #B9C0C8 *
-           goggle frame    plastic, strap                        #24262B *
-           goggle lens     glossy lens, 0.1 to 0.2               #F0C419 *
-           neck warmer     fleece, 0.8 to 1.0                    #26304A *
-           * Placeholder hex values for colours the notes name without one, for the art-director to set.
-             Hex values marked (notes) come from the notes. Equipment colours still need checking against
-             snow (story 007).
+MATERIALS  "First Chair" outfit: the user's palette (user choice 2026-10-20), replacing the GMA2 colours.
+           One material per colour role in the master, flat colour, no normal or detail maps; AO bake later
+           (FIRST-CHAIR.md). Roles that share a colour merge at export (see Decisions).
+           jacket          woven cloth, roughness 0.7 to 0.9    #F2B705 lift yellow
+           stripes, zip    tape (material split)                #22304A navy
+           cuffs           elastic cloth                         #22304A navy
+           mittens         padded cloth                          #D7263D red
+           trousers        woven cloth, 0.7 to 0.9               #22304A navy
+           knee patches    reinforced cloth (separate facets)    #18223A
+           boots           plastic shell, 0.4 to 0.6             #2B2F38
+           boot band       plastic or strap (material split)     #D7263D red
+           helmet          plastic shell, 0.4 to 0.6             #2C3A57, top panel #4A5B7D (material split)
+           goggle frame    plastic, and the strap                #15181E
+           goggle lens     glossy lens, 0.1 to 0.2               #E2557A pink
+           neck warmer     fleece, 0.8 to 1.0                    #D7263D red
+           skin            skin, 0.5 to 0.7                      #D9A07A *
+           mouth           skin shadow                           #9A5A4E *
+           * Placeholders (my picks, light-medium skin tone and a darker mouth) for the art-director or the
+             user to confirm. Every other value is the user's. Equipment colours still need checking
+             against snow at the follow camera (story 007).
 ARTICULATION humanoid deformation skeleton (references/rigging-animation.md) bound to the body; helmet,
            goggles and boot parts rigid to one bone each.
            Rest pose: relaxed A-pose, arms 40 deg below horizontal, standing straight, feet hip-width apart.
@@ -93,24 +105,29 @@ ARTICULATION humanoid deformation skeleton (references/rigging-animation.md) bou
            authored clips for tuck, grabs and crashes (story 007).
 INFERRED   No measured reference exists. Every dimension except the 1.75 m height and the 40 deg arm angle is
            from our proportion table (ref/make_refs.py P, copied into ref/refs.json "proportions_m"):
-           - helmet: centre (0, 0.01, 1.60), radii 0.13 / 0.155 / 0.15, rim cut at 1.53, top panel above 1.69,
-             about 15 percent oversized from a typical 0.22 x 0.28 m adult helmet
-           - goggles 0.22 x 0.06 x 0.085 at z 1.60, front at y -0.165; lens 0.19 x 0.06; strap z 1.578 to 1.622
-           - neck warmer 0.17 x 0.19 x 0.14 (z 1.42 to 1.56); hood collar 0.30 x 0.26 x 0.12 (z 1.40 to 1.52)
+           - helmet: centre (0, 0.01, 1.60), radii 0.13 / 0.155 / 0.15, rim plane z = 1.535 - 0.125 y (1.554
+             front, 1.514 back), top panel above 1.69, about 15 percent oversized from a typical 0.22 x 0.28 m
+             adult helmet
+           - goggles 0.22 x 0.06 x 0.085 at z 1.60, front at y -0.17; lens 0.19 x 0.06; strap z 1.578 to 1.622
+           - neck warmer band 0.26 x 0.25 x 0.045 (z 1.385 to 1.43), wrapping the collar
+           - collar 0.22 x 0.21 x 0.05 at z 1.40 (under the band); hood bunched behind the neck: back to
+             y 0.19, sides +/-0.14, z 1.42 to 1.505, at least 1 cm below the helmet rim
+           - face: head ellipsoid radii 0.088 / 0.095 / 0.10 centred (0, -0.02, 1.54); jaw 0.13 x 0.09 x 0.07
+             at z 1.47 (front y -0.105); chin 0.085 x 0.05 x 0.045 at z 1.455 (front y -0.115); nose
+             0.034 x 0.05 x 0.05 at z 1.525 (tip y -0.143); mouth 0.045 x 0.009 at z 1.487
            - jacket 0.46 x 0.30 x 0.62 (z 0.82 to 1.44); hem flare 0.48 x 0.32 x 0.12; shoulder caps r 0.085
+             (forms: puffy shoulders r 0.095, neckline at 1.42 under the band)
            - shoulder joint (0.18, 0.02, 1.36); upper arm 0.29, forearm 0.26; sleeve radii 0.085 / 0.075 /
              0.066; the sleeve ends 0.03 before the wrist; cuff r 0.06, from 0.04 before to 0.02 past the wrist
            - mitten 0.19 x 0.12 x 0.085, about 15 percent oversized from a 0.19 x 0.09 m hand plus padding;
              thumb r 0.025 pointing forward
            - pelvis 0.38 x 0.28 x 0.18 at z 0.86 (crotch 0.77); hip joint (0.10, 0.03, 0.88); knee (0.12, 0,
              0.50); thigh radii 0.105 / 0.095; shin radii 0.095 / 0.10; trouser hem z 0.29
-           - knee patches 0.13 x 0.15 ellipses on the knee front
+           - knee patches 0.12 x 0.15 ellipsoids, 1 cm proud of the knee front
            - boots: foot 0.115 x 0.32 x 0.13 (boot centre y -0.03), shaft 0.12 x 0.16 x 0.30 (top 0.34),
-             rust band 0.13 x 0.17 x 0.06 (z 0.23 to 0.29), ankle joint z 0.11; boot centres 0.26 apart
+             band 0.13 x 0.17 x 0.06 (z 0.23 to 0.29), ankle joint z 0.11; boot centres 0.26 apart
            - socket positions above
            - the back: no back view, so the back is the side view's depth with a symmetric jacket and hood
-             collar; the hood shape is a collar block until forms
-           - the face is fully covered (goggles and neck warmer), so no face is modelled
            - boot construction (shell and cuff on a hinge) and a vertical boot cuff in the rest pose; real
              boots have about 13 deg of built-in forward lean, which comes from the rig
            - colours marked * above
@@ -118,6 +135,8 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
            FIRST-CHAIR.md). Budget (FIRST-CHAIR.md): body 5k to 10k tris at LOD0, 2k to 4k at LOD1, about 1k
            at LOD2; helmet with goggles and each boot 100 to 600 tris, one LOD. Game camera estimate az 30,
            el 45, 18 m, 35 mm; skier about 80 px tall on screen.
+           Forms today (review/03_forms/measure.json): body 2,684, helmet and goggles 386, each boot 172,
+           total 3,414. The body is under the 5k floor; the budget is set in Phase 4.
 ```
 
 ## Decisions
@@ -138,19 +157,51 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
 - **The reference is a measuring stick, not a design.** The blockout and the reference come from the same
   table. A high IoU therefore proves scale, placement and proportions match the table; it does not prove
   the table is the right look. That is the user's review.
+- **Stripes, zip, helmet top panel and boot band are material splits on existing faces**, not decals
+  or extra geometry. FIRST-CHAIR.md asks for flat colour with one material per colour role. Splits add no
+  triangles and leave nothing to z-fight. The jacket and sleeve sections are laid out so that whole face
+  columns line up with the zip and stripes. **Phase 4 must keep those columns**, or the stripes break up
+  at LOD.
+- **Knee patches, goggle strap, nose, jaw, chin and mouth are separate faceted pieces.** Each is a small
+  low-segment shape that reads as a facet under flat shading.
+- **The hood and collar are one loft** (second forms pass). The first pass overlapped a hood ellipsoid, a
+  flat collar rim and the jacket back at shallow angles. The collar's back face sat about 4 mm outside the
+  jacket's, which rendered as grainy, speckled yellow behind the neck. The single loft keeps the collar
+  inside the band and keeps the hood at least 1 cm clear of the helmet rim and the shoulder puffs.
+- **More face, same proportions** (second forms pass):
+  - The neck warmer band is lowered to z 1.385 to 1.43 and wraps the collar.
+  - The jaw and chin are pushed forward and widened (jaw 0.13 wide).
+  - The helmet rim tilts 7 deg up at the front (1.554 front, 1.514 back), so the face shows from the band
+    up to the goggles.
+  - The goggles stay at their table height (1.60). Tilting them was considered and left out, because the
+    rim tilt alone exposes the face.
+- **Merge materials for Phase 5.** The master keeps 15 colour roles, but several share a colour: navy is
+  stripe, cuff and trousers; red is mitten, boot band and neck warmer. Each material on a
+  SkinnedMeshRenderer is a separate submesh and draw call. At export, either merge same-colour roles into
+  one material, or use one small palette texture with UVs packed by colour (one material for the whole
+  character, and the AO atlas can share it). Recommended: the palette texture, decided in Phase 5.
+- **Sample count for material reviews:** colour renders use `--samples 64`. At 16 samples with no
+  denoising, the shadowed crevices around the neck read as noise.
 
 ## Gate results
 
 | Phase | View | world_gate IoU | Band widths (max abs) | compose IoU | Notes |
 | --- | --- | --- | --- | --- | --- |
-| 02 blockout | front | 0.9945 | 0.0057 | 0.987 | tolerance 0.85 / 0.05 |
-| 02 blockout | side | 0.9886 | 0.0029 | 0.983 | tolerance 0.85 / 0.05 |
+| 02 blockout v1 | front | 0.9945 | 0.0057 | 0.987 | tolerance 0.85 / 0.05 |
+| 02 blockout v1 | side | 0.9886 | 0.0029 | 0.983 | tolerance 0.85 / 0.05 |
+| 02 blockout v2 (face, band, hood) | front | 0.9947 | 0.0029 | 0.988 | tolerance 0.85 / 0.05 |
+| 02 blockout v2 | side | 0.9895 | 0.0029 | 0.966 | tolerance 0.85 / 0.05 |
+| 02 blockout v3 (lower band, jaw, tilted rim) | front | 0.9942 | 0.0057 | 0.987 | tolerance 0.85 / 0.05 |
+| 02 blockout v3 | side | 0.9888 | 0.0029 | 0.986 | tolerance 0.85 / 0.05 |
+| 03 forms pass 1 | front | 0.9808 | 0.0129 | 0.977 | tolerance 0.90 / 0.03 |
+| 03 forms pass 1 | side | 0.9652 | 0.0100 | 0.952 | tolerance 0.90 / 0.03 |
+| 03 forms pass 2 (current) | front | 0.9806 | 0.0029 | 0.976 | tolerance 0.90 / 0.03 |
+| 03 forms pass 2 (current) | side | 0.9612 | 0.0100 | 0.953 | tolerance 0.90 / 0.03 |
 
-Measured on the blockout (`review/02_blockout/measure.json`): height 1.75, fingertip span 1.531 (table
-1.532), depth 0.37, shoulder top 1.445, shoulder width 0.53, jacket hem 0.82, helmet width 0.26, rim
-1.53, seat 0.38, boot length 0.32. All proportions are within 1 percent. One known deviation: the shin
-cylinders tilt slightly (knee x 0.12 to hem x 0.13), so the trouser hem's lowest point is 0.283 against
-0.29 (7 mm, 0.4 percent of H).
+Measured on the forms (`review/03_forms/measure.json`): height 1.75, fingertip span 1.531 (table 1.532),
+depth 0.3745. The blockout's measured proportions are all within 1 percent of the table. One known
+deviation: the shin cylinders tilt slightly (knee x 0.12 to hem x 0.13), so the trouser hem's lowest point
+is 0.283 against 0.29 (7 mm, 0.4 percent of H).
 
 ## Rebuild
 
@@ -162,14 +213,24 @@ $BLENDER_BIN -b --python $S/init_master.py -- --out CH_Skier_master.blend --name
   --ref-front ref/front.png --ref-right ref/side.png --subject-frac 0.948718 --ground-frac 0.051282 \
   --cell 2.0 --capsule 0.35 1.75 --cam-elev 45 --cam-az 30 --cam-dist 18 --cam-lens 35
 $BLENDER_BIN -b --python build/02_blockout.py -- --master CH_Skier_master.blend
-$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/02_blockout \
-  --collections LOW --views front,side,threequarter --ref-cam 30 45 35 --mode clay --gameplay-px 80
-$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/02_blockout \
-  --collections LOW --views front,side --mode silhouette
-$BLENDER_BIN -b --python $S/world_gate.py -- --blend CH_Skier_master.blend --out review/02_blockout \
+$BLENDER_BIN -b --python build/03_forms.py -- --master CH_Skier_master.blend
+# per phase: D=review/02_blockout with C=LOW, or D=review/03_forms with C=HIGH
+$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $D \
+  --collections $C --views front,side,threequarter --ref-cam 30 45 35 --mode clay --gameplay-px 80
+$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $D \
+  --collections $C --views front,side --mode silhouette
+$BLENDER_BIN -b --python $S/world_gate.py -- --blend CH_Skier_master.blend --out $D --collections $C \
   --matte ref/front_matte.png --az 0 --m-per-px 0.0025 --axis-col 380 --ground-row 740 --name front
-$BLENDER_BIN -b --python $S/world_gate.py -- --blend CH_Skier_master.blend --out review/02_blockout \
+$BLENDER_BIN -b --python $S/world_gate.py -- --blend CH_Skier_master.blend --out $D --collections $C \
   --matte ref/side_matte.png --az 90 --m-per-px 0.0025 --axis-col 180 --ground-row 740 --name side
-python3 $S/compose_review.py --ref ref/front_matte.png --render review/02_blockout/silhouette_front.png \
-  --out review/02_blockout/compare_front.png --measure --gameplay-px 80   # and the same for side
+python3 $S/compose_review.py --ref ref/front_matte.png --render $D/silhouette_front.png \
+  --out $D/compare_front.png --measure --gameplay-px 80   # and the same for side
+# forms only: colour renders, head close-ups, sheets
+$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/03_forms \
+  --collections HIGH --views front,side,threequarter --ref-cam 30 45 35 --mode material --gameplay-px 80 --samples 64
+$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/03_forms/head \
+  --collections HIGH --views threequarter,threequarter_back --ref-cam 30 45 35 --mode material --samples 64 \
+  --fit CH_Skier_Helmet_form,CH_Skier_Hood_form,CH_Skier_Jaw_form,CH_Skier_NeckWarmer_form
+python3 build/review_sheet.py --dir review/03_forms --mode material --out review/03_forms/colour_sheet.png
+python3 build/review_sheet.py --dir review/03_forms --mode clay --out review/03_forms/clay_sheet.png
 ```

@@ -37,14 +37,16 @@ THUMB = (-0.04, -0.02, -0.085, 0.025)  # side: thumb points forward (-Y)
 TORSO = ((0.0, 0.02, 1.13), (0.46, 0.30, 0.62), 0.07)    # jacket box: z 0.82 to 1.44, boxy, oversized
 HEM = ((0.0, 0.02, 0.88), (0.48, 0.32, 0.12), 0.04)      # jacket hem flare, bottom at 0.82
 PELVIS = ((0.0, 0.03, 0.86), (0.38, 0.28, 0.18), 0.07)   # trouser seat 0.38 wide, crotch 0.77
-COLLAR = ((0.0, 0.05, 1.41), (0.30, 0.24, 0.06), 0.025)  # hood collar rim, front: 0.30 wide, z 1.38 to 1.44
-NECK_WARMER = ((0.0, 0.005, 1.44), (0.17, 0.18, 0.05), 0.02)  # band around the neck, z 1.415 to 1.465 (user 2026-10-20)
-HOOD = ((0.0, 0.10, 1.47), (0.15, 0.085, 0.08))     # side: hood bunched behind the neck, z 1.39 to 1.55
-HEAD = ((0.0, -0.01, 1.54), (0.08, 0.09, 0.10))     # front and side: lower face under the goggles
-CHIN = ((0.0, -0.07, 1.468), (0.075, 0.05, 0.04), 0.015)   # side: chin over the band
-NOSE = ((0.0, -0.10, 1.525), (0.032, 0.05, 0.05), 0.01)    # side: nose tip y -0.125
+COLLAR = ((0.0, 0.03, 1.40), (0.22, 0.21, 0.05), 0.03)   # collar under the band (front and side)
+NECK_WARMER = ((0.0, 0.02, 1.4075), (0.26, 0.25, 0.045), 0.02)  # band around neck and collar, z 1.385 to 1.43
+HOOD = ((0.0, 0.10, 1.465), (0.14, 0.09, 0.045))    # side: hood bunched behind the neck, z 1.42 to 1.51
+HEAD = ((0.0, -0.02, 1.54), (0.088, 0.095, 0.10))   # front and side: lower face under the goggles
+JAW = ((0.0, -0.06, 1.47), (0.13, 0.09, 0.07), 0.025)  # side: jaw front y -0.105, 0.13 wide
+CHIN = ((0.0, -0.09, 1.455), (0.085, 0.05, 0.045), 0.015)  # side: chin front y -0.115
+NOSE = ((0.0, -0.118, 1.525), (0.034, 0.05, 0.05), 0.01)  # side: nose tip y -0.143
 # HEAD (front and side)
-HELMET = ((0.0, 0.01, 1.60), (0.13, 0.155, 0.15), 1.53)  # ellipsoid radii, rim cut at z 1.53; top 1.75
+HELMET = ((0.0, 0.01, 1.60), (0.13, 0.155, 0.15), 1.535)  # radii; rim z 1.535 at y 0, top 1.75
+RIM_TILT = 0.125                   # side: rim plane z = 1.535 - 0.125 y, 7 deg up at the front (1.554)
 GOGGLES = ((0.0, -0.135, 1.60), (0.22, 0.06, 0.085), 0.03)
 LENS = ((0.0, -0.166, 1.60), (0.19, 0.012, 0.06), 0.005)
 # LEGS (front and side)
@@ -121,7 +123,7 @@ def helmet(name, c, radii, zmin, role):
     bmesh.ops.scale(bm, vec=radii, verts=bm.verts)
     bmesh.ops.translate(bm, vec=c, verts=bm.verts)
     bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], plane_co=(0, 0, zmin),
-                           plane_no=(0, 0, 1), clear_inner=True)
+                           plane_no=(0, RIM_TILT, 1), clear_inner=True)
     bmesh.ops.holes_fill(bm, edges=[e for e in bm.edges if e.is_boundary], sides=0)
     return paint(T.new_mesh_object(name, bm, "LOW"), role)
 
@@ -153,6 +155,7 @@ def build(scene, args):
     helmet("CH_Skier_Helmet_block", HELMET[0], HELMET[1], HELMET[2], "helmet")
     paint(T.sphere("CH_Skier_Hood_block", 1.0, location=HOOD[0], u=16, v=8, scale=HOOD[1]), "jacket")
     paint(T.sphere("CH_Skier_Head_block", 1.0, location=HEAD[0], u=16, v=8, scale=HEAD[1]), "skin")
+    rbox("CH_Skier_Jaw_block", JAW[0], JAW[1], JAW[2], "skin")
     rbox("CH_Skier_Chin_block", CHIN[0], CHIN[1], CHIN[2], "skin")
     rbox("CH_Skier_Nose_block", NOSE[0], NOSE[1], NOSE[2], "skin")
     rbox("CH_Skier_Goggles_block", GOGGLES[0], GOGGLES[1], GOGGLES[2], "goggle_frame")
