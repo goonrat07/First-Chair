@@ -1,7 +1,7 @@
 # Story 001: Deterministic sim core and replay
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: Complete
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
@@ -113,3 +113,15 @@
 
 - Depends on: None
 - Unlocks: `production/epics/first-chair/story-002-skiing-on-snow.md`, `production/epics/first-chair/story-003-test-slope-unity-view.md`
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-20
+**Criteria**: 9/9 passing (none deferred). Each is covered by a test that ran: 80 pass under `dotnet test sim/`, and the `sim-tests` workflow is green on GitHub. A failing test makes `dotnet test` exit 1, which fails the CI step.
+**Deviations**: ADVISORY:
+- `Tuning.Default` sits in C# code, not an external data file (agreed during implementation). Every riding number is still in `Tuning`, none inline in logic.
+- The run setup's assist level and the seeded random generator are carried but not used yet.
+- Not verified in the Unity editor: the `.meta` files Unity creates on first open need committing. Run the golden-trace check in the Editor (Mono) and in an IL2CPP build before claiming identical replays on players.
+**Test Evidence**: waived at qa.level minimal; unit tests in `sim/FirstChair.Sim.Tests/` exist anyway, and `.claude/rules/sim-code.md` requires the determinism test
+**Reviewed by**: self, no independent review (solo mode; a unity-specialist engine review ran during `/dev-story`)
