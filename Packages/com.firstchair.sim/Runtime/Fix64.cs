@@ -13,6 +13,10 @@ namespace FirstChair.Sim
     /// <para>Overflow wraps silently and deterministically: add, subtract, multiply and divide keep
     /// the low 64 bits of the exact result. There is no saturation. Division by zero throws
     /// <see cref="DivideByZeroException"/>.</para>
+    /// <para>Any arithmetic that can wrap is done on <c>ulong</c> and cast back. In C# that gives the same
+    /// bits as signed math, and it keeps IL2CPP's generated C++ away from signed overflow and shifts of
+    /// negative numbers, which C++ leaves undefined. The zero-divisor check is explicit for the same
+    /// reason: IL2CPP builds skip the runtime's own check by default.</para>
     /// <para>Rounding: multiply rounds half up, divide rounds half away from zero, <see cref="Sqrt"/>
     /// rounds down. All of it is integer arithmetic; no float, double or System.Math is involved.</para>
     /// <para>There is deliberately no conversion to or from float or double. A view layer that needs a
@@ -55,7 +59,7 @@ namespace FirstChair.Sim
 
         /// <summary>Converts a whole number exactly.</summary>
         /// <param name="value">The whole number.</param>
-        public static Fix64 FromInt(int value) => new Fix64((long)value << FractionalBits);
+        public static Fix64 FromInt(int value) => new Fix64(unchecked((long)((ulong)(long)value << FractionalBits)));
 
         /// <summary>
         /// Returns <paramref name="numerator"/> / <paramref name="denominator"/>, rounded to the nearest
@@ -71,16 +75,16 @@ namespace FirstChair.Sim
         /// <summary>Adds two values; wraps on overflow.</summary>
         /// <param name="a">Left operand.</param>
         /// <param name="b">Right operand.</param>
-        public static Fix64 operator +(Fix64 a, Fix64 b) => new Fix64(unchecked(a.Raw + b.Raw));
+        public static Fix64 operator +(Fix64 a, Fix64 b) => new Fix64(unchecked((long)((ulong)a.Raw + (ulong)b.Raw)));
 
         /// <summary>Subtracts two values; wraps on overflow.</summary>
         /// <param name="a">Left operand.</param>
         /// <param name="b">Right operand.</param>
-        public static Fix64 operator -(Fix64 a, Fix64 b) => new Fix64(unchecked(a.Raw - b.Raw));
+        public static Fix64 operator -(Fix64 a, Fix64 b) => new Fix64(unchecked((long)((ulong)a.Raw - (ulong)b.Raw)));
 
         /// <summary>Negates a value; wraps for the minimum value.</summary>
         /// <param name="value">The value to negate.</param>
-        public static Fix64 operator -(Fix64 value) => new Fix64(unchecked(-value.Raw));
+        public static Fix64 operator -(Fix64 value) => new Fix64(unchecked((long)(0UL - (ulong)value.Raw)));
 
         /// <summary>
         /// Multiplies two values, rounding half up. The 128-bit product is built from four 32-bit partial
@@ -102,7 +106,7 @@ namespace FirstChair.Sim
                 long highLow = aHigh * (long)bLow;
                 long highHigh = aHigh * bHigh;
 
-                return new Fix64((highHigh << FractionalBits) + lowHigh + highLow + (long)((lowLow + RoundingHalf) >> FractionalBits));
+                return new Fix64((long)(((ulong)highHigh << FractionalBits) + (ulong)lowHigh + (ulong)highLow + ((lowLow + RoundingHalf) >> FractionalBits)));
             }
         }
 
@@ -115,11 +119,16 @@ namespace FirstChair.Sim
         /// <param name="b">Divisor.</param>
         public static Fix64 operator /(Fix64 a, Fix64 b)
         {
+            if (b.Raw == 0L)
+            {
+                throw new DivideByZeroException();
+            }
+
             unchecked
             {
                 bool negative = (a.Raw < 0) != (b.Raw < 0);
-                ulong dividend = a.Raw < 0 ? (ulong)(-a.Raw) : (ulong)a.Raw;
-                ulong divisor = b.Raw < 0 ? (ulong)(-b.Raw) : (ulong)b.Raw;
+                ulong dividend = a.Raw < 0 ? 0UL - (ulong)a.Raw : (ulong)a.Raw;
+                ulong divisor = b.Raw < 0 ? 0UL - (ulong)b.Raw : (ulong)b.Raw;
 
                 ulong whole = dividend / divisor;
                 ulong remainder = dividend % divisor;
@@ -141,7 +150,7 @@ namespace FirstChair.Sim
                 }
 
                 ulong magnitude = (whole << FractionalBits) + fraction;
-                return new Fix64(negative ? -(long)magnitude : (long)magnitude);
+                return new Fix64((long)(negative ? 0UL - magnitude : magnitude));
             }
         }
 

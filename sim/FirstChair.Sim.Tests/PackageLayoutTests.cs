@@ -26,6 +26,9 @@ namespace FirstChair.Sim.Tests
             Assert.That(root.GetProperty("name").GetString(), Is.EqualTo("FirstChair.Sim"));
             Assert.That(root.GetProperty("noEngineReferences").GetBoolean(), Is.True);
             Assert.That(root.GetProperty("references").GetArrayLength(), Is.EqualTo(0));
+            // overrideReferences with no precompiled references: Unity adds no auto-referenced plugin DLLs,
+            // so it compiles the sim against the same references as the dotnet build.
+            Assert.That(root.GetProperty("overrideReferences").GetBoolean(), Is.True);
             Assert.That(root.GetProperty("precompiledReferences").GetArrayLength(), Is.EqualTo(0));
             Assert.That(root.GetProperty("allowUnsafeCode").GetBoolean(), Is.False);
         }

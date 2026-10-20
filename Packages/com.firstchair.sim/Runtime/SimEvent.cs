@@ -17,9 +17,10 @@ namespace FirstChair.Sim
     /// <example>
     /// <code>
     /// simulation.Step(input);
-    /// foreach (SimEvent simEvent in simulation.Events)
+    /// // Loop by index: foreach over the IReadOnlyList boxes an enumerator every step.
+    /// for (int i = 0; i &lt; simulation.Events.Count; i++)
     /// {
-    ///     if (simEvent.Kind == SimEventKind.LeftHeightmap) { /* game layer reacts */ }
+    ///     if (simulation.Events[i].Kind == SimEventKind.LeftHeightmap) { /* game layer reacts */ }
     /// }
     /// </code>
     /// </example>
