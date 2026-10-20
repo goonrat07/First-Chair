@@ -58,10 +58,24 @@
 
 ## Files
 
-- `Packages/com.firstchair.sim/Runtime/` (rails and boxes, grinds, trick naming, trick scoring, run total)
+- `Assets/Terrain/TestSlope/TestSlope.txt`
+- `Packages/com.firstchair.sim/Runtime/RailSet.cs`
+- `Packages/com.firstchair.sim/Runtime/Recording.cs`
+- `Packages/com.firstchair.sim/Runtime/Replayer.cs`
+- `Packages/com.firstchair.sim/Runtime/RiderState.cs`
+- `Packages/com.firstchair.sim/Runtime/RunScore.cs`
+- `Packages/com.firstchair.sim/Runtime/SimEvent.cs`
+- `Packages/com.firstchair.sim/Runtime/Simulation.cs`
+- `Packages/com.firstchair.sim/Runtime/SlopeLayout.cs`
+- `Packages/com.firstchair.sim/Runtime/TrickScoring.cs`
+- `Packages/com.firstchair.sim/Runtime/Tuning.cs`
+- `sim/FirstChair.Sim.Tests/DeterminismTests.cs`
+- `sim/FirstChair.Sim.Tests/RailTests.cs`
+- `sim/FirstChair.Sim.Tests/RecordingTests.cs`
+- `sim/FirstChair.Sim.Tests/ScriptedRide.cs`
 - `sim/FirstChair.Sim.Tests/TrickScoringTests.cs`
-
----
+- `tools/terrain/make_test_slope.py`
+- `tools/terrain/test_make_test_slope.py`
 
 ## QA Test Cases
 

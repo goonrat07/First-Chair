@@ -143,3 +143,25 @@ The usage limit hit during item 7 (about 13:00 UTC). Sleep mode's own wake-up fo
   - the Flow bonus had no cap, and is now capped at 1000.
 - One design question for you (non-blocking): can a rider jump over trees? See questions.md #1.
 - Decisions made for you: closed it (the recommended option), although Story 003 is still In Progress. Story 005 needed only 003's finished tree data.
+
+## Item 9: story-006-rails-and-trick-scoring, /dev-story
+- Result: implemented (`e69c968`). Sim version 4 to 5; recording format 4 adds a rails hash, and replay refuses different rails.
+  - Trick names: optional "Switch", then flips, spin and grab. Examples: "Backflip", "Left 720 Japan", with id `left-720-japan`.
+  - Trick scores: the story's formula, times the Flow multiplier at landing. A repeat scores half as much each time.
+  - Run total: a crash keeps what's already scored. The replay reports the run's total.
+  - Rails: a box, a 0.5 m rail and a second box sit on the test slope's kicker line. You grind by landing on one or riding onto it, and keep the lean in check with left and right or fall into a RailFall crash. Grinds score per second times balance.
+- Changed: new `TrickScoring.cs`, `RunScore.cs` and `RailSet.cs`; `Simulation.cs`, `SimEvent.cs` (`GrindStart`, `GrindEnd`), `RiderState.cs`, `Tuning.cs` (21 new numbers), `Recording.cs`, `Replayer.cs` and `SlopeLayout.cs`; the generator plus the regenerated `TestSlope.txt` (heightmap and snow map unchanged); new `TrickScoringTests.cs` and `RailTests.cs`.
+- Tests: `dotnet test sim/`, 333 passed; pytest, 10 passed. Eight breaks were watched failing. The one the programmer couldn't run, replay ignoring rails, I ran myself and saw fail.
+- Decisions made for you:
+  - Flow is counted at the landing.
+  - The score is worked out from the event stream, not kept in sim state.
+  - The sim now records riding switch at takeoff.
+  - A grab is named and scored only if held 0.15 s or more.
+  - A jump with nothing else is "Straight Air".
+  - Repeats are tracked by trick id.
+  - Grinds get no repeat halving and no Flow multiplier, because the story ties Flow to jumps.
+  - High rails are caught from above only; you pass under them.
+  - The grind balance has a seeded wobble, so it replays exactly.
+  - Grinds score 200 points per second (a placeholder).
+- Design question for you (non-blocking): should a rail exit score? See questions.md #2.
+- Not verified: feel, and anything in Unity. Unity doesn't draw rails, boxes or a score yet.
