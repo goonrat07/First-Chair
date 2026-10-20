@@ -1,0 +1,62 @@
+{
+  "blend": "/home/user/First-Chair/art/source/EN_Conifer/EN_Conifer_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 557,
+      "1": 372
+    },
+    "fail": [],
+    "warn": [
+      "EN_Conifer_LOD0: no UV layer",
+      "EN_Conifer_LOD1: no UV layer"
+    ]
+  },
+  "objects": [
+    {
+      "name": "EN_Conifer_LOD0",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 557,
+        "verts_evaluated": 423,
+        "verts": 423,
+        "faces": 371,
+        "boundary_edges": 197,
+        "nonmanifold_edges": 0,
+        "islands": 47,
+        "materials": [
+          "M_Conifer_Bark",
+          "M_Conifer_Needle",
+          "M_Conifer_Snow"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "EN_Conifer_LOD1",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 372,
+        "verts_evaluated": 283,
+        "verts": 283,
+        "faces": 248,
+        "boundary_edges": 132,
+        "nonmanifold_edges": 0,
+        "islands": 32,
+        "materials": [
+          "M_Conifer_Bark",
+          "M_Conifer_Needle",
+          "M_Conifer_Snow"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}
