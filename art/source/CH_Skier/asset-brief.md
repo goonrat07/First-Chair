@@ -1,7 +1,7 @@
 # CH_Skier asset brief
 
-Status: Phase 3 (forms) second pass done: hood rebuilt, more of the face showing, gates re-run. The
-proportions are approved (user, 2026-10-20). Waiting for the user's review before Phase 4 (topology and LODs).
+Status: Phase 4 done, waiting for the user's review before Phase 5 (UVs, AO and materials). The proportions,
+palette, helmet, stripes and socket names are approved (user, 2026-10-20); Phase 4 keeps the Phase 3 forms as they are.
 Story: `production/epics/first-chair/story-007-first-art-pass.md`.
 
 ```text
@@ -135,8 +135,9 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
            FIRST-CHAIR.md). Budget (FIRST-CHAIR.md): body 5k to 10k tris at LOD0, 2k to 4k at LOD1, about 1k
            at LOD2; helmet with goggles and each boot 100 to 600 tris, one LOD. Game camera estimate az 30,
            el 45, 18 m, 35 mm; skier about 80 px tall on screen.
-           Forms today (review/03_forms/measure.json): body 2,684, helmet and goggles 386, each boot 172,
-           total 3,414. The body is under the 5k floor; the budget is set in Phase 4.
+           Phase 4 (review/04_topology/measure.json): body 2,895 tris at LOD0, 2,139 at LOD1, 1,081 at LOD2;
+           helmet with goggles 374, each boot 204 (shell 96 + cuff 108); whole character 3,677 at LOD0. The
+           body is under the 5k floor on purpose (see Decisions); the 10k ceiling is the hard limit.
 ```
 
 ## Decisions
@@ -182,6 +183,44 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
   character, and the AO atlas can share it). Recommended: the palette texture, decided in Phase 5.
 - **Sample count for material reviews:** colour renders use `--samples 64`. At 16 samples with no
   denoising, the shadowed crevices around the neck read as noise.
+- **Body LOD0 is 2,895 tris, under the 5k floor of FIRST-CHAIR.md** (Phase 4). The floor is a starting
+  estimate. Triangles went only where the silhouette or the bending needs them: LOD0's silhouette is
+  pixel-identical to the approved forms (IoU 1.0 against the Phase 3 silhouettes, front and side) and every joint
+  has its loops. More would only split flat facets that the 80 px game camera cannot show. The whole character,
+  props included, is 3,677 at LOD0, well under the 10k ceiling.
+- **Deformation loops** (Phase 4), inserted between the approved rings so no face moved: neck (hood rings z 1.39,
+  1.4075, 1.425, 1.435, 1.445; neck warmer 1.385, 1.4075, 1.43); shoulder (sleeve rings 0, 0.04, 0.08, 0.13 m
+  from the joint, the shoulder puff's 8 latitude rings, jacket rings 1.30, 1.38, 1.40); elbow (0.235, 0.29, 0.345
+  m from the shoulder); wrist (sleeve end 0.52, cuff rings -0.04, -0.02, 0, +0.02 m about the wrist); spine
+  (jacket 0.93, 1.02, 1.085, 1.15); hip (trousers 0.92, 0.88, 0.82, 0.77; seat 0.80, 0.84, 0.88); knee (0.62, 0.55,
+  0.50, 0.45, 0.38); ankle (the boot hinge, plus trouser hem rings 0.38, 0.335, 0.29). The zip, chest stripes and
+  sleeve stripe stay on the same face columns, ending on ring edges, so they survive deformation and LOD.
+- **Helmet and goggles are one object, `CH_Skier_Helmet`** (shell with the top panel split, strap, goggles and
+  lens): one head bone and one budget line, as the parts list allowed.
+- **Each boot is two objects:** `CH_Skier_BootShell_L/R` (foot bone) and `CH_Skier_BootCuff_L/R` (shin bone), so
+  each stays rigid on one bone. The cuff gained a hidden skirt (down to z 0.17, 4 mm inset, inside the shell), so
+  it can tip forward about the ankle into the ski stance without opening a gap at the hinge. 204 tris per boot.
+- **Triangulation lock:** the LOD0 meshes keep quads in the source (ngon caps fanned to triangles) and carry a
+  Triangulate modifier (quads FIXED, ngons BEAUTY), the same split Blender used to draw the forms. Bake and export
+  both evaluate it, so shading cannot change later. Keep it first in the stack when Phase 6 adds the Armature
+  modifier. LOD1 and LOD2 are stored as triangles.
+- **Interior faces removed:** 237 body faces (87 on centre parts, 75 per side; plus 6 in the helmet: strap
+  behind the goggles, back of the lens) whose corners, edge midpoints and centre all sit at least 8 mm inside
+  other body parts (3 mm for pieces on one rigid bone, such as the top of the head under the helmet). The body is
+  therefore 25 open shells, one per part, each opening hidden inside another part.
+- **LODs:** the skill's `lod_copy` per part with a ratio table (head, face, shoulders and mittens keep the most;
+  sleeves and legs give the most), with material-boundary vertices, the jacket hem and the shoulder line protected
+  through the Decimate vertex group, and the right side mirrored from the left. Then an outline fix: every LOD
+  vertex snapped back onto the approved surface, and any part extent that shrank by 2 to 6 mm pulled back out.
+  Parts that shrank more got a higher ratio instead (a bigger pull makes spikes). Helmet and boots have one LOD,
+  shared by all three body LODs, so their outline never changes.
+- **Collections:** LOW holds LOW_LOD0, LOW_LOD1 and LOW_LOD2 (the body per LOD) and LOW_PROPS (helmet and boots).
+  The Phase 2 blockout moved to BLOCKOUT (hidden). Review a LOD with `--collections LOW_LOD<n>,LOW_PROPS`.
+- **`--require-uv` belongs to Phase 5.** The skill's Phase 4 example passes it, but UVs are Phase 5's work ("UVs,
+  baking, materials"). Phase 4 validates without it. A run with it fails only on the 8 missing UV layers
+  (review/04_topology/validate_require_uv.json).
+- **For Phase 5:** `build/04_topology.py` rebuilds LOD1 and LOD2 from LOD0. Unwrap LOD0, then rebuild the LODs from
+  it (Decimate carries UVs over), rather than unwrapping each LOD.
 
 ## Gate results
 
@@ -195,13 +234,25 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
 | 02 blockout v3 | side | 0.9888 | 0.0029 | 0.986 | tolerance 0.85 / 0.05 |
 | 03 forms pass 1 | front | 0.9808 | 0.0129 | 0.977 | tolerance 0.90 / 0.03 |
 | 03 forms pass 1 | side | 0.9652 | 0.0100 | 0.952 | tolerance 0.90 / 0.03 |
-| 03 forms pass 2 (current) | front | 0.9806 | 0.0029 | 0.976 | tolerance 0.90 / 0.03 |
-| 03 forms pass 2 (current) | side | 0.9612 | 0.0100 | 0.953 | tolerance 0.90 / 0.03 |
+| 03 forms pass 2 (approved) | front | 0.9806 | 0.0029 | 0.976 | tolerance 0.90 / 0.03 |
+| 03 forms pass 2 (approved) | side | 0.9612 | 0.0100 | 0.953 | tolerance 0.90 / 0.03 |
+| 04 topology LOD0 (body 2,895) | front | 0.9806 | 0.0029 | 0.976 | floor 0.9756 (Phase 3 minus 0.005), IoU against the Phase 3 silhouette 1.0000 |
+| 04 topology LOD0 (body 2,895) | side | 0.9612 | 0.0100 | 0.953 | floor 0.9562 (Phase 3 minus 0.005), IoU against the Phase 3 silhouette 1.0000 |
+| 04 topology LOD1 (body 2,139) | front | 0.9804 | 0.0029 | - | IoU against the Phase 3 silhouette 0.9989 |
+| 04 topology LOD1 (body 2,139) | side | 0.9596 | 0.0114 | - | IoU against the Phase 3 silhouette 0.9967 |
+| 04 topology LOD2 (body 1,081) | front | 0.9799 | 0.0029 | - | IoU against the Phase 3 silhouette 0.9884 |
+| 04 topology LOD2 (body 1,081) | side | 0.9575 | 0.0100 | - | IoU against the Phase 3 silhouette 0.9845 |
 
 Measured on the forms (`review/03_forms/measure.json`): height 1.75, fingertip span 1.531 (table 1.532),
 depth 0.3745. The blockout's measured proportions are all within 1 percent of the table. One known
 deviation: the shin cylinders tilt slightly (knee x 0.12 to hem x 0.13), so the trouser hem's lowest point
 is 0.283 against 0.29 (7 mm, 0.4 percent of H).
+
+Phase 4 checks (`review/04_topology/`): `validate.py` on LOW,SOCKETS with `--budget-tris 10000` exits 0: 0 FAIL, 12
+warnings, all expected: no UV layer on the 8 LOW meshes (Phase 5) and no parent on the 4 sockets (parented to bones
+in Phase 6). No doubles, zero-area faces, loose geometry, non-manifold edges or stray islands remain. validate counts
+the unsuffixed props at LOD0 only: 3,677 / 2,139 / 1,081. The greyscale gameplay strip (`gameplay_strip_grey.png`)
+shows LOD0, LOD1 and LOD2 reading the same at 80 px.
 
 ## Rebuild
 
@@ -214,7 +265,8 @@ $BLENDER_BIN -b --python $S/init_master.py -- --out CH_Skier_master.blend --name
   --cell 2.0 --capsule 0.35 1.75 --cam-elev 45 --cam-az 30 --cam-dist 18 --cam-lens 35
 $BLENDER_BIN -b --python build/02_blockout.py -- --master CH_Skier_master.blend
 $BLENDER_BIN -b --python build/03_forms.py -- --master CH_Skier_master.blend
-# per phase: D=review/02_blockout with C=LOW, or D=review/03_forms with C=HIGH
+$BLENDER_BIN -b --python-exit-code 1 --python build/04_topology.py -- --master CH_Skier_master.blend
+# per phase: D=review/02_blockout with C=BLOCKOUT (moved out of LOW by Phase 4), or D=review/03_forms with C=HIGH
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $D \
   --collections $C --views front,side,threequarter --ref-cam 30 45 35 --mode clay --gameplay-px 80
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $D \
@@ -233,4 +285,12 @@ $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --
   --fit CH_Skier_Helmet_form,CH_Skier_Hood_form,CH_Skier_Jaw_form,CH_Skier_NeckWarmer_form
 python3 build/review_sheet.py --dir review/03_forms --mode material --out review/03_forms/colour_sheet.png
 python3 build/review_sheet.py --dir review/03_forms --mode clay --out review/03_forms/clay_sheet.png
+# Phase 4 gates: D=review/04_topology; for L in 0 1 2, C=LOW_LOD$L,LOW_PROPS and O=$D/lod$L
+$BLENDER_BIN -b --python $S/validate.py -- --blend CH_Skier_master.blend --collections LOW,SOCKETS \
+  --out $D/validate.json --budget-tris 10000
+$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $O --collections $C \
+  --views front,side,threequarter --ref-cam 30 45 35 --mode clay --gameplay-px 80   # and again with --mode wire
+# world_gate.py front and side as above with --collections $C --out $O; LOD0 also silhouette renders + compose_review
+python3 build/review_sheet.py --dir $O --mode wire --out $D/wire_sheet_lod$L.png
+python3 build/lod_review.py --dir $D --forms review/03_forms   # clay_compare, gameplay_strip_grey, lod_gates.json
 ```
