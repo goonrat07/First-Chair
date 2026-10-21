@@ -1,0 +1,16 @@
+{
+    "name": "FirstChair.Riding.Core",
+    "rootNamespace": "FirstChair.Riding",
+    "references": [
+        "FirstChair.Sim"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}

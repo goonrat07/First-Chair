@@ -78,6 +78,22 @@ Unity half, still to build on the PC:
 - `Assets/Scenes/TestSlope.unity`
 - `Assets/Tests/EditMode/TerrainParityTests.cs`
 
+Unity half, pre-written in the cloud (2026-10-21), **not verified in the editor**: it has never been
+compiled by Unity or run there. The engine-free parts (`Riding/Core/` and the tests that use only them) compile
+as netstandard2.1 / C# 9 with the sim sources and pass under `dotnet` in a scratch project, which is not committed.
+
+- `Assets/Scripts/Riding/Core/` (asmdef `FirstChair.Riding.Core`, no engine references): `SimCoordinates`
+  (the sim-to-Unity mapping, documented), `FixedStepClock`, `RiderInputQuantizer`, `RiderPose`, `TestSlopeData`,
+  `RideSession`, `ReplayCheck`, `TerrainHeights`, `FollowCameraMath`
+- `Assets/Scripts/Riding/` (asmdef `FirstChair.Riding`): `SimDriver`, `RiderInputReader` + `RiderInputConfig`,
+  `RiderView` + `RiderViewSettings`, `FollowCamera` + `FollowCameraSettings`, `SimCoordinatesUnity`
+- `Assets/Scripts/Riding/Editor/` (asmdef `FirstChair.Riding.Editor`): `TestSlopeTerrainBuilder`
+  (First Chair > Rebuild Test Slope Terrain), `TestSlopeSceneBuilder` (First Chair > Build Test Slope Scene, which
+  writes `Assets/Scenes/TestSlope.unity`), `TestSlopeBuildStep` (copies the slope files into a Windows player)
+- `Assets/Scripts/ScreenshotOnArg.cs` (run-and-observe bootstrap, verbatim from `.claude/docs/run-and-observe.md`)
+- `Assets/Tests/EditMode/` (asmdef `FirstChair.Riding.Tests.EditMode`): `TerrainParityTests`, `RideReplayTests`,
+  `FixedStepClockTests`, `RiderInputQuantizerTests`, `SimCoordinatesTests`, `TestSlopeFiles`
+
 ## QA Test Cases
 
 *N/A — no qa-lead specs at this tier; implement against the Acceptance Criteria above*
