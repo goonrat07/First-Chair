@@ -20,8 +20,9 @@ namespace FirstChair.Riding
         [Header("Motion")]
         [Tooltip("Tip of each pole trails behind the hand by this many degrees.")]
         [SerializeField] private float poleTiltDegrees = 20f;
-        [Tooltip("Scales the lean taken from the sim's edge angle.")]
-        [SerializeField] private float leanScale = 1f;
+        [Tooltip("Scales the lean taken from the sim's edge angle. A carving skier's body leans less than the skis, which "
+            + "angulate at the knees and hips; at 1 the full 60 degree edge reads as a fall from the follow camera.")]
+        [SerializeField] private float leanScale = 0.5f;
         [Tooltip("0 keeps the body upright; 1 tilts it fully to the snow's normal.")]
         [SerializeField, Range(0f, 1f)] private float slopeAlign = 1f;
 
