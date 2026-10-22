@@ -1,0 +1,128 @@
+# Runs Unity on GitHub's machines (Story 003), so the Unity side is compiled, tested and built without the Unity
+# Editor on the user's PC:
+#   1. EditMode tests, which also compile every script.
+#   2. A Linux player, run under a virtual display to take a screenshot from the follow camera.
+#   3. A Windows player, uploaded as an artifact to download and play.
+# Needs three repository secrets: UNITY_LICENSE (the whole Unity_lic.ulf file), UNITY_EMAIL and UNITY_PASSWORD.
+# Actions are pinned to full commit SHAs; the tag each SHA was taken from is in the comment.
+name: unity
+
+on:
+  push:
+    paths:
+      - "Assets/**"
+      - "Packages/**"
+      - "ProjectSettings/**"
+      - ".github/workflows/unity.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  checks: write
+
+concurrency:
+  group: unity-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+  UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+  UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+
+jobs:
+  editmode-tests:
+    name: EditMode tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # Only the LFS files Unity imports (the test slope and the ski models), not the Blender sources.
+      - name: Pull the LFS files under Assets
+        run: git lfs pull --include "Assets/**"
+
+      - name: Restore the Library cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: Library
+          key: Library-tests-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}-${{ hashFiles('Assets/**', 'Packages/com.firstchair.sim/**') }}
+          restore-keys: |
+            Library-tests-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}-
+
+      - name: Run the EditMode tests
+        uses: game-ci/unity-test-runner@32e57712352b500e17974b245a6dce9e11a73213 # v4.4.0
+        with:
+          testMode: editmode
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          checkName: EditMode test results
+
+      - name: Upload the test results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: editmode-test-results
+          path: artifacts
+
+  build:
+    name: Build ${{ matrix.targetPlatform }}
+    needs: editmode-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform: [StandaloneLinux64, StandaloneWindows64]
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Pull the LFS files under Assets
+        run: git lfs pull --include "Assets/**"
+
+      - name: Restore the Library cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}-${{ hashFiles('Assets/**', 'Packages/com.firstchair.sim/**') }}
+          restore-keys: |
+            Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}-
+
+      # CiBuild sets up URP and the Input System backend, builds the test slope scene, then the player.
+      - name: Build the player
+        uses: game-ci/unity-builder@4423ee75828dff56037d1d1cfdac6b68e3a6ba00 # v4.8.2
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: FirstChair
+          buildMethod: FirstChair.Ci.Editor.CiBuild.Build
+          versioning: None
+
+      # Run-and-observe (.claude/docs/run-and-observe.md): launch the player on the test slope and capture the
+      # follow camera. Software rendering (Mesa) under a virtual display, so it is slow but real.
+      - name: Take a screenshot from the Linux player
+        if: matrix.targetPlatform == 'StandaloneLinux64'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq xvfb libgl1 libglu1-mesa libegl1 mesa-utils > /dev/null
+          sudo chown -R "$(id -u):$(id -g)" build
+          player=build/StandaloneLinux64/FirstChair.x86_64
+          chmod +x "$player"
+          mkdir -p shots
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 "$player" -force-glcore \
+            -screen-width 1280 -screen-height 720 -screen-fullscreen 0 -logFile "$PWD/shots/player.log" \
+            --scene TestSlope --screenshot "$PWD/shots/follow-camera.png" --after 240 || echo "player exited with $?"
+          ls -la shots
+
+      - name: Upload the screenshot and player log
+        if: always() && matrix.targetPlatform == 'StandaloneLinux64'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: follow-camera-screenshot
+          path: shots
+          if-no-files-found: warn
+
+      - name: Upload the player
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: FirstChair-${{ matrix.targetPlatform }}
+          path: build/${{ matrix.targetPlatform }}

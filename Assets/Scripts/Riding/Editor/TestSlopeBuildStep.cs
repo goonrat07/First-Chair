@@ -7,7 +7,7 @@ using UnityEngine;
 namespace FirstChair.Riding.Editor
 {
     /// <summary>
-    /// After a Windows player build, copies the three test-slope files into the player's StreamingAssets, where
+    /// After a Windows or Linux player build, copies the three test-slope files into the player's StreamingAssets, where
     /// <see cref="SimDriver"/> reads them in a build. The RAW files are not Unity assets a player can load, and copying
     /// after the build keeps a second copy out of the repo.
     /// </summary>
@@ -20,9 +20,10 @@ namespace FirstChair.Riding.Editor
         public void OnPostprocessBuild(BuildReport report)
         {
             BuildTarget target = report.summary.platform;
-            if (target != BuildTarget.StandaloneWindows64 && target != BuildTarget.StandaloneWindows)
+            // Windows and Linux players keep their data in <name>_Data next to the executable; macOS does not.
+            if (target != BuildTarget.StandaloneWindows64 && target != BuildTarget.StandaloneWindows && target != BuildTarget.StandaloneLinux64)
             {
-                Debug.LogWarning("TestSlopeBuildStep copies the test slope for Windows players only; " + target + " will not find it.");
+                Debug.LogWarning("TestSlopeBuildStep copies the test slope for Windows and Linux players only; " + target + " will not find it.");
                 return;
             }
 

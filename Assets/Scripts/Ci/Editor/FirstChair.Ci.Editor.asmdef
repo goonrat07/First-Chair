@@ -1,0 +1,20 @@
+{
+    "name": "FirstChair.Ci.Editor",
+    "rootNamespace": "FirstChair.Ci.Editor",
+    "references": [
+        "FirstChair.Riding.Editor",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

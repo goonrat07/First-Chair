@@ -24,7 +24,7 @@ namespace FirstChair.Riding.Editor
         private const string SkiModelPath = "Assets/Art/Equipment/PR_Ski/PR_Ski.fbx";
         private const string PoleModelPath = "Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx";
 
-        /// <summary>Builds and saves the scene.</summary>
+        /// <summary>Builds and saves the scene, after offering to save the open scenes.</summary>
         [MenuItem("First Chair/Build Test Slope Scene")]
         public static void Build()
         {
@@ -33,6 +33,12 @@ namespace FirstChair.Riding.Editor
                 return;
             }
 
+            BuildScene();
+        }
+
+        /// <summary>Builds and saves the scene without asking anything (CI builds call this).</summary>
+        public static void BuildScene()
+        {
             TerrainData terrainData = TestSlopeTerrainBuilder.RebuildAsset();
             TestSlopeData slope = TestSlopeData.Load(Path.GetFullPath(TestSlopeTerrainBuilder.SlopeFolder));
             var cameraSettings = LoadOrCreate<FollowCameraSettings>("FollowCameraSettings");
