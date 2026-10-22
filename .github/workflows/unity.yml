@@ -104,28 +104,8 @@ jobs:
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}-
 
-      # Unity reads the input setting only at startup, and the player must be compiled with the same setting as the
-      # editor, so the set-up (URP asset, Input System backend) runs in a Unity session of its own first.
-      - name: Set up the project (URP, Input System)
-        uses: game-ci/unity-builder@4423ee75828dff56037d1d1cfdac6b68e3a6ba00 # v4.8.2
-        with:
-          targetPlatform: ${{ matrix.targetPlatform }}
-          buildName: FirstChair
-          buildMethod: FirstChair.Ci.Editor.CiBuild.SetUpProject
-          versioning: None
-
-      # The settings Unity generated, to commit so the set-up session can go.
-      - name: Upload the generated project settings
-        if: matrix.targetPlatform == 'StandaloneLinux64'
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: generated-project-settings
-          path: |
-            ProjectSettings
-            Packages/packages-lock.json
-            Assets/Settings
-
-      # The set-up session left new files (settings, .meta files), hence allowDirtyBuild.
+      # CiBuild builds the test slope scene, then the player. URP and the Input System backend are set in the committed
+      # ProjectSettings; Build stops with an error if Unity started without them.
       - name: Build the player
         uses: game-ci/unity-builder@4423ee75828dff56037d1d1cfdac6b68e3a6ba00 # v4.8.2
         with:
@@ -133,7 +113,6 @@ jobs:
           buildName: FirstChair
           buildMethod: FirstChair.Ci.Editor.CiBuild.Build
           versioning: None
-          allowDirtyBuild: true
 
       # Run-and-observe (.claude/docs/run-and-observe.md): launch the player on the test slope and capture the
       # follow camera. Software rendering (Mesa) under a virtual display, so it is slow but real.
@@ -146,9 +125,10 @@ jobs:
           player=build/StandaloneLinux64/FirstChair.x86_64
           chmod +x "$player"
           mkdir -p shots
-          xvfb-run -a -s "-screen 0 1280x720x24" timeout 300 "$player" -force-glcore \
+          # Software rendering takes seconds a frame, so wait 30 frames (240 never arrived within 5 minutes).
+          xvfb-run -a -s "-screen 0 1280x720x24" timeout 600 "$player" -force-glcore \
             -screen-width 1280 -screen-height 720 -screen-fullscreen 0 -logFile "$PWD/shots/player.log" \
-            --scene TestSlope --screenshot "$PWD/shots/follow-camera.png" --after 240 || echo "player exited with $?"
+            --scene TestSlope --screenshot "$PWD/shots/follow-camera.png" --after 30 || echo "player exited with $?"
           ls -la shots
 
       - name: Upload the screenshot and player log

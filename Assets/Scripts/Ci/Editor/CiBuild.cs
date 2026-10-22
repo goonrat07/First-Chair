@@ -12,10 +12,11 @@ namespace FirstChair.Ci.Editor
 {
     /// <summary>
     /// The player build that GitHub Actions runs (<c>.github/workflows/unity.yml</c>, game-ci unity-builder's
-    /// <c>buildMethod</c>). <see cref="SetUpProject"/> sets the project up the way the PC setup would (a URP asset, the
-    /// Input System backend) and runs in a Unity session of its own, because Unity reads the input setting only at
-    /// startup. <see cref="Build"/> then builds the test slope terrain and scene and a player for the active target, to
-    /// the path game-ci passes in <c>-customBuildPath</c>. Any failure exits the editor with code 1, so the CI job fails.
+    /// <c>buildMethod</c>). <see cref="Build"/> builds the test slope terrain and scene and a player for the active
+    /// target, to the path game-ci passes in <c>-customBuildPath</c>. Any failure exits the editor with code 1, so the CI
+    /// job fails. The committed ProjectSettings already carry a URP asset and the Input System backend;
+    /// <see cref="SetUpProject"/> restores them if they go missing, in a Unity session of its own, because Unity reads the
+    /// input setting only at startup.
     /// </summary>
     public static class CiBuild
     {
