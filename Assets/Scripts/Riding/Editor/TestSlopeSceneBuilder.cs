@@ -23,6 +23,7 @@ namespace FirstChair.Riding.Editor
 
         private const string SkiModelPath = "Assets/Art/Equipment/PR_Ski/PR_Ski.fbx";
         private const string PoleModelPath = "Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx";
+        private const string BodyShader = "Universal Render Pipeline/Lit";
 
         /// <summary>Builds and saves the scene, after offering to save the open scenes.</summary>
         [MenuItem("First Chair/Build Test Slope Scene")]
@@ -47,6 +48,7 @@ namespace FirstChair.Riding.Editor
             var cameraSettings = LoadOrCreate<FollowCameraSettings>("FollowCameraSettings");
             var viewSettings = LoadOrCreate<RiderViewSettings>("RiderViewSettings");
             var inputConfig = LoadOrCreate<RiderInputConfig>("RiderInputConfig");
+            Material bodyMaterial = LoadOrCreateMaterial("RiderPlaceholder", BodyShader);
 
             GameObject terrainObject = Terrain.CreateTerrainGameObject(terrainData);
             terrainObject.name = "TestSlopeTerrain";
@@ -67,6 +69,7 @@ namespace FirstChair.Riding.Editor
             Set(view, "settings", viewSettings);
             Set(view, "skiModel", AssetDatabase.LoadAssetAtPath<GameObject>(SkiModelPath));
             Set(view, "poleModel", AssetDatabase.LoadAssetAtPath<GameObject>(PoleModelPath));
+            Set(view, "bodyMaterial", bodyMaterial);
 
             Camera camera = FindCamera(scene);
             var follow = camera.gameObject.AddComponent<FollowCamera>();
@@ -108,6 +111,27 @@ namespace FirstChair.Riding.Editor
             }
 
             return asset;
+        }
+
+        private static Material LoadOrCreateMaterial(string name, string shaderName)
+        {
+            EnsureFolder(SettingsFolder);
+            string path = SettingsFolder + "/" + name + ".mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                Shader shader = Shader.Find(shaderName);
+                if (shader == null)
+                {
+                    throw new System.InvalidOperationException("Shader '" + shaderName + "' not found; is URP installed?");
+                }
+
+                AssetDatabase.CreateAsset(new Material(shader) { name = name }, path);
+                AssetDatabase.SaveAssets();
+                material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            }
+
+            return material;
         }
 
         // Throws rather than save a null reference: a missing asset or a destroyed object would otherwise ship silently.

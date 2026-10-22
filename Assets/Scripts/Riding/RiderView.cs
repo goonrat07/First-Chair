@@ -21,6 +21,10 @@ namespace FirstChair.Riding
         [Tooltip("Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx. Tip at the origin, shaft up +Y.")]
         [SerializeField] private GameObject poleModel;
 
+        [Tooltip("A URP Lit material for the body parts, tinted per part. Without it the primitives keep Unity's built-in "
+            + "default material, which URP draws magenta in a player.")]
+        [SerializeField] private Material bodyMaterial;
+
         private Transform _lean;
 
         private void Awake()
@@ -132,7 +136,13 @@ namespace FirstChair.Riding
         {
             GameObject part = GameObject.CreatePrimitive(type);
             Destroy(part.GetComponent<Collider>());
-            part.GetComponent<Renderer>().material.color = color;
+            var partRenderer = part.GetComponent<Renderer>();
+            if (bodyMaterial != null)
+            {
+                partRenderer.sharedMaterial = bodyMaterial;
+            }
+
+            partRenderer.material.color = color;
             part.transform.SetParent(_lean, false);
             return part.transform;
         }
