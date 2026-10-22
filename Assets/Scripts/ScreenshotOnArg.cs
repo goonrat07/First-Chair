@@ -9,6 +9,8 @@ public class ScreenshotOnArg : MonoBehaviour
     static void Boot()
     {
         if (Arg("--screenshot") == null) return;
+        // A virtual display has no window manager to focus the window, and an unfocused player pauses by default.
+        Application.runInBackground = true;
         var go = new GameObject(nameof(ScreenshotOnArg));
         DontDestroyOnLoad(go);
         go.AddComponent<ScreenshotOnArg>();

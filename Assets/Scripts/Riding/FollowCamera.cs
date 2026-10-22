@@ -21,6 +21,11 @@ namespace FirstChair.Riding
         private void Awake()
         {
             _camera = GetComponent<Camera>();
+            if (settings == null)
+            {
+                Debug.LogWarning("FollowCamera: no settings asset; using the defaults.", this);
+                settings = ScriptableObject.CreateInstance<FollowCameraSettings>();
+            }
         }
 
         private void LateUpdate()

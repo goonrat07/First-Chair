@@ -39,13 +39,14 @@ namespace FirstChair.Riding.Editor
         /// <summary>Builds and saves the scene without asking anything (CI builds call this).</summary>
         public static void BuildScene()
         {
+            // Assets are loaded after NewScene, which unloads unused assets. Settings created before it were saved as null
+            // references in the CI build of 2026-10-22, so the camera never moved; Set now throws instead.
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
             TerrainData terrainData = TestSlopeTerrainBuilder.RebuildAsset();
             TestSlopeData slope = TestSlopeData.Load(Path.GetFullPath(TestSlopeTerrainBuilder.SlopeFolder));
             var cameraSettings = LoadOrCreate<FollowCameraSettings>("FollowCameraSettings");
             var viewSettings = LoadOrCreate<RiderViewSettings>("RiderViewSettings");
             var inputConfig = LoadOrCreate<RiderInputConfig>("RiderInputConfig");
-
-            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
 
             GameObject terrainObject = Terrain.CreateTerrainGameObject(terrainData);
             terrainObject.name = "TestSlopeTerrain";
@@ -101,13 +102,15 @@ namespace FirstChair.Riding.Editor
             var asset = AssetDatabase.LoadAssetAtPath<T>(path);
             if (asset == null)
             {
-                asset = ScriptableObject.CreateInstance<T>();
-                AssetDatabase.CreateAsset(asset, path);
+                AssetDatabase.CreateAsset(ScriptableObject.CreateInstance<T>(), path);
+                AssetDatabase.SaveAssets();
+                asset = AssetDatabase.LoadAssetAtPath<T>(path);
             }
 
             return asset;
         }
 
+        // Throws rather than save a null reference: a missing asset or a destroyed object would otherwise ship silently.
         private static void Set(Object component, string field, Object value)
         {
             var serialized = new SerializedObject(component);
@@ -117,8 +120,17 @@ namespace FirstChair.Riding.Editor
                 throw new System.InvalidOperationException(component.GetType().Name + " has no serialized field '" + field + "'.");
             }
 
+            if (value == null)
+            {
+                throw new System.InvalidOperationException(component.GetType().Name + "." + field + " would be saved as null: its asset is missing or was unloaded.");
+            }
+
             property.objectReferenceValue = value;
             serialized.ApplyModifiedPropertiesWithoutUndo();
+            if (property.objectReferenceValue == null)
+            {
+                throw new System.InvalidOperationException(component.GetType().Name + "." + field + " did not keep its reference.");
+            }
         }
 
         private static void EnsureFolder(string path)
