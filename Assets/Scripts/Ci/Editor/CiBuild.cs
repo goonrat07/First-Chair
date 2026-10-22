@@ -12,9 +12,10 @@ namespace FirstChair.Ci.Editor
 {
     /// <summary>
     /// The player build that GitHub Actions runs (<c>.github/workflows/unity.yml</c>, game-ci unity-builder's
-    /// <c>buildMethod</c>). It sets the project up the way the PC setup would (a URP asset, the Input System backend),
-    /// builds the test slope terrain and scene, then builds a player for the active target to the path game-ci passes
-    /// in <c>-customBuildPath</c>. Any failure exits the editor with code 1, so the CI job fails.
+    /// <c>buildMethod</c>). <see cref="SetUpProject"/> sets the project up the way the PC setup would (a URP asset, the
+    /// Input System backend) and runs in a Unity session of its own, because Unity reads the input setting only at
+    /// startup. <see cref="Build"/> then builds the test slope terrain and scene and a player for the active target, to
+    /// the path game-ci passes in <c>-customBuildPath</c>. Any failure exits the editor with code 1, so the CI job fails.
     /// </summary>
     public static class CiBuild
     {
@@ -30,7 +31,19 @@ namespace FirstChair.Ci.Editor
         {
             try
             {
-                SetUpProject();
+                EnsureUrp();
+                if (EnsureInputSystemBackend())
+                {
+                    // The editor compiled its scripts without the Input System backend; a player compiled with it has
+                    // a different class layout (SRP Core's DebugActionDesc), and Unity refuses that build.
+                    AssetDatabase.SaveAssets();
+                    Debug.LogError("CiBuild: the Input System backend was off when Unity started. It is on now; run "
+                        + "FirstChair.Ci.Editor.CiBuild.SetUpProject in a Unity session of its own before Build.");
+                    EditorApplication.Exit(1);
+                    return;
+                }
+
+                AssetDatabase.SaveAssets();
                 TestSlopeSceneBuilder.BuildScene();
                 if (!BuildPlayer())
                 {
@@ -46,13 +59,18 @@ namespace FirstChair.Ci.Editor
 
         /// <summary>
         /// Assigns a URP asset to the graphics and quality settings and turns on the Input System backend, each only
-        /// when the project lacks it. Safe to run again.
+        /// when the project lacks it, and saves. Safe to run again. A changed input setting takes effect when Unity
+        /// next starts. Entry point for <c>-executeMethod FirstChair.Ci.Editor.CiBuild.SetUpProject</c>.
         /// </summary>
         [MenuItem("First Chair/Set Up Project (URP and Input System)")]
         public static void SetUpProject()
         {
             EnsureUrp();
-            EnsureInputSystemBackend();
+            if (EnsureInputSystemBackend())
+            {
+                Debug.Log("CiBuild: restart Unity for the input setting to take effect.");
+            }
+
             AssetDatabase.SaveAssets();
         }
 
@@ -94,7 +112,8 @@ namespace FirstChair.Ci.Editor
             Debug.Log("CiBuild: assigned " + PipelinePath + " to the graphics settings and every quality level.");
         }
 
-        private static void EnsureInputSystemBackend()
+        // Returns true when it changed the setting.
+        private static bool EnsureInputSystemBackend()
         {
             Object playerSettings = Unsupported.GetSerializedAssetInterfaceSingleton("PlayerSettings");
             var serialized = new SerializedObject(playerSettings);
@@ -102,15 +121,18 @@ namespace FirstChair.Ci.Editor
             if (handler == null)
             {
                 Debug.LogWarning("CiBuild: PlayerSettings has no activeInputHandler property; input handling left as it is.");
-                return;
+                return false;
             }
 
-            if (handler.intValue == 0)
+            if (handler.intValue != 0)
             {
-                handler.intValue = InputHandlerBoth;
-                serialized.ApplyModifiedPropertiesWithoutUndo();
-                Debug.Log("CiBuild: active input handling set to Both, so the Input System package receives input.");
+                return false;
             }
+
+            handler.intValue = InputHandlerBoth;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            Debug.Log("CiBuild: active input handling set to Both, so the Input System package receives input.");
+            return true;
         }
 
         private static bool BuildPlayer()

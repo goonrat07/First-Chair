@@ -104,7 +104,28 @@ jobs:
           restore-keys: |
             Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}-
 
-      # CiBuild sets up URP and the Input System backend, builds the test slope scene, then the player.
+      # Unity reads the input setting only at startup, and the player must be compiled with the same setting as the
+      # editor, so the set-up (URP asset, Input System backend) runs in a Unity session of its own first.
+      - name: Set up the project (URP, Input System)
+        uses: game-ci/unity-builder@4423ee75828dff56037d1d1cfdac6b68e3a6ba00 # v4.8.2
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: FirstChair
+          buildMethod: FirstChair.Ci.Editor.CiBuild.SetUpProject
+          versioning: None
+
+      # The settings Unity generated, to commit so the set-up session can go.
+      - name: Upload the generated project settings
+        if: matrix.targetPlatform == 'StandaloneLinux64'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: generated-project-settings
+          path: |
+            ProjectSettings
+            Packages/packages-lock.json
+            Assets/Settings
+
+      # The set-up session left new files (settings, .meta files), hence allowDirtyBuild.
       - name: Build the player
         uses: game-ci/unity-builder@4423ee75828dff56037d1d1cfdac6b68e3a6ba00 # v4.8.2
         with:
@@ -112,6 +133,7 @@ jobs:
           buildName: FirstChair
           buildMethod: FirstChair.Ci.Editor.CiBuild.Build
           versioning: None
+          allowDirtyBuild: true
 
       # Run-and-observe (.claude/docs/run-and-observe.md): launch the player on the test slope and capture the
       # follow camera. Software rendering (Mesa) under a virtual display, so it is slow but real.
