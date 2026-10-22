@@ -1,0 +1,10 @@
+Reviewed-Content-Hash: Assets/Scripts/Riding/SimDriver.cs 58f064366234f7b78be5aa7f0b0f518309088a0e
+Reviewed-Content-Hash: Assets/Scripts/Riding/RiderView.cs 058f95d5e2b94b9f00690a38e4da143e3355d30b
+Reviewed-Content-Hash: Assets/Scripts/Riding/RiderViewSettings.cs a04b9ab9389c072b4fc988581920a049fb4b2b9c
+Reviewed-Content-Hash: Assets/Scripts/Riding/FollowCamera.cs 7f116abab35622e42a7a188f4ffa982733d27214
+Reviewed-Content-Hash: Assets/Scripts/Riding/FollowCameraSettings.cs f2b629fd67e80d662e9744f186f3fd88611a1df9
+Reviewed-Content-Hash: Assets/Scripts/Riding/RiderInputReader.cs 04eabdee6601bc601c018dfb9dcdb067436846b9
+Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeSceneBuilder.cs ec657d52121b842c3bea3e2255aa02262c2cae6a
+Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeTerrainBuilder.cs 1588a88f3d6bb62f17cf24a2678a1403bf8f3e39
+Reviewed-Content-Hash: Assets/Scripts/Ci/Editor/CiBuild.cs e8b89cef06802c973de0360254ce3f3058152498
+Reviewed-Content-Hash: Assets/Scripts/ScreenshotOnArg.cs 35230411b0bad2f3d1d79795d8e2d2a37b369e96

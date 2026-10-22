@@ -94,6 +94,13 @@ as netstandard2.1 / C# 9 with the sim sources and pass under `dotnet` in a scrat
 - `Assets/Tests/EditMode/` (asmdef `FirstChair.Riding.Tests.EditMode`): `TerrainParityTests`, `RideReplayTests`,
   `FixedStepClockTests`, `RiderInputQuantizerTests`, `SimCoordinatesTests`, `TestSlopeFiles`
 
+Since 2026-10-22, Unity runs on GitHub Actions (`.github/workflows/unity.yml`). The project settings
+(`ProjectSettings/`, `Packages/manifest.json` and `packages-lock.json`, the URP assets in `Assets/Settings/`) are
+committed, and `Assets/Scripts/Ci/Editor/CiBuild.cs` builds the scene and the players. Every script compiles, the 34
+EditMode tests pass, and the Linux and Windows players build and run. Evidence is in
+`production/qa/evidence/story-003-test-slope-unity-view/`. The gamepad and the Windows playtest still need the
+user's PC.
+
 ## QA Test Cases
 
 *N/A — no qa-lead specs at this tier; implement against the Acceptance Criteria above*
