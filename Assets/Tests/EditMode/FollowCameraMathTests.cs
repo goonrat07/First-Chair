@@ -83,5 +83,32 @@ namespace FirstChair.Riding.Tests
             Assert.That(FollowCameraMath.YawDegrees(1.0, 0.0), Is.EqualTo(90.0).Within(1e-9));
             Assert.That(FollowCameraMath.YawDegrees(0.0, 1.0), Is.EqualTo(0.0).Within(1e-9));
         }
+
+        [Test]
+        public void SlopeDownAlongDegrees_LookingDownA30DegreeSlope_Is30()
+        {
+            // Arrange: a 30 degree slope falling toward +Z has the normal (0, cos 30, sin 30).
+            double c = System.Math.Cos(System.Math.PI / 6.0);
+            double s = System.Math.Sin(System.Math.PI / 6.0);
+
+            // Act
+            double down = FollowCameraMath.SlopeDownAlongDegrees(0.0, c, s, 0.0, 1.0);
+            double across = FollowCameraMath.SlopeDownAlongDegrees(0.0, c, s, 1.0, 0.0);
+            double up = FollowCameraMath.SlopeDownAlongDegrees(0.0, c, s, 0.0, -1.0);
+
+            // Assert
+            Assert.That(down, Is.EqualTo(30.0).Within(1e-9));
+            Assert.That(across, Is.EqualTo(0.0).Within(1e-9));
+            Assert.That(up, Is.EqualTo(-30.0).Within(1e-9));
+        }
+
+        [Test]
+        public void Pitch_AddsTheMarginToTheSlope_WithinTheLimits()
+        {
+            // Assert
+            Assert.That(FollowCameraMath.Pitch(17.0, 35.0, 30.0, 72.0), Is.EqualTo(52.0).Within(1e-9));
+            Assert.That(FollowCameraMath.Pitch(-20.0, 35.0, 30.0, 72.0), Is.EqualTo(30.0).Within(1e-9));
+            Assert.That(FollowCameraMath.Pitch(50.0, 35.0, 30.0, 72.0), Is.EqualTo(72.0).Within(1e-9));
+        }
     }
 }

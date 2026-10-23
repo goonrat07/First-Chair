@@ -197,10 +197,10 @@ namespace FirstChair.Riding
             switch (kind)
             {
                 case SnowType.Groomed:
-                    // Corduroy: 24 ridges a tile (25 cm on a 6 m tile) down the fall line (+V), slightly wavy.
-                    double wave = 0.015 * Math.Sin(2.0 * Math.PI * 2.0 * v);
-                    double ridge = 0.5 + 0.5 * Math.Sin(2.0 * Math.PI * 24.0 * (u + wave));
-                    return (float)(0.75 * ridge + 0.25 * Fractal(u, v, 16, 3, 11));
+                    // Corduroy: 18 straight ridges a tile (33 cm on a 6 m tile) down the fall line (+V), over soft
+                    // large-scale variation so the groomer doesn't read as a printed pattern from the follow camera.
+                    double ridge = 0.5 + 0.5 * Math.Sin(2.0 * Math.PI * 18.0 * u);
+                    return (float)(0.45 * ridge + 0.55 * Fractal(u, v, 3, 3, 11));
                 case SnowType.Powder:
                     return (float)Fractal(u, v, 4, 4, 23);
                 case SnowType.Crud:
@@ -218,7 +218,7 @@ namespace FirstChair.Riding
         {
             switch (kind)
             {
-                case SnowType.Groomed: r = 0.95f; g = 0.96f; b = 0.98f; shade = 0.07f; bump = 0.6f; return;
+                case SnowType.Groomed: r = 0.95f; g = 0.96f; b = 0.98f; shade = 0.05f; bump = 0.35f; return;
                 case SnowType.Powder: r = 0.98f; g = 0.985f; b = 1.0f; shade = 0.05f; bump = 3.0f; return;
                 case SnowType.Crud: r = 0.92f; g = 0.93f; b = 0.95f; shade = 0.12f; bump = 0.8f; return;
                 case SnowType.Ice: r = 0.78f; g = 0.85f; b = 0.92f; shade = 0.10f; bump = 0.6f; return;

@@ -82,6 +82,32 @@ namespace FirstChair.Riding
             return true;
         }
 
+        /// <summary>
+        /// How steeply the snow falls away along a ground direction, degrees: positive when the direction goes downhill.
+        /// </summary>
+        /// <param name="normalX">Snow normal X.</param>
+        /// <param name="normalY">Snow normal Y (up); at or below 0 counts as flat.</param>
+        /// <param name="normalZ">Snow normal Z.</param>
+        /// <param name="directionX">Unit ground direction X.</param>
+        /// <param name="directionZ">Unit ground direction Z.</param>
+        public static double SlopeDownAlongDegrees(double normalX, double normalY, double normalZ, double directionX, double directionZ)
+        {
+            if (normalY <= 1e-6)
+            {
+                return 0.0;
+            }
+
+            return Math.Atan((normalX * directionX + normalZ * directionZ) / normalY) * DegreesPerRadian;
+        }
+
+        /// <summary>The camera's pitch below the horizon: the slope's fall along the view plus a margin, clamped.</summary>
+        /// <param name="slopeDownDegrees">From <see cref="SlopeDownAlongDegrees"/>.</param>
+        /// <param name="aboveSlopeDegrees">Margin above the snow, degrees.</param>
+        /// <param name="minDegrees">Least pitch.</param>
+        /// <param name="maxDegrees">Most pitch.</param>
+        public static double Pitch(double slopeDownDegrees, double aboveSlopeDegrees, double minDegrees, double maxDegrees) =>
+            Math.Max(minDegrees, Math.Min(maxDegrees, slopeDownDegrees + aboveSlopeDegrees));
+
         /// <summary>How far ahead of the rider to aim, metres: grows with speed up to a cap.</summary>
         /// <param name="baseMetres">Look-ahead when stopped.</param>
         /// <param name="perSpeedSeconds">Extra metres per metre per second.</param>

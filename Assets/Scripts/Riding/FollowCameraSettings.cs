@@ -5,15 +5,21 @@ namespace FirstChair.Riding
     /// <summary>
     /// The follow camera's tuning, as data. The defaults match Grand Mountain Adventure 2's gameplay view as measured
     /// from the user's screenshots (<c>art/reference/style-notes-gma2.md</c>, "Gameplay camera"): straight behind the
-    /// rider, uphill, looking down the line of travel at about 40°, far enough that the rider is about 5 percent of the
+    /// rider, uphill, looking down the line of travel about 35° steeper than the snow, far enough that the rider is about 5 percent of the
     /// screen height, centred left to right and a little below the middle.
     /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Follow Camera Settings", fileName = "FollowCameraSettings")]
     public sealed class FollowCameraSettings : ScriptableObject
     {
         [Header("Placement")]
-        [Tooltip("Angle below the horizon the camera looks down, degrees.")]
-        [SerializeField, Range(5f, 89f)] private float pitchDegrees = 40f;
+        [Tooltip("How far the camera looks down past the slope's own angle along the view, degrees. Measured from GMA2: "
+            + "about 35 above the snow, so on a 17 degree groomer the camera looks down 52 degrees.")]
+        [SerializeField, Range(5f, 85f)] private float pitchAboveSlopeDegrees = 35f;
+        [Tooltip("Least and most the camera looks down below the horizon, degrees.")]
+        [SerializeField, Range(5f, 89f)] private float minPitchDegrees = 30f;
+        [SerializeField, Range(5f, 89f)] private float maxPitchDegrees = 72f;
+        [Tooltip("How slowly the pitch follows the slope, seconds.")]
+        [SerializeField, Min(0f)] private float pitchSmoothTime = 1f;
         [Tooltip("Distance from the aim point, metres. 50 m with the 35 mm lens makes the rider about 5% of the screen height.")]
         [SerializeField, Min(1f)] private float distance = 50f;
         [Tooltip("Aim point height above the rider's feet, metres.")]
@@ -48,8 +54,14 @@ namespace FirstChair.Riding
         [Tooltip("A jump of the aim point larger than this, metres (a reset), snaps instead of smoothing.")]
         [SerializeField, Min(0f)] private float snapDistance = 30f;
 
-        /// <summary>Pitch below the horizon, degrees.</summary>
-        public float PitchDegrees => pitchDegrees;
+        /// <summary>Pitch past the slope's angle along the view, degrees.</summary>
+        public float PitchAboveSlopeDegrees => pitchAboveSlopeDegrees;
+        /// <summary>Least pitch below the horizon, degrees.</summary>
+        public float MinPitchDegrees => minPitchDegrees;
+        /// <summary>Most pitch below the horizon, degrees.</summary>
+        public float MaxPitchDegrees => maxPitchDegrees;
+        /// <summary>Pitch smoothing time, seconds.</summary>
+        public float PitchSmoothTime => pitchSmoothTime;
         /// <summary>Distance, metres.</summary>
         public float Distance => distance;
         /// <summary>Aim height, metres.</summary>

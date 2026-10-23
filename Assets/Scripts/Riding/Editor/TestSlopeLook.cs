@@ -113,22 +113,38 @@ namespace FirstChair.Riding.Editor
         public static void Lighting(Light sun)
         {
             // About 25 degrees up, ahead and to the right of a camera looking down the fall line (+Z), so shadows stretch
-            // across the slope toward the bottom left, as in the GMA2 forest shot.
+            // across the slope toward the bottom left, as in the GMA2 forest shot. Bright enough that lit snow is near
+            // white after neutral tonemapping (the first build at 1.3 read grey).
             sun.transform.rotation = Quaternion.Euler(25f, -122f, 0f);
             sun.color = new Color(1f, 0.94f, 0.86f);
-            sun.intensity = 1.3f;
+            sun.intensity = 2f;
             sun.shadows = LightShadows.Soft;
             sun.shadowStrength = 1f;
             RenderSettings.sun = sun;
             RenderSettings.ambientMode = AmbientMode.Trilight;
-            RenderSettings.ambientSkyColor = new Color(0.55f, 0.66f, 0.86f);
-            RenderSettings.ambientEquatorColor = new Color(0.70f, 0.76f, 0.86f);
-            RenderSettings.ambientGroundColor = new Color(0.45f, 0.50f, 0.60f);
+            RenderSettings.ambientSkyColor = new Color(0.62f, 0.72f, 0.92f);
+            RenderSettings.ambientEquatorColor = new Color(0.78f, 0.83f, 0.92f);
+            RenderSettings.ambientGroundColor = new Color(0.55f, 0.60f, 0.70f);
+            RenderSettings.skybox = Sky();
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = new Color(0.80f, 0.86f, 0.94f);
             RenderSettings.fogStartDistance = 150f;
             RenderSettings.fogEndDistance = 900f;
+        }
+
+        // Unity's procedural sky with a snow-coloured lower half, so any view past the terrain's edge reads as distant
+        // snow in the haze instead of brown ground.
+        private static Material Sky()
+        {
+            Material sky = LitMaterial("Sky", "Skybox/Procedural", Color.white, 0f, false);
+            sky.SetColor("_GroundColor", new Color(0.82f, 0.86f, 0.92f));
+            sky.SetColor("_SkyTint", new Color(0.50f, 0.60f, 0.75f));
+            sky.SetFloat("_AtmosphereThickness", 0.8f);
+            sky.SetFloat("_Exposure", 1.2f);
+            EditorUtility.SetDirty(sky);
+            AssetDatabase.SaveAssets();
+            return sky;
         }
 
         /// <summary>
