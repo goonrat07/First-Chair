@@ -1,0 +1,166 @@
+{
+  "asset": "EN_Conifer",
+  "generated": "2026-10-23T21:30:37",
+  "blender": "5.2.2 LTS",
+  "source": "/home/user/First-Chair/art/source/EN_Conifer/EN_Conifer_master.blend",
+  "target_engine": "unity",
+  "units": {
+    "system": "METRIC",
+    "scale_length": 1.0,
+    "authoring_up": "Z",
+    "authoring_forward": "-Y",
+    "export_up": "Y",
+    "export_forward": "+Z",
+    "fbx_bake_space_transform": true,
+    "note": "Z up becomes Y up; a subject facing -Y in Blender faces +Z in the exported scene (glTF and FBX alike, measured for FBX on Blender 5.2.2)"
+  },
+  "target_height_m": 12.0,
+  "bounds_m": {
+    "min": [
+      -1.7409,
+      -1.6057,
+      0.0
+    ],
+    "max": [
+      1.7474,
+      1.8433,
+      12.0
+    ],
+    "size": [
+      3.4884,
+      3.449,
+      12.0
+    ]
+  },
+  "files": {
+    "all": "/home/user/First-Chair/Assets/Art/Environment/EN_Conifer/EN_Conifer.fbx"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "objects": [
+        "EN_Conifer_LOD0"
+      ],
+      "tris": 1169,
+      "budget_tris": [
+        300,
+        1500
+      ]
+    },
+    {
+      "level": 1,
+      "objects": [
+        "EN_Conifer_LOD1"
+      ],
+      "tris": 396,
+      "budget_tris": [
+        100,
+        400
+      ]
+    }
+  ],
+  "materials": [
+    "M_Conifer_Bark",
+    "M_Conifer_Needle",
+    "M_Conifer_Snow"
+  ],
+  "textures": [],
+  "texture_contract": {
+    "basecolor": "sRGB",
+    "normal": "Non-Color, tangent space, OpenGL +Y",
+    "roughness": "Non-Color",
+    "metallic": "Non-Color",
+    "ao": "Non-Color",
+    "packed_channels": "none by default; document any ORM packing here"
+  },
+  "skeleton": [],
+  "sockets": [],
+  "colliders": [],
+  "animation_contract": "animation-contract.json",
+  "inferred_from_no_reference": [
+    "base height 12 m and the 8 to 14 m game range (user decision)",
+    "tier count and droop and plane widths (our notes and the user's review)",
+    "all colours"
+  ],
+  "dependencies": [],
+  "tree": {
+    "kind": "conifer",
+    "variant": "snowy_spruce",
+    "version": 2,
+    "status": "approved for use in the test build",
+    "height_m": 12.0,
+    "trunk_base_radius_m": 0.16,
+    "crown_width_m": 3.6958,
+    "origin": "trunk base, on the ground",
+    "per_lod": {
+      "LOD0": {
+        "object": "EN_Conifer_LOD0",
+        "tris": 1169,
+        "height_m": 12.0,
+        "base_z_m": 0.0,
+        "trunk_base_radius_m": 0.16,
+        "crown_width_m": 3.6958
+      },
+      "LOD1": {
+        "object": "EN_Conifer_LOD1",
+        "tris": 396,
+        "height_m": 12.0,
+        "base_z_m": 0.0,
+        "trunk_base_radius_m": 0.16,
+        "crown_width_m": 3.5957
+      }
+    },
+    "in_game_scale": [
+      0.667,
+      1.167
+    ],
+    "note": "12 m base tree; instances scaled 0.667 to 1.167 give 8 to 14 m trees (user decision 2026-10-20)"
+  },
+  "material_colours": {
+    "M_Conifer_Bark": {
+      "role": "bark",
+      "base_colour_linear": [
+        0.09,
+        0.07,
+        0.06
+      ],
+      "base_colour_srgb_hex": "#554B45",
+      "roughness": 0.9,
+      "carried_as": "FBX DiffuseColor, linear RGB; no textures, no UVs"
+    },
+    "M_Conifer_Needle": {
+      "role": "needle",
+      "base_colour_linear": [
+        0.01,
+        0.03,
+        0.018
+      ],
+      "base_colour_srgb_hex": "#193024",
+      "roughness": 0.85,
+      "carried_as": "FBX DiffuseColor, linear RGB; no textures, no UVs"
+    },
+    "M_Conifer_Snow": {
+      "role": "snow",
+      "base_colour_linear": [
+        0.8,
+        0.87,
+        0.96
+      ],
+      "base_colour_srgb_hex": "#E7F0FA",
+      "roughness": 0.7,
+      "carried_as": "FBX DiffuseColor, linear RGB; no textures, no UVs"
+    }
+  },
+  "provenance": {
+    "params": "art/source/EN_Conifer/EN_Conifer_params.json",
+    "blend": "art/source/EN_Conifer/EN_Conifer_master.blend",
+    "generator": "tree-kit build_tree.py (procedural)",
+    "style_reference": "art/reference/style-notes-gma2.md (our notes; no third-party images in the repo)",
+    "licence": "ours: First Chair's own procedural mesh and colours; no third-party meshes, images or textures"
+  },
+  "unity": {
+    "lod_group": "the importer builds it from the _LOD0/_LOD1 name suffixes (not verified in the editor)",
+    "gpu_instancing": "turn on for the three materials (not verified in the editor)",
+    "billboard_lod2": "not built: tree-kit has no billboard script yet (asset-brief.md)"
+  }
+}

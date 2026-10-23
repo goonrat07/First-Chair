@@ -3,7 +3,7 @@
 ```text
 ASSET      EN_Conifer (environment, tree). Built with .claude/skills/tree-kit from EN_Conifer_params.json.
 KIND       conifer: slender trunk, tiers of wide drooping branch planes, narrow spike crown.
-VARIANT    snowy_spruce v2 (built). Planned: olive_bare, rust_larch (placeholders in the params, status "planned").
+VARIANT    snowy_spruce v2 (built; approved for use in the test build; exported 2026-10-23). Planned: olive_bare, rust_larch (placeholders in the params, status "planned").
 REFERENCE  art/reference/style-notes-gma2.md, "Overall look" and "Trees": our notes on the user's Grand Mountain
            Adventure 2 screenshots. The screenshots are copyrighted and not in the repo. Silhouette reference:
            ref/front_matte.png, side_matte.png, top_matte.png and profiles_sheet.png, drawn by script from the
@@ -35,9 +35,50 @@ CAMERA     Game camera from art/source/CH_Skier/CH_Skier_master.blend REF_game_c
            review render now uses this exact follow camera on a skier proxy beside the trunk.
 INFERRED   Base height and the 8 to 14 m range (the user's decision, not measured from screenshots); tier count,
            droop and widths (from the notes and the review, not from measured images); all colours.
-TARGET     Unity 6.3 LTS URP, FBX, Assets/Art/Environment/EN_Conifer/ (Phase 6, after the look review).
+TARGET     Unity 6.3 LTS URP, FBX, Assets/Art/Environment/EN_Conifer/ (exported in Phase 6, 2026-10-23).
            Thousands instanced: GPU instancing on the materials and a LODGroup (not verified in the editor).
 ```
+
+## Status
+
+- 2026-10-23: snowy_spruce v2 is approved for use in the test build and exported (tree-kit Phase 6) to
+  `Assets/Art/Environment/EN_Conifer/`: `EN_Conifer.fbx` (Git LFS) with the meshes `EN_Conifer_LOD0`
+  (1,169 tris) and `EN_Conifer_LOD1` (396 tris) and the materials `M_Conifer_Bark`, `M_Conifer_Needle`
+  and `M_Conifer_Snow` (base colours carried as the FBX DiffuseColor, linear), plus `asset-manifest.json`
+  and `animation-contract.json` (no clips: a static asset). Shape and colours are unchanged from v2.
+- One FBX holds both LODs (no `--split-lods`), so Unity gets one model and builds its LODGroup from the
+  `_LOD0` and `_LOD1` suffixes.
+- Export check PASS (30 of 30, `build/export_check.py`). In the raw FBX: Y up, both meshes at the scene
+  root with identity local transforms, 1,169 and 396 tris, height 12.00 m after the unit scale, trunk base
+  at the origin, DiffuseColor equal to the params colours. Reimported into a blank Blender scene: the same
+  tris, height 12.00 m and base colours. `roundtrip.py`: no errors, height 12.0 m. The evidence is in
+  `review/final/` (`export_check.json`, `roundtrip.json`, `export_clay.png`, `export_colour.png`). The
+  working copies and logs are in `review/export/`, which git ignores.
+- **Not verified in the Unity editor:** the LODGroup, no rotation on import, 1 unit = 1 m, the imported
+  Base Colours, and GPU instancing on the materials.
+- LOD2 billboard: not built, because tree-kit has no billboard script yet (see below).
+- The colours are approved for the test build only. They stay provisional until the final art sign-off.
+
+## Rebuild
+
+From the repo root, with `$BLENDER_BIN` set (cloud sessions: `cloud-setup.sh` sets it):
+
+```bash
+bash art/source/EN_Conifer/build/phases.sh all   # phases 1 to 5, review/final, then the Phase 6 export
+bash art/source/EN_Conifer/build/phases.sh 6     # the export only, from the current master .blend
+```
+
+Phase 6 runs these steps in order:
+
+1. `export_delivery.py --engine unity --format FBX --collections LOW --no-animation`
+2. `build/manifest_extras.py`, which adds the tree fields to the manifest: height, trunk base radius,
+   crown width, the colours of each material, the variant, the source and the licence
+3. `roundtrip.py --expect-height 12`
+4. `build/export_check.py`
+
+It then copies the check evidence into `review/final/`. To change the tree, change the params and rerun.
+Never edit the mesh or the FBX by hand. Each export rewrites the manifest's `generated` time and
+absolute `source` path (export_delivery's convention, the same as PR_Ski).
 
 ## Billboard (LOD2) still to build
 

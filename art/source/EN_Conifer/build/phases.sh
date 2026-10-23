@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # EN_Conifer: every tree-kit phase for this asset, rebuilt from EN_Conifer_params.json.
-# Usage: bash art/source/EN_Conifer/build/phases.sh [1|2|3|4|5|final|all]   (default all)
-# Phase 6 (export to Assets/) is not here yet: it waits for the user's look review.
+# Usage: bash art/source/EN_Conifer/build/phases.sh [1|2|3|4|5|final|6|all]   (default all)
+# Phase 6 exports snowy_spruce v2 (approved for the test build) to Assets/Art/Environment/EN_Conifer/.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
 A="$ROOT/art/source/EN_Conifer"
@@ -47,8 +47,26 @@ final() {
   cp "$G/"{gates.json,validate.json,diff_front.png,diff_side.png,diff_top_lod0.png,diff_front_lod1.png,diff_top_lod1.png} "$F/"
 }
 
+phase6() {
+  local X="$ROOT/Assets/Art/Environment/EN_Conifer" E="$A/review/export" F="$A/review/final" H
+  H="$(python3 -c "import json; print(json.load(open('$P'))['shape']['height_m'])")"
+  mkdir -p "$E" "$F"
+  "$B" --background --python "$PK/export_delivery.py" -- --blend "$M" --out "$X" --name EN_Conifer --format FBX \
+    --collections LOW --engine unity --no-animation \
+    --inferred "base height 12 m and the 8 to 14 m game range (user decision),tier count and droop and plane widths (our notes and the user's review),all colours" \
+    > "$E/log_export.txt" 2>&1
+  "$B" --background --python "$A/build/manifest_extras.py" -- --blend "$M" --params "$P" --manifest "$X/asset-manifest.json" \
+    --variant "$V" --root "$ROOT" >> "$E/log_export.txt" 2>&1
+  "$B" --background --python "$PK/roundtrip.py" -- --file "$X/EN_Conifer.fbx" --out "$E" --expect-height "$H" \
+    > "$E/log_roundtrip.txt" 2>&1 || echo "roundtrip.py reported errors: see $E/roundtrip.json"
+  "$B" --background --python "$A/build/export_check.py" -- --fbx "$X/EN_Conifer.fbx" --manifest "$X/asset-manifest.json" \
+    --params "$P" --variant "$V" --out "$E" > "$E/log_check.txt" 2>&1 || echo "export_check.py reported FAIL: see $E/export_check.json"
+  grep -E "^(CHECK|VERDICT)" "$E/log_check.txt"
+  cp "$E/"{export_check.json,export_clay.png,export_colour.png,roundtrip.json} "$F/"
+}
+
 case "${1:-all}" in
-  1) phase1 ;; 2) phase2 ;; 3) phase3 ;; 4) phase4 ;; 5) phase5 ;; final) final ;;
-  all) phase1; phase2; phase3; phase4; phase5; final ;;
-  *) echo "usage: $0 [1|2|3|4|5|final|all]"; exit 2 ;;
+  1) phase1 ;; 2) phase2 ;; 3) phase3 ;; 4) phase4 ;; 5) phase5 ;; final) final ;; 6) phase6 ;;
+  all) phase1; phase2; phase3; phase4; phase5; final; phase6 ;;
+  *) echo "usage: $0 [1|2|3|4|5|final|6|all]"; exit 2 ;;
 esac
