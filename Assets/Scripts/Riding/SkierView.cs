@@ -64,7 +64,7 @@ namespace FirstChair.Riding
 
             GameObject skier = Instantiate(skierModel, transform, false);
             skier.name = "CH_Skier";
-            skier.transform.localPosition = Vector3.zero;
+            skier.transform.localPosition = new Vector3(0f, settings.SkierRootLift, 0f);
             skier.transform.localRotation = Quaternion.identity;
 
             _trackLeft = AttachSki(skier.transform, settings.SkierSkiSocketLeft);

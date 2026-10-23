@@ -42,6 +42,9 @@ namespace FirstChair.Riding
         [SerializeField] private string skierHandSocketRight = "SOCKET_hand_R";
         [Tooltip("How long the skier takes to ease between poses, seconds.")]
         [SerializeField, Min(0f)] private float poseSmoothTime = 0.12f;
+        [Tooltip("Lift of CH_Skier's root above the snow, metres: its root is at the boot soles, and PR_Ski's base is "
+            + "0.045 m below the boot socket (CH_Skier asset-manifest.json).")]
+        [SerializeField] private float skierRootLift = 0.045f;
 
         [Header("Ski tracks")]
         [Tooltip("Width of each ski's track, metres.")]
@@ -95,6 +98,8 @@ namespace FirstChair.Riding
         public string SkierHandSocketRight => skierHandSocketRight;
         /// <summary>Pose easing time, seconds.</summary>
         public float PoseSmoothTime => poseSmoothTime;
+        /// <summary>CH_Skier's root height above the snow, metres.</summary>
+        public float SkierRootLift => skierRootLift;
         /// <summary>Track width, metres.</summary>
         public float TrackWidth => trackWidth;
         /// <summary>Track lifetime, seconds.</summary>
