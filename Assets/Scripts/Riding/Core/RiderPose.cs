@@ -9,7 +9,9 @@ namespace FirstChair.Riding
     public readonly struct RiderPose
     {
         /// <summary>Creates a pose.</summary>
-        public RiderPose(float x, float y, float z, float yawDegrees, float rollDegrees, bool airborne, bool crashed)
+        public RiderPose(
+            float x, float y, float z, float yawDegrees, float rollDegrees, bool airborne, bool crashed,
+            float velocityX = 0f, float velocityY = 0f, float velocityZ = 0f)
         {
             X = x;
             Y = y;
@@ -18,6 +20,9 @@ namespace FirstChair.Riding
             RollDegrees = rollDegrees;
             Airborne = airborne;
             Crashed = crashed;
+            VelocityX = velocityX;
+            VelocityY = velocityY;
+            VelocityZ = velocityZ;
         }
 
         /// <summary>Unity x, metres.</summary>
@@ -34,6 +39,15 @@ namespace FirstChair.Riding
 
         /// <summary>Lean about the rider's forward axis, degrees, from the sim's edge angle (into the turn).</summary>
         public float RollDegrees { get; }
+
+        /// <summary>Unity velocity x, metres per second.</summary>
+        public float VelocityX { get; }
+
+        /// <summary>Unity velocity y, metres per second.</summary>
+        public float VelocityY { get; }
+
+        /// <summary>Unity velocity z, metres per second.</summary>
+        public float VelocityZ { get; }
 
         /// <summary>Whether the current state is in the air.</summary>
         public bool Airborne { get; }
@@ -57,6 +71,9 @@ namespace FirstChair.Riding
             double heading = SimCoordinates.LerpAngle(
                 SimCoordinates.ToDouble(previous.Heading), SimCoordinates.ToDouble(current.Heading), t);
             double edge = Lerp(SimCoordinates.ToDouble(previous.EdgeAngle), SimCoordinates.ToDouble(current.EdgeAngle), t);
+            double vx = Lerp(SimCoordinates.ToDouble(previous.Velocity.X), SimCoordinates.ToDouble(current.Velocity.X), t);
+            double vy = Lerp(SimCoordinates.ToDouble(previous.Velocity.Y), SimCoordinates.ToDouble(current.Velocity.Y), t);
+            double vz = Lerp(SimCoordinates.ToDouble(previous.Velocity.Z), SimCoordinates.ToDouble(current.Velocity.Z), t);
             return new RiderPose(
                 (float)x,
                 (float)y,
@@ -64,7 +81,10 @@ namespace FirstChair.Riding
                 (float)SimCoordinates.HeadingToYawDegrees(heading),
                 (float)SimCoordinates.EdgeAngleToRollDegrees(edge),
                 current.Airborne,
-                current.Crashed);
+                current.Crashed,
+                (float)vx,
+                (float)vy,
+                (float)vz);
         }
 
         private static double Lerp(double a, double b, double t) => a + (b - a) * t;

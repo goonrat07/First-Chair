@@ -24,6 +24,7 @@ namespace FirstChair.Riding.Editor
         private const string SkiModelPath = "Assets/Art/Equipment/PR_Ski/PR_Ski.fbx";
         private const string PoleModelPath = "Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx";
         private const string BodyShader = "Universal Render Pipeline/Lit";
+        private const string SkierModelPath = "Assets/Art/Characters/CH_Skier/CH_Skier.fbx";
 
         /// <summary>Builds and saves the scene, after offering to save the open scenes.</summary>
         [MenuItem("First Chair/Build Test Slope Scene")]
@@ -49,11 +50,19 @@ namespace FirstChair.Riding.Editor
             var viewSettings = LoadOrCreate<RiderViewSettings>("RiderViewSettings");
             var inputConfig = LoadOrCreate<RiderInputConfig>("RiderInputConfig");
             Material bodyMaterial = LoadOrCreateMaterial("RiderPlaceholder", BodyShader);
+            Material trackMaterial = TestSlopeLook.TrackMaterial();
+            TerrainLayer[] snowLayers = TestSlopeLook.SnowLayers();
+            TestSlopeLook.PaintSnow(terrainData, snowLayers, TestSlopeTerrainBuilder.SlopeFolder, slope.Heightmap.Resolution);
+            Material terrainMaterial = TestSlopeLook.TerrainMaterial();
 
             GameObject terrainObject = Terrain.CreateTerrainGameObject(terrainData);
             terrainObject.name = "TestSlopeTerrain";
             terrainObject.transform.position = SimCoordinatesUnity.TerrainOrigin(slope.Layout.Spec);
-            terrainObject.GetComponent<Terrain>().heightmapPixelError = 1f;
+            var terrain = terrainObject.GetComponent<Terrain>();
+            terrain.heightmapPixelError = 1f;
+            terrain.basemapDistance = 600f;
+            terrain.materialTemplate = terrainMaterial;
+            TestSlopeLook.Lighting(FindSun(scene));
 
             var driverObject = new GameObject("SimDriver");
             var input = driverObject.AddComponent<RiderInputReader>();
@@ -64,22 +73,96 @@ namespace FirstChair.Riding.Editor
             var rider = new GameObject("Rider");
             slope.Heightmap.Sample(slope.Layout.StartX, slope.Layout.StartZ, out Fix64 startHeight, out _);
             rider.transform.position = SimCoordinatesUnity.ToVector3(new Vec3(slope.Layout.StartX, startHeight, slope.Layout.StartZ));
-            var view = rider.AddComponent<RiderView>();
-            Set(view, "driver", driver);
-            Set(view, "settings", viewSettings);
-            Set(view, "skiModel", AssetDatabase.LoadAssetAtPath<GameObject>(SkiModelPath));
-            Set(view, "poleModel", AssetDatabase.LoadAssetAtPath<GameObject>(PoleModelPath));
-            Set(view, "bodyMaterial", bodyMaterial);
+            var skierModel = AssetDatabase.LoadAssetAtPath<GameObject>(SkierModelPath);
+            if (skierModel != null)
+            {
+                var skier = rider.AddComponent<SkierView>();
+                Set(skier, "driver", driver);
+                Set(skier, "settings", viewSettings);
+                Set(skier, "skierModel", skierModel);
+                Set(skier, "skiModel", AssetDatabase.LoadAssetAtPath<GameObject>(SkiModelPath));
+                Set(skier, "poleModel", AssetDatabase.LoadAssetAtPath<GameObject>(PoleModelPath));
+                Set(skier, "trackMaterial", trackMaterial);
+                SetArray(skier, "poseClips", LoadPoseClips(SkierModelPath));
+            }
+            else
+            {
+                Debug.LogWarning("TestSlopeSceneBuilder: no " + SkierModelPath + "; the placeholder skier rides instead.");
+                var view = rider.AddComponent<RiderView>();
+                Set(view, "driver", driver);
+                Set(view, "settings", viewSettings);
+                Set(view, "skiModel", AssetDatabase.LoadAssetAtPath<GameObject>(SkiModelPath));
+                Set(view, "poleModel", AssetDatabase.LoadAssetAtPath<GameObject>(PoleModelPath));
+                Set(view, "bodyMaterial", bodyMaterial);
+                Set(view, "trackMaterial", trackMaterial);
+            }
 
             Camera camera = FindCamera(scene);
             var follow = camera.gameObject.AddComponent<FollowCamera>();
             Set(follow, "target", rider.transform);
+            Set(follow, "driver", driver);
             Set(follow, "settings", cameraSettings);
+            TestSlopeLook.PostProcessing(camera);
+
+            var hud = new GameObject("HUD").AddComponent<RiderHud>();
+            Set(hud, "driver", driver);
+
+            var scenery = new GameObject("Scenery");
+            TestSlopeLook.Trees(scenery.transform, slope);
+            TestSlopeLook.RailsAndBoxes(scenery.transform, slope);
 
             EnsureFolder("Assets/Scenes");
             EditorSceneManager.SaveScene(scene, ScenePath);
             AddToBuildSettings(ScenePath);
-            Debug.Log("Built " + ScenePath + ". Press Play to ride; F5 checks the replay, F6 saves the recording.");
+            Debug.Log("Built " + ScenePath + ". Press Play to ride; F5 checks the replay, F6 saves the recording, F1 hides the HUD.");
+        }
+
+        // The pose clips in SkierPose order, matched by name; Blender may prefix a take with "Armature|".
+        private static AnimationClip[] LoadPoseClips(string modelPath)
+        {
+            var clips = new AnimationClip[SkierPoseWeights.Count];
+            foreach (Object asset in AssetDatabase.LoadAllAssetRepresentationsAtPath(modelPath))
+            {
+                if (!(asset is AnimationClip clip) || clip.name.StartsWith("__preview__", System.StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                string name = clip.name.Substring(clip.name.LastIndexOf('|') + 1);
+                for (int i = 0; i < SkierPoseWeights.Count; i++)
+                {
+                    if (name == SkierPoseWeights.ClipName((SkierPose)i))
+                    {
+                        clips[i] = clip;
+                    }
+                }
+            }
+
+            for (int i = 0; i < SkierPoseWeights.Count; i++)
+            {
+                if (clips[i] == null)
+                {
+                    Debug.LogWarning("TestSlopeSceneBuilder: " + modelPath + " has no " + SkierPoseWeights.ClipName((SkierPose)i) + " clip.");
+                }
+            }
+
+            return clips;
+        }
+
+        private static Light FindSun(Scene scene)
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                var light = root.GetComponentInChildren<Light>();
+                if (light != null && light.type == LightType.Directional)
+                {
+                    return light;
+                }
+            }
+
+            var created = new GameObject("Sun").AddComponent<Light>();
+            created.type = LightType.Directional;
+            return created;
         }
 
         private static Camera FindCamera(Scene scene)
@@ -155,6 +238,25 @@ namespace FirstChair.Riding.Editor
             {
                 throw new System.InvalidOperationException(component.GetType().Name + "." + field + " did not keep its reference.");
             }
+        }
+
+        // Sets an object array field; null entries are allowed (SkierView falls back to the stance clip).
+        private static void SetArray(Object component, string field, Object[] values)
+        {
+            var serialized = new SerializedObject(component);
+            SerializedProperty property = serialized.FindProperty(field);
+            if (property == null || !property.isArray)
+            {
+                throw new System.InvalidOperationException(component.GetType().Name + " has no serialized array '" + field + "'.");
+            }
+
+            property.arraySize = values.Length;
+            for (int i = 0; i < values.Length; i++)
+            {
+                property.GetArrayElementAtIndex(i).objectReferenceValue = values[i];
+            }
+
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static void EnsureFolder(string path)

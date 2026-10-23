@@ -1,4 +1,3 @@
-using FirstChair.Sim;
 using UnityEngine;
 
 namespace FirstChair.Riding
@@ -25,7 +24,12 @@ namespace FirstChair.Riding
             + "default material, which URP draws magenta in a player.")]
         [SerializeField] private Material bodyMaterial;
 
+        [Tooltip("Double-sided material for the ski tracks.")]
+        [SerializeField] private Material trackMaterial;
+
         private Transform _lean;
+        private TrailRenderer _trackLeft;
+        private TrailRenderer _trackRight;
 
         private void Awake()
         {
@@ -45,25 +49,29 @@ namespace FirstChair.Riding
             }
 
             RiderPose pose = driver.Pose;
-            Vector3 normal = SnowNormal(driver.Session, driver.InterpolationAlpha);
+            Vector3 normal = ViewHelpers.SnowNormal(driver.Session, driver.InterpolationAlpha);
             Quaternion tilt = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(Vector3.up, normal), settings.SlopeAlign);
             transform.SetPositionAndRotation(SimCoordinatesUnity.Position(pose), tilt * Quaternion.Euler(0f, pose.YawDegrees, 0f));
             _lean.localRotation = Quaternion.Euler(0f, 0f, pose.RollDegrees * settings.LeanScale);
+
+            bool onSnow = !pose.Airborne && !pose.Crashed;
+            UpdateTrack(_trackLeft, onSnow, driver.Session.SnappedThisFrame);
+            UpdateTrack(_trackRight, onSnow, driver.Session.SnappedThisFrame);
         }
 
-        private static Vector3 SnowNormal(RideSession session, float alpha)
+        private static void UpdateTrack(TrailRenderer track, bool onSnow, bool snapped)
         {
-            RiderState current = session.Current;
-            if (current.Airborne)
+            if (track == null)
             {
-                return Vector3.up;
+                return;
             }
 
-            RiderState previous = session.Previous;
-            Heightmap heightmap = session.Slope.Heightmap;
-            heightmap.Sample(previous.Position.X, previous.Position.Z, out _, out Vec3 before);
-            heightmap.Sample(current.Position.X, current.Position.Z, out _, out Vec3 after);
-            return Vector3.Lerp(SimCoordinatesUnity.ToVector3(before), SimCoordinatesUnity.ToVector3(after), alpha).normalized;
+            if (snapped)
+            {
+                track.Clear();
+            }
+
+            track.emitting = onSnow;
         }
 
         private void BuildPlaceholder()
@@ -83,7 +91,17 @@ namespace FirstChair.Riding
                     ski.name = side < 0 ? "Ski_L" : "Ski_R";
                     ski.localPosition = skiOrigin;
                     ski.localRotation = Quaternion.identity;
-                    Transform socket = FindSocket(ski, settings.SkiSocket);
+                    TrailRenderer track = SkiTrack.Create(ski, trackMaterial, settings);
+                    if (side < 0)
+                    {
+                        _trackLeft = track;
+                    }
+                    else
+                    {
+                        _trackRight = track;
+                    }
+
+                    Transform socket = ViewHelpers.FindSocket(ski, settings.SkiSocket);
                     if (socket != null)
                     {
                         foot = _lean.InverseTransformPoint(socket.position);
@@ -110,7 +128,7 @@ namespace FirstChair.Riding
                     Transform pole = Instantiate(poleModel, anchor, false).transform;
                     pole.localRotation = Quaternion.identity;
                     pole.localPosition = Vector3.zero;
-                    Transform socket = FindSocket(pole, settings.PoleSocket);
+                    Transform socket = ViewHelpers.FindSocket(pole, settings.PoleSocket);
                     Vector3 grip = socket != null ? pole.InverseTransformPoint(socket.position) : settings.PoleSocketFallback;
                     pole.localPosition = -Vector3.Scale(pole.localScale, grip);
                 }
@@ -145,19 +163,6 @@ namespace FirstChair.Riding
             partRenderer.material.color = color;
             part.transform.SetParent(_lean, false);
             return part.transform;
-        }
-
-        private static Transform FindSocket(Transform root, string socketName)
-        {
-            foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
-            {
-                if (child.name.StartsWith(socketName, System.StringComparison.Ordinal))
-                {
-                    return child;
-                }
-            }
-
-            return null;
         }
     }
 }

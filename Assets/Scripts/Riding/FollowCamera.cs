@@ -1,21 +1,26 @@
+using FirstChair.Sim;
 using UnityEngine;
 
 namespace FirstChair.Riding
 {
     /// <summary>
-    /// A high, pulled-back follow camera like Grand Mountain Adventure 2's: a fixed azimuth and elevation around a
-    /// smoothed aim point a little ahead of the rider. Presentation only; it reads the rider view's transform.
+    /// A high, pulled-back follow camera like Grand Mountain Adventure 2's: behind the rider, uphill, looking down the
+    /// line of travel at a fixed pitch, with the aim point a little ahead so the rider sits below the middle of the
+    /// screen. The view direction blends the slope's fall line with the rider's travel direction and turns slowly.
+    /// Presentation only; it reads the rider view's transform and the sim's state, and writes nothing back.
     /// </summary>
     [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Camera))]
     public sealed class FollowCamera : MonoBehaviour
     {
         [SerializeField] private Transform target;
+        [Tooltip("Gives the rider's velocity and the snow's fall line. Without it the camera looks down +Z.")]
+        [SerializeField] private SimDriver driver;
         [SerializeField] private FollowCameraSettings settings;
 
         private Camera _camera;
         private Vector3 _aim;
-        private Vector3 _lookDirection = Vector3.forward;
+        private Vector3 _viewDirection = Vector3.forward;
         private bool _hasAim;
 
         private void Awake()
@@ -30,7 +35,7 @@ namespace FirstChair.Riding
 
         private void LateUpdate()
         {
-            if (target == null || settings == null)
+            if (target == null)
             {
                 return;
             }
@@ -40,26 +45,50 @@ namespace FirstChair.Riding
             _camera.farClipPlane = settings.FarClip;
 
             float dt = Time.deltaTime;
-            Vector3 heading = target.forward;
-            heading.y = 0f;
-            if (heading.sqrMagnitude > 1e-4f)
+            bool snap = !_hasAim || (driver != null && driver.Session != null && driver.Session.SnappedThisFrame);
+
+            Vector3 fall = Vector3.forward;
+            Vector3 velocity = Vector3.zero;
+            if (driver != null && driver.Session != null)
             {
-                _lookDirection = Vector3.Slerp(_lookDirection, heading.normalized, FollowCameraMath.SmoothingFactor(settings.LookAheadSmoothTime, dt));
+                RiderPose pose = driver.Pose;
+                velocity = new Vector3(pose.VelocityX, 0f, pose.VelocityZ);
+                fall = FallLine(driver.Session, target.position);
             }
 
-            Vector3 desired = target.position + Vector3.up * settings.AimHeight + _lookDirection * settings.LookAhead;
-            if (!_hasAim || (desired - _aim).sqrMagnitude > settings.SnapDistance * settings.SnapDistance)
+            if (FollowCameraMath.ViewDirection(
+                fall.x, fall.z, velocity.x, velocity.z, settings.TravelWeight, settings.MinTravelSpeed, out double dx, out double dz))
             {
-                _aim = desired;
+                var desired = new Vector3((float)dx, 0f, (float)dz);
+                _viewDirection = snap
+                    ? desired
+                    : Vector3.Slerp(_viewDirection, desired, FollowCameraMath.SmoothingFactor(settings.YawSmoothTime, dt)).normalized;
+            }
+
+            float lookAhead = (float)FollowCameraMath.LookAhead(
+                settings.LookAheadBase, settings.LookAheadPerSpeed, settings.LookAheadMax, velocity.magnitude);
+            Vector3 desiredAim = target.position + Vector3.up * settings.AimHeight + _viewDirection * lookAhead;
+            if (snap || (desiredAim - _aim).sqrMagnitude > settings.SnapDistance * settings.SnapDistance)
+            {
+                _aim = desiredAim;
                 _hasAim = true;
             }
             else
             {
-                _aim = Vector3.Lerp(_aim, desired, FollowCameraMath.SmoothingFactor(settings.PositionSmoothTime, dt));
+                _aim = Vector3.Lerp(_aim, desiredAim, FollowCameraMath.SmoothingFactor(settings.PositionSmoothTime, dt));
             }
 
-            FollowCameraMath.Offset(settings.AzimuthDegrees, settings.ElevationDegrees, settings.Distance, out float x, out float y, out float z);
-            transform.SetPositionAndRotation(_aim + new Vector3(x, y, z), Quaternion.Euler(settings.ElevationDegrees, settings.AzimuthDegrees, 0f));
+            float yaw = (float)FollowCameraMath.YawDegrees(_viewDirection.x, _viewDirection.z);
+            FollowCameraMath.Offset(yaw, settings.PitchDegrees, settings.Distance, out float x, out float y, out float z);
+            transform.SetPositionAndRotation(_aim + new Vector3(x, y, z), Quaternion.Euler(settings.PitchDegrees, yaw, 0f));
+        }
+
+        // Downhill on the ground: the snow normal's horizontal part (the normal leans toward the fall line).
+        private static Vector3 FallLine(RideSession session, Vector3 position)
+        {
+            session.Slope.Heightmap.Sample(
+                SimCoordinates.FromMetres(position.x), SimCoordinates.FromMetres(position.z), out _, out Vec3 normal);
+            return new Vector3(SimCoordinates.ToFloat(normal.X), 0f, SimCoordinates.ToFloat(normal.Z));
         }
     }
 }

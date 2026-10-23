@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace FirstChair.Riding
 {
-    /// <summary>Proportions and attachment data for the placeholder skier. Presentation only.</summary>
+    /// <summary>Proportions, attachments, pose easing and ski tracks for the skier views. Presentation only.</summary>
     [CreateAssetMenu(menuName = "First Chair/Rider View Settings", fileName = "RiderViewSettings")]
     public sealed class RiderViewSettings : ScriptableObject
     {
@@ -33,6 +33,25 @@ namespace FirstChair.Riding
         [SerializeField] private string poleSocket = "SOCKET_grip";
         [Tooltip("PR_SkiPole manifest: Blender (0, 0, 1.1), Unity (0, 1.1, 0).")]
         [SerializeField] private Vector3 poleSocketFallback = new Vector3(0f, 1.1f, 0f);
+
+        [Header("Skier model (CH_Skier.fbx)")]
+        [Tooltip("Socket name prefixes on CH_Skier for the left ski, right ski, left hand and right hand.")]
+        [SerializeField] private string skierSkiSocketLeft = "SOCKET_ski_L";
+        [SerializeField] private string skierSkiSocketRight = "SOCKET_ski_R";
+        [SerializeField] private string skierHandSocketLeft = "SOCKET_hand_L";
+        [SerializeField] private string skierHandSocketRight = "SOCKET_hand_R";
+        [Tooltip("How long the skier takes to ease between poses, seconds.")]
+        [SerializeField, Min(0f)] private float poseSmoothTime = 0.12f;
+
+        [Header("Ski tracks")]
+        [Tooltip("Width of each ski's track, metres.")]
+        [SerializeField, Min(0.01f)] private float trackWidth = 0.09f;
+        [Tooltip("How long a track stays on the snow, seconds.")]
+        [SerializeField, Min(0f)] private float trackLifetime = 45f;
+        [Tooltip("Shortest step between track points, metres.")]
+        [SerializeField, Min(0.01f)] private float trackMinVertexDistance = 0.3f;
+        [Tooltip("Lift above the ski base, metres, so the track doesn't flicker into the snow.")]
+        [SerializeField, Min(0f)] private float trackLift = 0.015f;
 
         /// <summary>Distance between the two skis' centres.</summary>
         public float StanceWidth => stanceWidth;
@@ -66,5 +85,23 @@ namespace FirstChair.Riding
         public string PoleSocket => poleSocket;
         /// <summary>The grip socket in the pole's model space if the FBX has no socket node.</summary>
         public Vector3 PoleSocketFallback => poleSocketFallback;
+        /// <summary>CH_Skier's left ski socket.</summary>
+        public string SkierSkiSocketLeft => skierSkiSocketLeft;
+        /// <summary>CH_Skier's right ski socket.</summary>
+        public string SkierSkiSocketRight => skierSkiSocketRight;
+        /// <summary>CH_Skier's left hand socket.</summary>
+        public string SkierHandSocketLeft => skierHandSocketLeft;
+        /// <summary>CH_Skier's right hand socket.</summary>
+        public string SkierHandSocketRight => skierHandSocketRight;
+        /// <summary>Pose easing time, seconds.</summary>
+        public float PoseSmoothTime => poseSmoothTime;
+        /// <summary>Track width, metres.</summary>
+        public float TrackWidth => trackWidth;
+        /// <summary>Track lifetime, seconds.</summary>
+        public float TrackLifetime => trackLifetime;
+        /// <summary>Shortest step between track points, metres.</summary>
+        public float TrackMinVertexDistance => trackMinVertexDistance;
+        /// <summary>Track lift above the ski base, metres.</summary>
+        public float TrackLift => trackLift;
     }
 }

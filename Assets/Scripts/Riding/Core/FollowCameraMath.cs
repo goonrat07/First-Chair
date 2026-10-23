@@ -15,8 +15,8 @@ namespace FirstChair.Riding
 
         /// <summary>
         /// The camera's offset from its aim point: Unity's <c>Quaternion.Euler(elevation, azimuth, 0) * (0, 0, -distance)</c>,
-        /// that is (-d cos(el) sin(az), d sin(el), -d cos(el) cos(az)). Azimuth 0 puts the camera straight up-slope
-        /// (-Z) of the rider, looking down the fall line (+Z); a positive azimuth swings it toward -X.
+        /// that is (-d cos(el) sin(az), d sin(el), -d cos(el) cos(az)). Pass the view's yaw as the azimuth to put the
+        /// camera behind and above the aim point; azimuth 0 sits up-slope (-Z) looking down the fall line (+Z).
         /// </summary>
         public static void Offset(double azimuthDegrees, double elevationDegrees, double distance, out float x, out float y, out float z)
         {
@@ -26,6 +26,69 @@ namespace FirstChair.Riding
             y = (float)(distance * Math.Sin(el));
             z = (float)(-distance * Math.Cos(el) * Math.Cos(az));
         }
+
+        /// <summary>The yaw, degrees, of a direction on the ground: 0 = +Z, 90 = +X (Unity's yaw).</summary>
+        /// <param name="x">Direction X.</param>
+        /// <param name="z">Direction Z.</param>
+        public static double YawDegrees(double x, double z) => Math.Atan2(x, z) * DegreesPerRadian;
+
+        /// <summary>
+        /// The ground direction the camera looks along, as GMA2's does: the fall line blended with the rider's travel
+        /// direction. Travel counts only at or above <paramref name="minTravelSpeed"/>; with no usable fall line (flat
+        /// snow) travel counts fully. Returns false, with (0, 0), when neither is usable, so the caller keeps its last
+        /// direction.
+        /// </summary>
+        /// <param name="fallX">Downhill X: the snow normal's X (any length).</param>
+        /// <param name="fallZ">Downhill Z: the snow normal's Z.</param>
+        /// <param name="travelX">Ground velocity X, metres per second.</param>
+        /// <param name="travelZ">Ground velocity Z, metres per second.</param>
+        /// <param name="travelWeight">0 = fall line only, 1 = travel only.</param>
+        /// <param name="minTravelSpeed">Speed below which travel is ignored, metres per second.</param>
+        /// <param name="x">Unit direction X.</param>
+        /// <param name="z">Unit direction Z.</param>
+        public static bool ViewDirection(
+            double fallX, double fallZ, double travelX, double travelZ, double travelWeight, double minTravelSpeed, out double x, out double z)
+        {
+            x = 0.0;
+            z = 0.0;
+            double fallLength = Math.Sqrt(fallX * fallX + fallZ * fallZ);
+            double speed = Math.Sqrt(travelX * travelX + travelZ * travelZ);
+            bool hasFall = fallLength > 1e-4;
+            bool hasTravel = speed >= minTravelSpeed && speed > 1e-6;
+            if (!hasFall && !hasTravel)
+            {
+                return false;
+            }
+
+            double weight = !hasTravel ? 0.0 : (!hasFall ? 1.0 : Math.Max(0.0, Math.Min(1.0, travelWeight)));
+            double bx = (hasTravel ? weight * travelX / speed : 0.0) + (hasFall ? (1.0 - weight) * fallX / fallLength : 0.0);
+            double bz = (hasTravel ? weight * travelZ / speed : 0.0) + (hasFall ? (1.0 - weight) * fallZ / fallLength : 0.0);
+            double length = Math.Sqrt(bx * bx + bz * bz);
+            if (length < 1e-6)
+            {
+                // Travelling straight uphill against the fall line at equal weight: keep the fall line.
+                if (!hasFall)
+                {
+                    return false;
+                }
+
+                bx = fallX / fallLength;
+                bz = fallZ / fallLength;
+                length = 1.0;
+            }
+
+            x = bx / length;
+            z = bz / length;
+            return true;
+        }
+
+        /// <summary>How far ahead of the rider to aim, metres: grows with speed up to a cap.</summary>
+        /// <param name="baseMetres">Look-ahead when stopped.</param>
+        /// <param name="perSpeedSeconds">Extra metres per metre per second.</param>
+        /// <param name="maxMetres">Cap.</param>
+        /// <param name="speed">Rider speed, metres per second.</param>
+        public static double LookAhead(double baseMetres, double perSpeedSeconds, double maxMetres, double speed) =>
+            Math.Min(maxMetres, baseMetres + perSpeedSeconds * Math.Max(0.0, speed));
 
         /// <summary>
         /// The frame-rate-independent blend toward a target for exponential smoothing: 1 - e^(-dt / smoothTime).

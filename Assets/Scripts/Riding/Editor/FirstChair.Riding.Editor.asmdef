@@ -4,7 +4,9 @@
     "references": [
         "FirstChair.Sim",
         "FirstChair.Riding.Core",
-        "FirstChair.Riding"
+        "FirstChair.Riding",
+        "Unity.RenderPipelines.Core.Runtime",
+        "Unity.RenderPipelines.Universal.Runtime"
     ],
     "includePlatforms": [
         "Editor"

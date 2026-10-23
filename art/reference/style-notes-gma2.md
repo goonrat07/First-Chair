@@ -77,6 +77,22 @@ proportions and palette, never copy a design one to one.
 - **Lift.** Grey steel towers, thin cables, small grey gondola cabins with a dark window band.
 - **Rock.** Dark grey rock bands show at the edges of steep rollers and cliffs.
 
+## Gameplay camera (user's three gameplay screenshots, re-sent 2026-10-23)
+
+Measured from a snowboard run at sunset, a skier on a forested slope with a gondola, and a skier crossing a railway in
+the village:
+- **Direction.** Straight behind the rider, uphill, looking down the line of travel: the rider's own tracks run from
+  the bottom centre of the screen up to the rider. Not offset to one side.
+- **Framing.** The rider is centred left to right and sits a little below the middle (about 55 to 70 percent down the
+  screen). The slope ahead, downhill, fills the upper half up to a distant valley or village near the top edge. Little
+  or no sky.
+- **Height and size.** Looks down at about 40 degrees from far away: the rider is only about 4 percent of the screen
+  height (25 px of 600). The narrow field of view flattens the scene a little, like a telephoto lens.
+- **Readability cues.** Ski tracks everywhere, old and new, and the rider's own fresh pair; trees and rocks with long,
+  crisp blue shadows from a low sun; haze toward the distance; a tilt-shift blur at the top and bottom edges; snow
+  shading that shows every roller and lip.
+- **HUD.** Small white condensed labels in a top corner (GATE, TARGET, TIME), or a points counter top left.
+
 ## HUD (for later)
 
 White, bold, condensed uppercase labels with a soft drop shadow, small and in the top-right corner (for example
