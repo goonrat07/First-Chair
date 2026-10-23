@@ -1,0 +1,116 @@
+{
+  "asset": "CH_Skier",
+  "fps": 30,
+  "time_unit": "seconds from clip start",
+  "clips": [
+    {
+      "name": "Air",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "Air",
+      "description": "balanced air, skis off the snow"
+    },
+    {
+      "name": "Brake",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "Brake",
+      "description": "hard skid stop, feet 60 deg right of the body"
+    },
+    {
+      "name": "CarveLeft",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "CarveLeft",
+      "description": "left-edge carve, skis on left edges ~50 deg"
+    },
+    {
+      "name": "CarveRight",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "CarveRight",
+      "description": "mirror of CarveLeft"
+    },
+    {
+      "name": "Crash",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "Crash",
+      "description": "fallen on the left side and hip"
+    },
+    {
+      "name": "Crouch",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "Crouch",
+      "description": "loaded before a jump pop"
+    },
+    {
+      "name": "Pole",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": true,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "Pole",
+      "description": "double-pole push cycle"
+    },
+    {
+      "name": "Stance",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": true,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "Stance",
+      "description": "athletic ski stance with a 1 s breathing bob"
+    },
+    {
+      "name": "Tuck",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "Tuck",
+      "description": "deep downhill tuck"
+    }
+  ],
+  "note": "events come from pose markers on each action; loop/speed/root_motion from action custom properties"
+}

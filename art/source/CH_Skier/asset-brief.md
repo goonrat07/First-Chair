@@ -1,7 +1,10 @@
 # CH_Skier asset brief
 
-Status: Phase 4 done, waiting for the user's review before Phase 5 (UVs, AO and materials). The proportions,
-palette, helmet, stripes and socket names are approved (user, 2026-10-20); Phase 4 keeps the Phase 3 forms as they are.
+Status: Phases 5 (light), 6, 8 (nine pose clips) and 9 done, 2026-10-23. The user asked for the real skier with
+animation in the next test build, so the work went past the Phase 4 review stop. Exported to
+`Assets/Art/Characters/CH_Skier/` (FBX, manifest, animation contract); **not verified in the Unity editor**. Open: the
+seat shows through the lower jacket back in back three-quarter close-ups (see Gate results). The proportions, palette,
+helmet, stripes and socket names are approved (user, 2026-10-20).
 Story: `production/epics/first-chair/story-007-first-art-pass.md`.
 
 ```text
@@ -138,6 +141,8 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
            Phase 4 (review/04_topology/measure.json): body 2,895 tris at LOD0, 2,139 at LOD1, 1,081 at LOD2;
            helmet with goggles 374, each boot 204 (shell 96 + cuff 108); whole character 3,677 at LOD0. The
            body is under the 5k floor on purpose (see Decisions); the 10k ceiling is the hard limit.
+           Phase 9 (Assets/Art/Characters/CH_Skier/CH_Skier.fbx): body 2,895 / 2,139 / 1,081; helmet 374, boot shells
+           96, boot cuffs 108 each, shared by every LOD (with props: 3,677 / 2,913 / 1,855). 20 bones, 4 sockets, 9 clips.
 ```
 
 ## Decisions
@@ -221,6 +226,43 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
   (review/04_topology/validate_require_uv.json).
 - **For Phase 5:** `build/04_topology.py` rebuilds LOD1 and LOD2 from LOD0. Unwrap LOD0, then rebuild the LODs from
   it (Decimate carries UVs over), rather than unwrapping each LOD.
+- **Phase 5 is light: 11 flat materials, no UVs, no bake** (2026-10-23). Merged same-colour roles rather than the
+  palette texture, because merged materials need no UVs and URP Lit takes the FBX diffuse colour:
+  `M_CH_Skier_Yellow` #F2B705 (jacket), `_Navy` #22304A (stripes, zip, cuffs, trousers), `_Red` #D7263D (mittens,
+  boot band, neck warmer), `_KneePatch` #18223A, `_Boot` #2B2F38, `_Helmet` #2C3A57, `_HelmetPanel` #4A5B7D,
+  `_GoggleFrame` #15181E, `_Lens` #E2557A, `_Skin` #D9A07A, `_Mouth` #9A5A4E; roughness from the MATERIALS table
+  (cloth 0.8, knee patch 0.85, plastic 0.5, lens 0.15, skin 0.6). The body has 6 submeshes, the helmet 4, each cuff 2.
+  **AO bake deferred:** it needs UVs (unwrap LOD0, rebuild LODs, per the Phase 4 note) or vertex colours. The HIGH and
+  BLOCKOUT pieces keep the 15 role materials.
+- **Skeleton (Phase 6):** `CH_Skier_Rig` with `Root` (ground, between the feet), `Hips`, `Spine`, `Chest`, `Neck`,
+  `Head` and per side `Shoulder`, `UpperArm`, `LowerArm`, `Hand`, `UpperLeg`, `LowerLeg`, `Foot` (`_L`/`_R`), at the
+  ARTICULATION joint centres. Inferred: clavicle root (0.04, 0.02, 1.34), hand bone 0.15 m along the forearm, foot
+  tail (0.13, -0.15, 0.06). Every bone deforms (FBX deform-only export); Root has no weights. Rest = the A-pose.
+- **Weights from one analytic field, not heat weighting.** Heat weighting weights each of the 25 open shells on its
+  own, so overlapping shells (puff over sleeve, hem over seat) would separate. Every deforming shell samples the
+  same field of position (`build/06_rig.py`): trunk blends along z, limb chains blend across each joint with
+  smoothstep falloffs along the bone axes, limbs mix into the trunk around the shoulder and hip, less behind the hip
+  joint. The falloffs replace mesh smoothing, which would differ per shell. 4 influences, under 0.01 dropped,
+  normalised. Face parts are rigid on Head, mittens and thumbs on Hand.
+- **Rigid props are skinned to one bone at weight 1.0**, not bone-parented: helmet to Head, boot shells to Foot,
+  boot cuffs to LowerLeg (the ankle hinge). In Unity each is a one-bone SkinnedMeshRenderer.
+- **Socket axes (Phase 6):** `SOCKET_ski_L/R` on `Foot_L/R`, at the sole under the boot centre, +Y the figure's
+  forward, +Z up (PR_Ski's SOCKET_boot aligns). `SOCKET_hand_L/R` on `Hand_L/R`, at the palm centre, +Z up the pole
+  (thumb side), -Z down the shaft, +Y along the hand to the fingertips (PR_SkiPole's SOCKET_grip aligns).
+- **Snow plane:** PR_Ski's base is 0.045 m below its SOCKET_boot. Flat poses put the soles at z 0, so with skis the
+  snow is 0.045 m below the root; Unity places the root 0.045 m above the snow.
+- **Poses are solved from specs, not hand-keyed** (`build/08_poses.py`): hips, trunk bends, wrist targets, elbow and
+  knee directions, pole directions and ski placement; two-bone IK for arms and legs; the hand turns so its socket's
+  -Z runs down the pole; a foot with no height drops until its ski's lowest edge touches the snow. CarveRight is the
+  mirror of CarveLeft's spec on the mirrored skeleton. Brake turns the pelvis -25 deg and counter-turns the chest
+  so the upper body faces forward. All poses are authored from the user's descriptions (no motion reference).
+- **Take names:** each clip is also one NLA strip of the same name, and `build/09_export.py` exports strips instead of
+  "all actions" (Blender names those `CH_Skier_Rig|Stance`), so the FBX takes, and Unity's clips, are named exactly
+  like the clips. Everything else is `export_delivery.py` with `--engine unity`. Static clips are not looped.
+- **Manifest at rest:** `09_export.py` sets the rig to its rest pose after the FBX is written, so the manifest's
+  bounds and socket positions are rest values (otherwise the top NLA track was evaluated).
+- **`roundtrip.py --rest-pose`** (skill change, recorded in FIRST-CHAIR.md): Blender's FBX importer leaves the first
+  take active, so the rigged import was measured in Stance (1.579 m). The flag measures at rest.
 
 ## Gate results
 
@@ -253,6 +295,41 @@ warnings, all expected: no UV layer on the 8 LOW meshes (Phase 5) and no parent 
 in Phase 6). No doubles, zero-area faces, loose geometry, non-manifold edges or stray islands remain. validate counts
 the unsuffixed props at LOD0 only: 3,677 / 2,139 / 1,081. The greyscale gameplay strip (`gameplay_strip_grey.png`)
 shows LOD0, LOD1 and LOD2 reading the same at 80 px.
+
+Phase 5 (`review/05_materials/`): material renders front, side, three-quarter, game camera and 80 px (plus a greyscale
+80 px copy); every colour role reads, flat colours only.
+
+Phase 6 (`review/06_rig/`): `validate.py` on LOW, SOCKETS, RIG_DEF with `--budget-tris 10000` exits 0: 0 FAIL, 8 WARN
+(no UV layers, expected). On all three body LODs: 0 unweighted, 0 over 4 influences, 0 not normalised, 0 tiny
+weights (`validate.json`, `weights.json`). Pose sheets `pose_sheet.png` and `pose_sheet_front/side/game.png` show all
+nine clips with PR_Ski and PR_SkiPole attached at the sockets; `joints_sheet.png` has front and back three-quarter
+close-ups of Tuck, Crouch, Brake, CarveLeft and Crash. Shoulders, elbows and knees hold their volume. **Open:** navy
+patches of the seat show through the lower jacket back in the back three-quarter close-ups. Reducing leg weights
+behind the hip joint did not remove them. Next step: render the rest pose from behind to see whether the overlap
+predates rigging, then copy the jacket's weights onto the seat vertices just beneath it.
+
+Phase 8 lowest points per clip (m; the snow is -0.045; `review/06_rig/poses/lowest_points.json`):
+
+| Clip | Body | Boot | Ski | Pole |
+| --- | --- | --- | --- | --- |
+| Stance | 0.2369 | -0.0000 | -0.0450 | 0.0044 |
+| CarveLeft | 0.1322 | -0.0103 | -0.0405 | 0.0797 |
+| CarveRight | 0.1322 | -0.0103 | -0.0405 | 0.0797 |
+| Tuck | 0.2422 | -0.0000 | -0.0450 | 0.6418 |
+| Crouch | 0.2210 | -0.0000 | -0.0450 | -0.0302 |
+| Air | 0.4053 | 0.1777 | 0.0608 | 0.2649 |
+| Brake | 0.1686 | -0.0010 | -0.0422 | -0.0076 |
+| Pole | 0.2337 | -0.0000 | -0.0450 | -0.0743 |
+| Crash | -0.0175 | -0.0226 | -0.0405 | 0.0499 |
+
+No limb needed more reach than it has. Pole tips up to 3 cm into the snow in Crouch and Pole read as planted
+poles. Air lifts the skis to 0.06.
+
+Phase 9 (`review/09_export/`): the FBX holds exactly 9 takes, `Stance`, `CarveLeft`, `CarveRight`, `Tuck`, `Crouch`,
+`Air`, `Brake`, `Pole`, `Crash`, each frames 0 to 30 (read back from the file). `roundtrip.py --rest-pose` exits 0 at
+height 1.75. `09_roundtrip_check.py` exits 0: tris 3,677 / 2,139 / 1,081 match the manifest, 20 bones match, 9 clips at
+1.0 s, sockets on Foot_L/R and Hand_L/R at their manifest positions, height 1.7500 at rest. Reimport renders:
+`reimport_clay_rest.png`, `reimport_clay_CarveLeft.png`, `reimport_clay_Tuck.png`.
 
 ## Rebuild
 
@@ -293,4 +370,20 @@ $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --
 # world_gate.py front and side as above with --collections $C --out $O; LOD0 also silhouette renders + compose_review
 python3 build/review_sheet.py --dir $O --mode wire --out $D/wire_sheet_lod$L.png
 python3 build/lod_review.py --dir $D --forms review/03_forms   # clay_compare, gameplay_strip_grey, lod_gates.json
+# Phase 5, 6, 8, 9 (run in this order; 06 rebuilds the rig, so 08 must follow it)
+$BLENDER_BIN -b --python-exit-code 1 --python build/05_materials.py -- --master CH_Skier_master.blend
+$BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/05_materials \
+  --collections LOW_LOD0,LOW_PROPS --views front,side,threequarter --ref-cam 30 45 35 --mode material \
+  --gameplay-px 80 --samples 64 --res 768
+$BLENDER_BIN -b --python-exit-code 1 --python build/06_rig.py -- --master CH_Skier_master.blend
+$BLENDER_BIN -b --python $S/validate.py -- --blend CH_Skier_master.blend --collections LOW,SOCKETS,RIG_DEF \
+  --out review/06_rig/validate.json --budget-tris 10000
+$BLENDER_BIN -b --python-exit-code 1 --python build/08_poses.py -- --master CH_Skier_master.blend
+$BLENDER_BIN -b --python build/pose_sheet.py -- --master CH_Skier_master.blend --out review/06_rig/poses \
+  --closeup Tuck,Crouch,Brake,CarveLeft,Crash
+python3 build/compose_pose_sheet.py --dir review/06_rig/poses --out review/06_rig
+$BLENDER_BIN -b --python-exit-code 1 --python build/09_export.py
+E=../../../Assets/Art/Characters/CH_Skier
+$BLENDER_BIN -b --python $S/roundtrip.py -- --file $E/CH_Skier.fbx --out review/09_export --expect-height 1.75 --rest-pose
+$BLENDER_BIN -b --python build/09_roundtrip_check.py -- --dir $E --out review/09_export
 ```

@@ -20,6 +20,8 @@ def parse(argv):
     p.add_argument("--out", required=True)
     p.add_argument("--expect-height", type=float, default=0.0)
     p.add_argument("--res", type=int, default=768)
+    p.add_argument("--rest-pose", action="store_true",
+                   help="measure and render rigged imports at rest (Blender's FBX importer leaves the first take active)")
     return p.parse_args(argv)
 
 
@@ -43,6 +45,11 @@ def main(a):
         bpy.ops.import_scene.fbx(filepath=path)
     else:
         raise RuntimeError("unsupported file " + ext)
+    if a.rest_pose:
+        for o in scene.objects:
+            if o.type == "ARMATURE":
+                o.data.pose_position = "REST"
+        bpy.context.view_layer.update()
     shapes = set()
     for o in scene.objects:
         if o.type == "ARMATURE":

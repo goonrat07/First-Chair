@@ -92,5 +92,7 @@ detail than GMA2's camera shows. Pass the LOD0 figure to `validate.py --budget-t
 
 - `scripts/export_delivery.py`: Unity-aware `bake_space_transform` (`fbx_bake_space()`), and the
   manifest now records the measured export forward (+Z) for FBX as well as glTF.
+- `scripts/roundtrip.py`: `--rest-pose` measures and renders rigged imports at rest. Blender's FBX importer leaves
+  the first take active, so a rigged asset is otherwise measured in a clip's pose (CH_Skier: 1.579 m in Stance).
 - `SKILL.md`: one line pointing here.
 - This file.

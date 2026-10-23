@@ -1,0 +1,710 @@
+{
+  "asset": "CH_Skier",
+  "generated": "2026-10-23T22:13:24",
+  "blender": "5.2.2 LTS",
+  "source": "/home/user/First-Chair/art/source/CH_Skier/CH_Skier_master.blend",
+  "target_engine": "unity",
+  "units": {
+    "system": "METRIC",
+    "scale_length": 1.0,
+    "authoring_up": "Z",
+    "authoring_forward": "-Y",
+    "export_up": "Y",
+    "export_forward": "+Z",
+    "fbx_bake_space_transform": false,
+    "note": "Z up becomes Y up; a subject facing -Y in Blender faces +Z in the exported scene (glTF and FBX alike, measured for FBX on Blender 5.2.2)"
+  },
+  "target_height_m": 1.75,
+  "bounds_m": {
+    "min": [
+      -0.7656,
+      -0.19,
+      0.0
+    ],
+    "max": [
+      0.7656,
+      0.1845,
+      1.75
+    ],
+    "size": [
+      1.5313,
+      0.3745,
+      1.75
+    ]
+  },
+  "files": {
+    "all": "/home/user/First-Chair/Assets/Art/Characters/CH_Skier/CH_Skier.fbx"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "objects": [
+        "CH_Skier_Body_LOD0",
+        "CH_Skier_Helmet",
+        "CH_Skier_BootShell_L",
+        "CH_Skier_BootCuff_L",
+        "CH_Skier_BootShell_R",
+        "CH_Skier_BootCuff_R"
+      ],
+      "tris": 3677,
+      "objects_tris": {
+        "CH_Skier_Body_LOD0": 2895,
+        "CH_Skier_Helmet": 374,
+        "CH_Skier_BootShell_L": 96,
+        "CH_Skier_BootCuff_L": 108,
+        "CH_Skier_BootShell_R": 96,
+        "CH_Skier_BootCuff_R": 108
+      }
+    },
+    {
+      "level": 1,
+      "objects": [
+        "CH_Skier_Body_LOD1"
+      ],
+      "tris": 2139,
+      "objects_tris": {
+        "CH_Skier_Body_LOD1": 2139
+      }
+    },
+    {
+      "level": 2,
+      "objects": [
+        "CH_Skier_Body_LOD2"
+      ],
+      "tris": 1081,
+      "objects_tris": {
+        "CH_Skier_Body_LOD2": 1081
+      }
+    }
+  ],
+  "materials": [
+    "M_CH_Skier_Boot",
+    "M_CH_Skier_GoggleFrame",
+    "M_CH_Skier_Helmet",
+    "M_CH_Skier_HelmetPanel",
+    "M_CH_Skier_KneePatch",
+    "M_CH_Skier_Lens",
+    "M_CH_Skier_Mouth",
+    "M_CH_Skier_Navy",
+    "M_CH_Skier_Red",
+    "M_CH_Skier_Skin",
+    "M_CH_Skier_Yellow"
+  ],
+  "textures": [],
+  "texture_contract": {
+    "basecolor": "sRGB",
+    "normal": "Non-Color, tangent space, OpenGL +Y",
+    "roughness": "Non-Color",
+    "metallic": "Non-Color",
+    "ao": "Non-Color",
+    "packed_channels": "none by default; document any ORM packing here"
+  },
+  "skeleton": [
+    {
+      "armature": "CH_Skier_Rig",
+      "bones": 20,
+      "deform_bones": [
+        "Root",
+        "Hips",
+        "Spine",
+        "Chest",
+        "Neck",
+        "Head",
+        "Shoulder_L",
+        "UpperArm_L",
+        "LowerArm_L",
+        "Hand_L",
+        "Shoulder_R",
+        "UpperArm_R",
+        "LowerArm_R",
+        "Hand_R",
+        "UpperLeg_L",
+        "LowerLeg_L",
+        "Foot_L",
+        "UpperLeg_R",
+        "LowerLeg_R",
+        "Foot_R"
+      ],
+      "roots": [
+        "Root"
+      ],
+      "rest_pose": "relaxed A-pose, arms 40 deg below horizontal, feet hip-width (0.26 m) apart",
+      "bones_detail": [
+        {
+          "name": "Root",
+          "parent": null,
+          "head_m": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "tail_m": [
+            0.0,
+            0.0,
+            0.2
+          ]
+        },
+        {
+          "name": "Hips",
+          "parent": "Root",
+          "head_m": [
+            0.0,
+            0.03,
+            0.88
+          ],
+          "tail_m": [
+            0.0,
+            0.02,
+            1.0
+          ]
+        },
+        {
+          "name": "Spine",
+          "parent": "Hips",
+          "head_m": [
+            0.0,
+            0.02,
+            1.0
+          ],
+          "tail_m": [
+            0.0,
+            0.02,
+            1.15
+          ]
+        },
+        {
+          "name": "Chest",
+          "parent": "Spine",
+          "head_m": [
+            0.0,
+            0.02,
+            1.15
+          ],
+          "tail_m": [
+            0.0,
+            0.02,
+            1.36
+          ]
+        },
+        {
+          "name": "Neck",
+          "parent": "Chest",
+          "head_m": [
+            0.0,
+            0.02,
+            1.36
+          ],
+          "tail_m": [
+            0.0,
+            0.0,
+            1.46
+          ]
+        },
+        {
+          "name": "Head",
+          "parent": "Neck",
+          "head_m": [
+            0.0,
+            0.0,
+            1.46
+          ],
+          "tail_m": [
+            0.0,
+            0.0,
+            1.7
+          ]
+        },
+        {
+          "name": "Shoulder_L",
+          "parent": "Chest",
+          "head_m": [
+            0.04,
+            0.02,
+            1.34
+          ],
+          "tail_m": [
+            0.18,
+            0.02,
+            1.36
+          ]
+        },
+        {
+          "name": "UpperArm_L",
+          "parent": "Shoulder_L",
+          "head_m": [
+            0.18,
+            0.02,
+            1.36
+          ],
+          "tail_m": [
+            0.402,
+            0.02,
+            1.174
+          ]
+        },
+        {
+          "name": "LowerArm_L",
+          "parent": "UpperArm_L",
+          "head_m": [
+            0.402,
+            0.02,
+            1.174
+          ],
+          "tail_m": [
+            0.601,
+            0.02,
+            1.006
+          ]
+        },
+        {
+          "name": "Hand_L",
+          "parent": "LowerArm_L",
+          "head_m": [
+            0.601,
+            0.02,
+            1.006
+          ],
+          "tail_m": [
+            0.7156,
+            0.02,
+            0.9092
+          ]
+        },
+        {
+          "name": "Shoulder_R",
+          "parent": "Chest",
+          "head_m": [
+            -0.04,
+            0.02,
+            1.34
+          ],
+          "tail_m": [
+            -0.18,
+            0.02,
+            1.36
+          ]
+        },
+        {
+          "name": "UpperArm_R",
+          "parent": "Shoulder_R",
+          "head_m": [
+            -0.18,
+            0.02,
+            1.36
+          ],
+          "tail_m": [
+            -0.402,
+            0.02,
+            1.174
+          ]
+        },
+        {
+          "name": "LowerArm_R",
+          "parent": "UpperArm_R",
+          "head_m": [
+            -0.402,
+            0.02,
+            1.174
+          ],
+          "tail_m": [
+            -0.601,
+            0.02,
+            1.006
+          ]
+        },
+        {
+          "name": "Hand_R",
+          "parent": "LowerArm_R",
+          "head_m": [
+            -0.601,
+            0.02,
+            1.006
+          ],
+          "tail_m": [
+            -0.7156,
+            0.02,
+            0.9092
+          ]
+        },
+        {
+          "name": "UpperLeg_L",
+          "parent": "Hips",
+          "head_m": [
+            0.1,
+            0.03,
+            0.88
+          ],
+          "tail_m": [
+            0.12,
+            0.0,
+            0.5
+          ]
+        },
+        {
+          "name": "LowerLeg_L",
+          "parent": "UpperLeg_L",
+          "head_m": [
+            0.12,
+            0.0,
+            0.5
+          ],
+          "tail_m": [
+            0.13,
+            0.02,
+            0.11
+          ]
+        },
+        {
+          "name": "Foot_L",
+          "parent": "LowerLeg_L",
+          "head_m": [
+            0.13,
+            0.02,
+            0.11
+          ],
+          "tail_m": [
+            0.13,
+            -0.15,
+            0.06
+          ]
+        },
+        {
+          "name": "UpperLeg_R",
+          "parent": "Hips",
+          "head_m": [
+            -0.1,
+            0.03,
+            0.88
+          ],
+          "tail_m": [
+            -0.12,
+            0.0,
+            0.5
+          ]
+        },
+        {
+          "name": "LowerLeg_R",
+          "parent": "UpperLeg_R",
+          "head_m": [
+            -0.12,
+            0.0,
+            0.5
+          ],
+          "tail_m": [
+            -0.13,
+            0.02,
+            0.11
+          ]
+        },
+        {
+          "name": "Foot_R",
+          "parent": "LowerLeg_R",
+          "head_m": [
+            -0.13,
+            0.02,
+            0.11
+          ],
+          "tail_m": [
+            -0.13,
+            -0.15,
+            0.06
+          ]
+        }
+      ]
+    }
+  ],
+  "sockets": [
+    {
+      "name": "SOCKET_ski_L",
+      "parent": "CH_Skier_Rig",
+      "parent_bone": "Foot_L",
+      "world_location": [
+        0.13,
+        -0.03,
+        0.0
+      ],
+      "world_rotation_deg": [
+        -0.0,
+        0.0,
+        -180.0
+      ],
+      "axes": "sole under the boot centre; +Y figure forward, +Z up; PR_Ski SOCKET_boot aligns here",
+      "props": {
+        "owner": "phase:02_blockout",
+        "role": "ski",
+        "note": "sole under the boot centre; +Y figure forward, +Z up; PR_Ski SOCKET_boot aligns here"
+      },
+      "local_offset_m": [
+        0.0,
+        -0.0982,
+        0.0914
+      ]
+    },
+    {
+      "name": "SOCKET_hand_L",
+      "parent": "CH_Skier_Rig",
+      "parent_bone": "Hand_L",
+      "world_location": [
+        0.6651,
+        0.02,
+        0.9269
+      ],
+      "world_rotation_deg": [
+        90.0,
+        130.17,
+        -0.0
+      ],
+      "axes": "palm centre; +Z up the pole (thumb side), -Z down the shaft, +Y toward the fingertips; PR_SkiPole SOCKET_grip aligns here",
+      "props": {
+        "owner": "phase:02_blockout",
+        "role": "hand",
+        "note": "palm centre; +Z up the pole (thumb side), -Z down the shaft, +Y toward the fingertips; PR_SkiPole SOCKET_grip aligns here"
+      },
+      "local_offset_m": [
+        -0.0123,
+        -0.05,
+        -0.0146
+      ]
+    },
+    {
+      "name": "SOCKET_ski_R",
+      "parent": "CH_Skier_Rig",
+      "parent_bone": "Foot_R",
+      "world_location": [
+        -0.13,
+        -0.03,
+        0.0
+      ],
+      "world_rotation_deg": [
+        -0.0,
+        -0.0,
+        180.0
+      ],
+      "axes": "sole under the boot centre; +Y figure forward, +Z up; PR_Ski SOCKET_boot aligns here",
+      "props": {
+        "owner": "phase:02_blockout",
+        "role": "ski",
+        "note": "sole under the boot centre; +Y figure forward, +Z up; PR_Ski SOCKET_boot aligns here"
+      },
+      "local_offset_m": [
+        -0.0,
+        -0.0982,
+        0.0914
+      ]
+    },
+    {
+      "name": "SOCKET_hand_R",
+      "parent": "CH_Skier_Rig",
+      "parent_bone": "Hand_R",
+      "world_location": [
+        -0.6651,
+        0.02,
+        0.9269
+      ],
+      "world_rotation_deg": [
+        90.0,
+        -130.17,
+        0.0
+      ],
+      "axes": "palm centre; +Z up the pole (thumb side), -Z down the shaft, +Y toward the fingertips; PR_SkiPole SOCKET_grip aligns here",
+      "props": {
+        "owner": "phase:02_blockout",
+        "role": "hand",
+        "note": "palm centre; +Z up the pole (thumb side), -Z down the shaft, +Y toward the fingertips; PR_SkiPole SOCKET_grip aligns here"
+      },
+      "local_offset_m": [
+        0.0123,
+        -0.05,
+        -0.0146
+      ]
+    }
+  ],
+  "colliders": [],
+  "animation_contract": "animation-contract.json",
+  "inferred_from_no_reference": [
+    "every dimension except height and arm angle (proportion table",
+    "brief INFERRED)",
+    "back of the figure from symmetry",
+    "clavicle root",
+    "hand and foot bone tails",
+    "skin weights (analytic field",
+    "not painted)",
+    "skin and mouth colours (placeholders)",
+    "all pose clips (authored from the brief",
+    "no motion reference)"
+  ],
+  "dependencies": [],
+  "lod_note": "Unity builds a LODGroup from CH_Skier_Body_LOD0/1/2. Helmet and boots carry no LOD suffix, so they are counted in LOD0 here and render at every LOD: totals with props are LOD0 3677, LOD1 2913, LOD2 1855.",
+  "body_tris_per_lod": {
+    "LOD0": 2895,
+    "LOD1": 2139,
+    "LOD2": 1081
+  },
+  "materials_detail": [
+    {
+      "name": "M_CH_Skier_Boot",
+      "hex_srgb": "#2B2F38",
+      "roughness": 0.5,
+      "base_color_linear": [
+        0.0242,
+        0.0284,
+        0.0395
+      ],
+      "roles": "boot"
+    },
+    {
+      "name": "M_CH_Skier_GoggleFrame",
+      "hex_srgb": "#15181E",
+      "roughness": 0.5,
+      "base_color_linear": [
+        0.0075,
+        0.0091,
+        0.013
+      ],
+      "roles": "goggle_frame"
+    },
+    {
+      "name": "M_CH_Skier_Helmet",
+      "hex_srgb": "#2C3A57",
+      "roughness": 0.5,
+      "base_color_linear": [
+        0.0252,
+        0.0423,
+        0.0953
+      ],
+      "roles": "helmet"
+    },
+    {
+      "name": "M_CH_Skier_HelmetPanel",
+      "hex_srgb": "#4A5B7D",
+      "roughness": 0.5,
+      "base_color_linear": [
+        0.0685,
+        0.1046,
+        0.2051
+      ],
+      "roles": "helmet_panel"
+    },
+    {
+      "name": "M_CH_Skier_KneePatch",
+      "hex_srgb": "#18223A",
+      "roughness": 0.85,
+      "base_color_linear": [
+        0.0091,
+        0.016,
+        0.0423
+      ],
+      "roles": "knee_patch"
+    },
+    {
+      "name": "M_CH_Skier_Lens",
+      "hex_srgb": "#E2557A",
+      "roughness": 0.15,
+      "base_color_linear": [
+        0.7605,
+        0.0908,
+        0.1946
+      ],
+      "roles": "goggle_lens"
+    },
+    {
+      "name": "M_CH_Skier_Mouth",
+      "hex_srgb": "#9A5A4E",
+      "roughness": 0.6,
+      "base_color_linear": [
+        0.3231,
+        0.1022,
+        0.0762
+      ],
+      "roles": "mouth"
+    },
+    {
+      "name": "M_CH_Skier_Navy",
+      "hex_srgb": "#22304A",
+      "roughness": 0.8,
+      "base_color_linear": [
+        0.016,
+        0.0296,
+        0.0685
+      ],
+      "roles": "stripe,cuff,trousers"
+    },
+    {
+      "name": "M_CH_Skier_Red",
+      "hex_srgb": "#D7263D",
+      "roughness": 0.8,
+      "base_color_linear": [
+        0.6795,
+        0.0194,
+        0.0467
+      ],
+      "roles": "mitten,boot_band,neck_warmer"
+    },
+    {
+      "name": "M_CH_Skier_Skin",
+      "hex_srgb": "#D9A07A",
+      "roughness": 0.6,
+      "base_color_linear": [
+        0.6939,
+        0.3515,
+        0.1946
+      ],
+      "roles": "skin"
+    },
+    {
+      "name": "M_CH_Skier_Yellow",
+      "hex_srgb": "#F2B705",
+      "roughness": 0.8,
+      "base_color_linear": [
+        0.8879,
+        0.4735,
+        0.0015
+      ],
+      "roles": "jacket"
+    }
+  ],
+  "skinning": {
+    "max_influences": 4,
+    "normalised": true,
+    "method": "analytic weight field shared by all body shells (build/06_rig.py); rigid: helmet->Head, boot shells->Foot_L/R, boot cuffs->LowerLeg_L/R"
+  },
+  "snow_contact": "Root at the origin. Flat poses put the soles at z 0; PR_Ski's base is 0.045 m below its SOCKET_boot, so with skis on, the snow is 0.045 m below the root (place the root 0.045 m above the snow).",
+  "fbx_takes": [
+    {
+      "name": "Stance",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "CarveLeft",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "CarveRight",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "Tuck",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "Crouch",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "Air",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "Brake",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "Pole",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "Crash",
+      "LocalStop_frame": 30.0
+    }
+  ]
+}
