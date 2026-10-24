@@ -100,6 +100,11 @@
     steep step then a bench, about 2 m deep over 40 to 50 m. Each swaps gradient between its halves (8 to 24 degrees),
     so the slope never rises and drops no further overall. They keep off the start, the pitch, the kickers' ramps and
     landings and the roll-out. Even a full tuck at 120 km/h stays on the snow over them. Lighting is still to do.
+    Seen in build 40119190896, the bands are faint: about 4 levels of 255 down the screen. Neutral tonemapping
+    compresses the bright snow, and the sun, from downhill and to the right, lights steep and flat bands nearly alike.
+    Making the slope's shape read needs the lighting pass. Options: a sun nearer the fall line or lower, less
+    ambient, the snow out of the tonemapper's shoulder, or relief in the snow itself as GMA2 has. Cross-slope bumps
+    off the groomer would also catch the side light.
   - [x] Trees maybe a little sparse. Dense forest beyond the runs: `forestWest` (between the map's west edge and the
     western tree line) and `forestEast` (east of the bowl and glade), 459 more trees (938 in all). No line through the
     tree lines or the glade is closed.
