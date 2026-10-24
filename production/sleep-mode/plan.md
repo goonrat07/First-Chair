@@ -20,7 +20,7 @@ commit after every step); none of them closes a story, so there is no `/story-do
 | 8 | Story 007: equipment colours that read on snow, GPU instancing on the tree | dev-story | done | (this commit) |
 | 9 | Story 007: tree billboard (far LOD) | dev-story | done | (this commit) |
 | 10 | Story 007: stamped snow trails with a URP snow shader, blue shading and sparkle | dev-story | done: sparkle; skipped: stamped trails and the snow shader (need the editor) | 0007471 |
-| 11 | Verify the final build: old tracks, camera drift, pole colours, the instancing and billboard import tests, the billboard at a distance, sparkle | dev-story (verify) | running | |
+| 11 | Verify the final build: old tracks, camera drift, pole colours, the instancing and billboard import tests, the billboard at a distance, sparkle | dev-story (verify) | done (the billboard is not visible from the gameplay camera; its import test passes) | 918633c, (this commit) |
 
 ## Left for the PC
 - Story 003: the gamepad check, and the user's own playtest of each new build (feel, look, speed).

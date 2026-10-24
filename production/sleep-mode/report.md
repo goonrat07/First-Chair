@@ -265,3 +265,17 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
     `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-build-40058662563-old-tracks-too-faint.png`.
     Fixed in the next commit: about one track per 800 m^2 instead of 2300 (58 on the groomer), a little darker
     (still lighter than your live track), and 10 cm wide.
+- Build 40060424205 (commit 918633c, everything from tonight) is green: EditMode 93/93 in Unity, including
+  `BillboardQuadsTests`, the billboard atlas import test and the sparkle tests. I rode it at 4K.
+  - Old tracks: now clear, curving S-trails across the groomer like GMA2's.
+  - Tree lines: they cast long blue shadows beside the run.
+  - Speed: the HUD showed 42 to 50 km/h on the traverse.
+  - Sparkle: present but subtle. A 900 x 500 patch of 4K snow beside the rider has 9 glint pixels, up to 254
+    brightness, where the build before had none (max 225). Tune the share or crystal size on the PC if you want
+    more.
+  - Billboard: it can't be seen from the gameplay camera, which doesn't show trees past about 300 m at its pitch.
+    Its import test passes.
+  - Evidence:
+    - `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-build-40060424205-*.png`
+    - `production/qa/evidence/story-007-first-art-pass/2026-10-24-build-40060424205-snow-sparkle-4k-crop.png`
+  - The Windows player for your playtest is the `FirstChair-StandaloneWindows64` artifact of run 40060424205.
