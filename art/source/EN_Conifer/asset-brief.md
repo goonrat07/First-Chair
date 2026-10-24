@@ -29,7 +29,7 @@ MATERIALS  Flat colour, no textures, no UVs, one material per role (linear RGB, 
              M_Conifer_Snow   (0.80, 0.87, 0.96)   roughness 0.7   tier tops (snow caps); 98 percent of branches
 LODS       LOD0 1,169 tris (budget 300 to 1,500). LOD1 396 tris (budget 100 to 400): LOD0's placement, all 16
            tiers, at most 4 branches per tier, each a 6-tri double pyramid (a point at the trunk, a tent section
-           with a snow ridge, a point at the tip), 55 percent wide. LOD2 billboard: planned, not built (below).
+           with a snow ridge, a point at the tip), 55 percent wide. LOD2 billboard: two crossed quads (below).
 CAMERA     Game camera from art/source/CH_Skier/CH_Skier_master.blend REF_game_camera: az 30, el 45, 35 mm,
            18.0 m from the skier's mid-height (0.875 m). This is still the FIRST-CHAIR.md estimate. The game
            review render now uses this exact follow camera on a skier proxy beside the trunk.
@@ -56,7 +56,7 @@ TARGET     Unity 6.3 LTS URP, FBX, Assets/Art/Environment/EN_Conifer/ (exported 
   working copies and logs are in `review/export/`, which git ignores.
 - **Not verified in the Unity editor:** the LODGroup, no rotation on import, 1 unit = 1 m, the imported
   Base Colours, and GPU instancing on the materials.
-- LOD2 billboard: not built, because tree-kit has no billboard script yet (see below).
+- LOD2 billboard: built 2026-10-24 (below); the crossed quads in Unity are not verified in the editor.
 - The colours are approved for the test build only. They stay provisional until the final art sign-off.
 
 ## Rebuild
@@ -80,10 +80,18 @@ It then copies the check evidence into `review/final/`. To change the tree, chan
 Never edit the mesh or the FBX by hand. Each export rewrites the manifest's `generated` time and
 absolute `source` path (export_delivery's convention, the same as PR_Ski).
 
-## Billboard (LOD2) still to build
+## Billboard (LOD2)
 
-Render LOD0 orthographic from 8 azimuths (or front and side for crossed quads) under flat light into an alpha
-atlas of about 512 x 256, on a 2 to 4 tri quad with an alpha-clip URP material. A camera-facing quad needs a
-custom vertex shader (Shader Graph) in Unity: not verified in the editor. The billboard is the one textured part
-of the tree, so its atlas size and texture memory go in the manifest (512 x 256 RGBA8 is 512 KiB uncompressed,
-about 128 KiB at BC7 or BC3). Gate: alpha-mask IoU against the LOD0 silhouette from the same view.
+Built 2026-10-24 (sleep mode) by `build/billboard.py` (Blender: LOD0 alone, orthographic, Workbench flat light in its
+material colours, Standard view transform, front and side at 4x) and `build/billboard_atlas.py` (Pillow: a
+premultiplied box downsample into a 512 x 1024 RGBA atlas, two 256 x 1024 cells of 3.6 x 14.4 m, colour bled into the
+clear texels). `phases.sh billboard` runs both. The atlas and its layout are
+`Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.png` and `.json`. Texture memory: 2 MiB as RGBA8,
+about 512 KiB at BC7 or BC3, plus mipmaps.
+
+Gate: each cell's alpha mask against LOD0's silhouette from the same view, rendered at 4x and reduced by
+majority: IoU 0.993 front and side (minimum 0.9). Crossed quads (4 tris) rather than a camera-facing quad, which
+would need a custom vertex shader. Unity's scene builder makes the quads (`BillboardQuads`), an alpha-clip URP Lit
+material with up-facing normals so it lights like the snow, and adds them as each tree's last LOD (switch heights
+0.25, 0.08 and 0.0125 of the screen). Not verified in the editor. The scripts live here because tree-kit has no
+billboard script yet; they move into the skill when it is next edited.

@@ -34,6 +34,13 @@ namespace FirstChair.Riding.Editor
         // EN_Conifer asset-manifest.json: crown width 3.6958 m at LOD0.
         private const float TreeCrownRadius = 1.848f;
 
+        // The tree's far LOD (story 007): crossed quads from art/source/EN_Conifer/build/billboard_atlas.py. The 12 m tree
+        // fills about 25 / d of the follow camera's screen height at d metres, so LOD0 shows to about 100 m, LOD1 to
+        // about 300 m and the billboard out to the 2 km far clip.
+        private const string BillboardAtlasPath = "Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.png";
+        private const string BillboardLayoutPath = "Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.json";
+        private static readonly float[] TreeLodHeights = { 0.25f, 0.08f, 0.0125f };
+
         // Old tracks (story 003 decisions, 2026-10-24): on the groomer and in the bowl, about one track per 2300 m^2 (20 on
         // the groomer), each ski's line 9 cm wide like the live track, 2 cm off the snow, and 1 m clear of any canopy.
         private static readonly string[] OldTrackZones = { "groomer", "bowl" };
@@ -209,6 +216,9 @@ namespace FirstChair.Riding.Editor
         {
             var model = AssetDatabase.LoadAssetAtPath<GameObject>(TreeModelPath);
             Material fallback = model == null ? LitMaterial("TreeFallback", "Universal Render Pipeline/Lit", new Color(0.12f, 0.22f, 0.16f), 0.1f, false) : null;
+            Mesh billboardMesh = null;
+            Material billboardMaterial = null;
+            bool billboard = model != null && TreeBillboard(out billboardMesh, out billboardMaterial);
             for (int i = 0; i < slope.Layout.Trees.Count; i++)
             {
                 SlopeTree tree = slope.Layout.Trees[i];
@@ -221,7 +231,94 @@ namespace FirstChair.Riding.Editor
                     new Vector3(SimCoordinates.ToFloat(tree.X), SimCoordinates.ToFloat(height), SimCoordinates.ToFloat(tree.Z)),
                     Quaternion.Euler(0f, i * 137.508f % 360f, 0f));
                 instance.transform.localScale = Vector3.one * scale;
+                if (billboard)
+                {
+                    AddBillboardLod(instance, billboardMesh, billboardMaterial);
+                }
             }
+        }
+
+        /// <summary>The billboard's mesh and alpha-clipped material, made in <see cref="Folder"/>; false if its files are missing.</summary>
+        private static bool TreeBillboard(out Mesh mesh, out Material material)
+        {
+            mesh = null;
+            material = null;
+            var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(BillboardAtlasPath);
+            var layoutText = AssetDatabase.LoadAssetAtPath<TextAsset>(BillboardLayoutPath);
+            if (atlas == null || layoutText == null)
+            {
+                Debug.LogWarning("TestSlopeLook: no tree billboard (" + BillboardAtlasPath + "); trees keep two LODs.");
+                return false;
+            }
+
+            var layout = JsonUtility.FromJson<BillboardLayout>(layoutText.text);
+            BillboardQuads.Build(layout.cells, layout.cellWidthMetres, layout.cellHeightMetres, layout.bottomMetres,
+                out float[] positions, out float[] uvs, out int[] triangles);
+            var vertices = new Vector3[positions.Length / 3];
+            var texcoords = new Vector2[vertices.Length];
+            var normals = new Vector3[vertices.Length];
+            for (int v = 0; v < vertices.Length; v++)
+            {
+                vertices[v] = new Vector3(positions[3 * v], positions[3 * v + 1], positions[3 * v + 2]);
+                texcoords[v] = new Vector2(uvs[2 * v], uvs[2 * v + 1]);
+                normals[v] = Vector3.up;  // lit like the snow from above, the same on every side and from both faces
+            }
+
+            mesh = new Mesh { name = "EN_Conifer_Billboard", vertices = vertices, uv = texcoords, normals = normals, triangles = triangles };
+            mesh.RecalculateBounds();
+            string meshPath = Folder + "/EN_Conifer_Billboard.asset";
+            AssetDatabase.DeleteAsset(meshPath);
+            AssetDatabase.CreateAsset(mesh, meshPath);
+
+            material = LitMaterial("ConiferBillboard", "Universal Render Pipeline/Lit", Color.white, 0f, true);
+            material.SetTexture("_BaseMap", atlas);
+            material.SetFloat("_AlphaClip", 1f);
+            material.SetFloat("_Cutoff", layout.alphaCutoff);
+            material.EnableKeyword("_ALPHATEST_ON");
+            material.SetOverrideTag("RenderType", "TransparentCutout");
+            material.renderQueue = (int)RenderQueue.AlphaTest;
+            material.enableInstancing = true;
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return true;
+        }
+
+        /// <summary>Adds the billboard as the tree's last LOD and sets the LOD switch heights.</summary>
+        private static void AddBillboardLod(GameObject tree, Mesh mesh, Material material)
+        {
+            var group = tree.GetComponent<LODGroup>();
+            if (group == null)
+            {
+                Debug.LogWarning("TestSlopeLook: " + tree.name + " has no LODGroup; no billboard.");
+                return;
+            }
+
+            var quads = new GameObject("EN_Conifer_Billboard");
+            quads.transform.SetParent(tree.transform, false);
+            quads.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = quads.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            LOD[] lods = group.GetLODs();
+            var withBillboard = new LOD[lods.Length + 1];
+            for (int i = 0; i < withBillboard.Length; i++)
+            {
+                Renderer[] renderers = i < lods.Length ? lods[i].renderers : new Renderer[] { renderer };
+                withBillboard[i] = new LOD(TreeLodHeights[Mathf.Min(i, TreeLodHeights.Length - 1)], renderers);
+            }
+
+            group.SetLODs(withBillboard);
+            group.RecalculateBounds();
+        }
+
+        /// <summary><c>EN_Conifer_Billboard.json</c>, written by billboard_atlas.py.</summary>
+        [System.Serializable]
+        private sealed class BillboardLayout
+        {
+            public int cells = 2;
+            public float cellWidthMetres = 3.6f;
+            public float cellHeightMetres = 14.4f;
+            public float bottomMetres = -0.1f;
+            public float alphaCutoff = 0.5f;
         }
 
         /// <summary>

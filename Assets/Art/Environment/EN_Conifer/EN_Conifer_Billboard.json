@@ -1,0 +1,13 @@
+{
+  "atlas": "EN_Conifer_Billboard.png",
+  "cells": 2,
+  "cellWidthMetres": 3.6,
+  "cellHeightMetres": 14.4,
+  "bottomMetres": -0.1,
+  "alphaCutoff": 0.5019607843137255,
+  "views": [
+    "front",
+    "side"
+  ],
+  "source": "art/source/EN_Conifer/build/billboard.py and billboard_atlas.py"
+}

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # EN_Conifer: every tree-kit phase for this asset, rebuilt from EN_Conifer_params.json.
-# Usage: bash art/source/EN_Conifer/build/phases.sh [1|2|3|4|5|final|6|all]   (default all)
+# Usage: bash art/source/EN_Conifer/build/phases.sh [1|2|3|4|5|billboard|final|6|all]   (default all)
 # Phase 6 exports snowy_spruce v2 (approved for the test build) to Assets/Art/Environment/EN_Conifer/.
 set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../../.." && pwd)"
@@ -65,8 +65,16 @@ phase6() {
   cp "$E/"{export_check.json,export_clay.png,export_colour.png,roundtrip.json} "$F/"
 }
 
+# The far LOD (story 007): LOD0 rendered front and side into a two-cell alpha atlas, gated by IoU against LOD0's
+# silhouette; the Unity scene builder makes the crossed quads from EN_Conifer_Billboard.json.
+billboard() {
+  local R="$A/review/05_billboard"
+  "$B" --background --python "$A/build/billboard.py" -- --master "$M" --out "$R" | grep -E "^BILLBOARD"
+  python3 "$A/build/billboard_atlas.py" --renders "$R" --params "$P" --out "$ROOT/Assets/Art/Environment/EN_Conifer"
+}
+
 case "${1:-all}" in
-  1) phase1 ;; 2) phase2 ;; 3) phase3 ;; 4) phase4 ;; 5) phase5 ;; final) final ;; 6) phase6 ;;
-  all) phase1; phase2; phase3; phase4; phase5; final; phase6 ;;
-  *) echo "usage: $0 [1|2|3|4|5|final|6|all]"; exit 2 ;;
+  1) phase1 ;; 2) phase2 ;; 3) phase3 ;; 4) phase4 ;; 5) phase5 ;; billboard) billboard ;; final) final ;; 6) phase6 ;;
+  all) phase1; phase2; phase3; phase4; phase5; billboard; final; phase6 ;;
+  *) echo "usage: $0 [1|2|3|4|5|billboard|final|6|all]"; exit 2 ;;
 esac

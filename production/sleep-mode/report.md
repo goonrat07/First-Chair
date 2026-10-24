@@ -195,3 +195,34 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
 - Not verified:
   - The editor import (CI will run the test).
   - How the poles look in a build.
+
+## 9. Tree billboard (far LOD)
+- Changed:
+  - `art/source/EN_Conifer/build/billboard.py` (Blender) and `billboard_atlas.py` (Pillow), both new. They render
+    LOD0 front and side, flat-lit in its own colours, at 4x into a 512 x 1024 alpha atlas, with colour bled into
+    the clear texels.
+    - Gate: IoU 0.993 front and side against LOD0's silhouette (the minimum is 0.9).
+    - `phases.sh billboard` runs both.
+    - These belong in the tree-kit skill, but skills can't be edited while sleep mode is on. They wait in the
+      asset's folder.
+  - `Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.png` and `.json` (new). The params and brief record
+    LOD2 as built.
+  - `Assets/Scripts/Riding/Core/BillboardQuads.cs` (new, engine-free): crossed quads, one per atlas cell.
+  - `Assets/Scripts/Riding/Editor/TestSlopeLook.cs`: the billboard mesh and an alpha-clip URP Lit material with
+    up-facing normals, so it lights like the snow. It is added as each conifer's last LOD; the switch heights are
+    0.25, 0.08 and 0.0125, so LOD0 shows to about 100 m, LOD1 to about 300 m, and the billboard beyond.
+  - `EnvironmentModelImport`: billboard atlases import with alpha as transparency, clamped, with coverage-preserving
+    mipmaps.
+  - Tests:
+    - `BillboardQuadsTests` (4, engine-free).
+    - A second `EnvironmentImportTests` test for the atlas import settings (CI).
+  - Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-tree-billboard-atlas-on-snow-blue.png`.
+- Tests:
+  - The engine-free EditMode check: 77 passed. The new tests failed (did not compile) first.
+  - The runtime scripts compile against Unity's DLLs. The new editor methods compile with stubs.
+- Decisions made for you:
+  - Crossed quads rather than a camera-facing quad. Turning a quad to the camera needs a custom vertex shader,
+    which can't be checked without the editor.
+- Not verified:
+  - The LOD switch and the look at a distance, in a build and in the editor.
+  - Billboard shadows: the quads cast them (alpha-clipped).

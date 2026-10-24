@@ -73,6 +73,11 @@
     and `EnvironmentImportTests` checks the conifer's in CI. The URP asset has the SRP Batcher on, which takes those
     materials first. Unity 6's GPU Resident Drawer (URP asset plus Forward+) would instance the trees through the
     BatchRendererGroup, but it is a renderer change to try on the PC with the profiler.
+  - Tree billboard, done 2026-10-24 (sleep mode), not verified in the editor. LOD0 is rendered front and side into
+    a 512 x 1024 alpha atlas. Its gate is IoU 0.993 against LOD0's silhouette, with 0.9 the minimum. Two crossed
+    quads (4 tris) use an alpha-clip URP material and are added by the scene builder as each tree's last LOD.
+    Details are in `art/source/EN_Conifer/asset-brief.md` ("Billboard (LOD2)"). Evidence:
+    `production/qa/evidence/story-007-first-art-pass/2026-10-24-tree-billboard-atlas-on-snow-blue.png`.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).

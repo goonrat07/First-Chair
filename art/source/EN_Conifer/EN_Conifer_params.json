@@ -15,7 +15,7 @@
   "lods": [
     {"level": 0, "budget_tris": [300, 1500], "overrides": {}},
     {"level": 1, "budget_tris": [100, 400], "select": {"max_branches_per_tier": 4, "tier_stride": 1}, "overrides": {"branch.section": "tent", "branch.stations": "mid_only", "branch.mid_width_frac": 0.55, "trunk.sides": 4, "spike.sides": 4}},
-    {"level": 2, "kind": "billboard", "budget_tris": [2, 4], "status": "planned", "notes": "Flat far version (story-007). Not built yet; see asset-brief.md LODS."}
+    {"level": 2, "kind": "billboard", "budget_tris": [2, 4], "status": "built", "notes": "Flat far version (story-007): two crossed quads (4 tris) on a 512 x 1024 alpha atlas, front and side cells, from build/billboard.py and billboard_atlas.py (phases.sh billboard). Unity's scene builder adds it as the last LOD."}
   ],
   "variants": {
     "snowy_spruce": {"status": "built", "snow_cover": 0.98, "colours_linear": {"bark": [0.09, 0.07, 0.06], "needle": [0.01, 0.03, 0.018], "snow": [0.8, 0.87, 0.96]}, "roughness": {"bark": 0.9, "needle": 0.85, "snow": 0.7}},
