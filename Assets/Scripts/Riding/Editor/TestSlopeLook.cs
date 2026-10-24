@@ -41,12 +41,13 @@ namespace FirstChair.Riding.Editor
         private const string BillboardLayoutPath = "Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.json";
         private static readonly float[] TreeLodHeights = { 0.25f, 0.08f, 0.0125f };
 
-        // Old tracks (story 003 decisions, 2026-10-24): on the groomer and in the bowl, about one track per 2300 m^2 (20 on
-        // the groomer), each ski's line 9 cm wide like the live track, 2 cm off the snow, and 1 m clear of any canopy.
+        // Old tracks (story 003 decisions, 2026-10-24): on the groomer and in the bowl, about one track per 800 m^2 (58 on
+        // the groomer; one per 2300 m^2 left barely one in view in build 40058662563), each ski's line 10 cm wide, 2 cm
+        // off the snow, and 1 m clear of any canopy.
         private static readonly string[] OldTrackZones = { "groomer", "bowl" };
-        private const double OldTrackAreaPerTrack = 2300.0;
+        private const double OldTrackAreaPerTrack = 800.0;
         private const ulong OldTrackSeed = 2026_10_24;
-        private const float OldTrackWidth = 0.09f;
+        private const float OldTrackWidth = 0.10f;
         private const float OldTrackLift = 0.02f;
         private const double OldTrackTreeClearance = 1.0;
 
@@ -368,14 +369,15 @@ namespace FirstChair.Riding.Editor
 
         /// <summary>
         /// Lays old ski tracks (<see cref="FirstChair.Riding.OldTracks"/>) over the groomer and the bowl: each ski's line
-        /// is a thin ribbon a little bluer than the snow, following the snow, clear of the trees. One mesh per zone, saved
+        /// is a thin ribbon a little bluer and darker than the snow, following the snow, clear of the trees. One mesh per zone, saved
         /// in <see cref="Folder"/>. Display only: they cast no shadow, and the sim never reads them.
         /// </summary>
         /// <param name="parent">Parent for the track meshes.</param>
         /// <param name="slope">The slope.</param>
         public static void OldTracks(Transform parent, TestSlopeData slope)
         {
-            Material material = LitMaterial("OldTrack", "Universal Render Pipeline/Lit", new Color(0.80f, 0.85f, 0.94f), 0f, false);
+            // A little lighter than the live track (TrackMaterial), so old tracks read as older.
+            Material material = LitMaterial("OldTrack", "Universal Render Pipeline/Lit", new Color(0.74f, 0.80f, 0.91f), 0f, false);
             for (int z = 0; z < OldTrackZones.Length; z++)
             {
                 if (!slope.Layout.TryGetZone(OldTrackZones[z], out SlopeZone zone))

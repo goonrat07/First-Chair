@@ -255,3 +255,13 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
   next build, so they wait for the PC. Your live ski tracks still draw as before.
 - Decisions made for you: sparkle through the existing terrain shader, and no custom shader tonight.
 - Not verified: whether the glints read at the follow camera (the next build), and the look in the editor.
+
+## 11. Checking the final builds
+- Build 40058662563 (commit 54c34d4) is green: EditMode 84/84 in Unity, including `ConiferMaterials_HaveGpuInstancingOn`,
+  so the instancing import hook runs. I rode it at 4K.
+  - Poles: graphite shafts that read clearly on the snow, with red baskets.
+    `production/qa/evidence/story-007-first-art-pass/2026-10-24-build-40058662563-graphite-poles.png`.
+  - Old tracks: S-curves that follow the snow, but too faint and too few, with barely one in view.
+    `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-build-40058662563-old-tracks-too-faint.png`.
+    Fixed in the next commit: about one track per 800 m^2 instead of 2300 (58 on the groomer), a little darker
+    (still lighter than your live track), and 10 cm wide.
