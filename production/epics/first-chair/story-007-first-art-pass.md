@@ -107,7 +107,9 @@
     off the groomer would also catch the side light.
   - [x] Trees maybe a little sparse. Dense forest beyond the runs: `forestWest` (between the map's west edge and the
     western tree line) and `forestEast` (east of the bowl and glade), 459 more trees (938 in all). No line through the
-    tree lines or the glade is closed.
+    tree lines or the glade is closed. Seen in build 40120266835: a left traverse from the start runs into the western
+    tree line, with the forest strip behind it up to the map's edge, all snow-laden conifers with long blue shadows.
+    Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-build-40120266835-west-tree-line-and-forest.png`.
   - [ ] Tracks should build up where skiers pass, as in GMA2, not sit as streaks on a static texture. This belongs
     to the custom snow shader.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain

@@ -174,7 +174,16 @@ All in `Tuning`:
   - The first build (40117971068) showed no spray. Neutral tonemapping turns unlit white into the sunlit snow's own
     brightness (about 218 against 220 of 255), so the flakes vanished against it. They now take colours between snow
     in shade and in sun. The player logs one line the first time the spray emits.
-- Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-race-carve-pose.png`.
+  - Seen in build 40120266835 once the rider was up to speed (a 45 s straight first: software rendering runs the
+    game in slow motion, and a first ride at 0 to 6 km/h threw almost nothing, as the spray scales with speed). Quick
+    turns at about 83 km/h and a brake from 66 km/h throw a cloud of shaded flakes. A clean W carve throws none and
+    leaves two thin tracks.
+- Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-race-carve-pose.png` and
+  `2026-10-24-build-40120266835-spray-brake-and-clean-carve.png` in the same folder.
+- The same ride showed the camera losing the rider at speed: the look-ahead grows with speed to 13 m, which put the
+  feet below the bottom of the screen from about 73 km/h when the camera's smoothing barely lagged (as at a low frame
+  rate). The look-ahead is now capped so the feet stay at or above 85% of the screen height (story 003's camera,
+  `FollowCameraSettings.LowestRiderOnScreen`). Stopped, the rider still sits 80% of the way down.
 
 ## Out of Scope
 
