@@ -65,6 +65,7 @@
     air `SkierPoseWeights` shows the held grab's pose instead of Air. Evidence:
     `production/qa/evidence/story-007-first-art-pass/2026-10-24-grab-poses-*.png`. The skier's grab names follow
     the sim's `GrabKind` names, not real ski-trick definitions; the user can rename or reshape any of them.
+    Flips, spins and grabs were seen in build 40056930596 (evidence `2026-10-24-build-40056930596-*.png`).
   - Equipment colours and tree instancing, done 2026-10-24 (sleep mode), not yet seen in a build or the editor.
     PR_SkiPole's shaft is graphite now (8.5:1 luminance contrast on sunlit snow; the old light grey was 1.1:1), and
     its grip and basket are red like the gloves. Re-exported from `05_materials.py` through `export_delivery.py`;

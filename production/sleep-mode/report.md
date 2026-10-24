@@ -104,7 +104,13 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
   - `RiderPlacementTests` uses Unity's math, so it runs only in CI's EditMode job.
 - Decisions made for you: the flip turns about the middle of the body (0.9 m up), not the boots, so the rider turns
   over in place like GMA2's skier.
-- Not verified: how flips look in a build, and in the editor.
+- Seen in build 40056930596 (commit db9337b; EditMode 67/67 there, including the 5 `RiderPlacementTests`), ridden
+  here at 4K:
+  - Mid-flip the rider is upside down, skis seen from below and arms out.
+  - A spin shows the skis sideways in the air.
+  - Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-build-40056930596-flip-*.png` and
+    `-spin.png`. That flip landed badly, so the frames go on to the crash pose and the reset, which also work.
+- Not verified: the editor, and how flips feel.
 
 ## 5. Grab poses
 - Changed:
@@ -135,8 +141,12 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
 - Decisions made for you:
   - Each grab is named after the sim's `GrabKind` (Mute, Tip, Tail, Japan, Safety). The shapes are my reading
     of those names for skis, not a reference you gave.
-- Not verified: how the grabs look in a build and in the editor, and their feel. They are a first pass for you
-  to judge.
+- Seen in build 40056930596, ridden here:
+  - Pop with grab held: the grab pose shows in the air and reads from the follow camera.
+  - Mute: folded, knees spread, the free arm out with its pole.
+  - Tip: a pike, tips up, the right hand at the right tip.
+  - Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-build-40056930596-grabs-mute-tip-tail.png`.
+- Not verified: the editor, and the feel. They are a first pass for you to judge.
 
 ## 6. Old ski tracks
 - Changed:
