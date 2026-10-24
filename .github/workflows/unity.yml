@@ -20,9 +20,12 @@ permissions:
   contents: read
   checks: write
 
+# One run per branch at a time, and a run in progress always finishes: a build takes about 40 minutes and pushes
+# come more often than that, so cancelling would mean no build ever finished. A newer push waits; a newer one still
+# replaces it while it waits, so the next build is always of the latest commit.
 concurrency:
   group: unity-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
