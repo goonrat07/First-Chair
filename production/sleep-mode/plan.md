@@ -1,29 +1,27 @@
 # Sleep mode plan
 
-Started: 2026-10-20T11:05:45Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 5268986
-Finished: 2026-10-20T16:41:20Z · Reason: done
+Started: 2026-10-24T02:38:00Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 0f146e0
+
+The user chose tonight's items on 2026-10-24 (story 003 "Decisions", story 007 "Next"). Unity now builds on GitHub
+Actions (`unity.yml`; the repo is public, so minutes are free), and each Linux build is ridden in this session under
+Xvfb with scripted keys, so Unity-side items can run here. They are still reported as **not verified in the Unity
+editor**, and feel stays the user's call. Each item follows `/dev-story`'s method (tests first where there is logic,
+commit after every step); none of them closes a story, so there is no `/story-done` tonight.
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
-| 1 | story-001-sim-core-replay | story-done | done | bb0e1c0 |
-| 2 | story-002-skiing-on-snow | dev-story | done | 77371d7 |
-| 3 | story-002-skiing-on-snow | story-done | done | 919ce3a |
-| 4 | story-003-test-slope-unity-view, sim half only: slope generator, snow-type map, feature data (kickers, trees), sim-side height checks | dev-story | done | 5d9a50a |
-| 5 | story-004-air-landings-crashes (needs item 4's kicker data; goes ahead of 003's Unity half) | dev-story | done | 9223bb3 |
-| 6 | story-004-air-landings-crashes | story-done | done | 6636874 |
-| 7 | story-005-trees-and-flow (needs item 4's tree data and story 004) | dev-story | done | c5b5e6c |
-| 8 | story-005-trees-and-flow | story-done | done | 87e86fc |
-| 9 | story-006-rails-and-trick-scoring | dev-story | done | e69c968 |
-| 10 | story-006-rails-and-trick-scoring | story-done | done | d472f3d |
-
-Story 003 stays In Progress after item 4: its Unity half is left for the PC, so it gets
-no `/story-done` here.
+| 1 | Story 003 playtest fixes: ride build 40054775510, confirm skis, poles and the lower, narrower camera | dev-story (verify) | queued | |
+| 2 | Speed: retune story 002's numbers toward a GMA2-like pace (40-60 km/h on the groomer), tests show before and after, sim version bump | dev-story | queued | |
+| 3 | Tree lines along the groomer and park edges in `make_test_slope.py` (real, collidable trees in the sim layout) | dev-story | queued | |
+| 4 | Show tricks: rotate the skier by the sim's spin and flip angles in the air | dev-story | queued | |
+| 5 | Grab poses for CH_Skier (Mute, Tip, Tail, Japan, Safety) and the view blending them in the air | dev-story | queued | |
+| 6 | Old ski tracks over the groomers and powder (display only) | dev-story | queued | |
+| 7 | Camera drift: let the rider move a little side to side before the camera follows | dev-story | queued | |
+| 8 | Story 007: equipment colours that read on snow, GPU instancing on the tree | dev-story | queued | |
+| 9 | Story 007: tree billboard (far LOD) | dev-story | queued | |
+| 10 | Story 007: stamped snow trails with a URP snow shader, blue shading and sparkle | dev-story | queued | |
 
 ## Left for the PC
-- story-003-test-slope-unity-view, Unity half: Unity Terrain from the heightmap (1 cm
-  height check), 120 Hz stepping with interpolation, placeholder skier, GMA2-style
-  follow camera, keyboard and gamepad input, record and replay in Unity, and the Windows
-  playtest with a retained screenshot.
-- story-007-first-art-pass: Visual/Feel, needs the Unity Editor, screenshots and sign-off.
-- Feel tuning for stories 002, 004 and 005: their tests pin behaviour, not final numbers
-  (story 002: "Tune by playtest once Story 003 makes the rider visible").
+- Story 003: the gamepad check, and the user's own playtest of each new build (feel, look, speed).
+- Story 007: sign-off on the look.
+- Feel tuning beyond item 2: the user judges the new speed and says what to change.
