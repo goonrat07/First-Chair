@@ -171,6 +171,9 @@ All in `Tuning`:
 - Snow spray (`SnowSpray`, `SnowSprayMath`): the skis throw snow the way they slide, in proportion to the sideways
   slide (speed · sin slip). Brakes throw it ahead. A clean carve slides none, so it throws none, and the two kinds of
   turn read apart. Powder throws more, ice a few chips. All numbers are in `RiderViewSettings`.
+  - The first build (40117971068) showed no spray. Neutral tonemapping turns unlit white into the sunlit snow's own
+    brightness (about 218 against 220 of 255), so the flakes vanished against it. They now take colours between snow
+    in shade and in sun. The player logs one line the first time the spray emits.
 - Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-race-carve-pose.png`.
 
 ## Out of Scope

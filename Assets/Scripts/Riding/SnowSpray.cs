@@ -25,6 +25,7 @@ namespace FirstChair.Riding
 
         private ParticleSystem _particles;
         private float _owed;
+        private bool _reported;
 
         private void Awake()
         {
@@ -44,7 +45,9 @@ namespace FirstChair.Riding
             main.simulationSpace = ParticleSystemSimulationSpace.World;
             main.maxParticles = settings.SprayMaxParticles;
             main.gravityModifier = settings.SprayGravity;
-            main.startColor = Color.white;
+            // Each flake a colour between snow in shade and in sun: unlit white alone tonemaps to the sunlit snow's own
+            // brightness and vanishes against it.
+            main.startColor = new ParticleSystem.MinMaxGradient(settings.SprayShadeColor, settings.SprayLightColor);
             ParticleSystem.EmissionModule emission = _particles.emission;
             emission.enabled = false;
             ParticleSystem.ShapeModule shape = _particles.shape;
@@ -125,6 +128,13 @@ namespace FirstChair.Riding
                 emit.startSize = settings.SpraySize * (0.6f + 0.8f * Random.value);
                 emit.startLifetime = settings.SprayLifetime * (0.7f + 0.6f * Random.value);
                 _particles.Emit(emit, 1);
+            }
+
+            if (!_reported)
+            {
+                // One line per session, so a run's log shows the spray working (a player built for CI can't be watched).
+                _reported = true;
+                Debug.Log("SnowSpray: throwing snow, " + _particles.particleCount + " flakes alive after the first " + count + ".");
             }
         }
     }

@@ -61,7 +61,7 @@ namespace FirstChair.Riding
 
         [Header("Snow spray (Story 008)")]
         [Tooltip("Flakes per metre the skis slide sideways (quick turns and skids; a clean carve slides none).")]
-        [SerializeField, Min(0f)] private float sprayPerSlideMetre = 60f;
+        [SerializeField, Min(0f)] private float sprayPerSlideMetre = 80f;
         [Tooltip("Flakes per metre travelled while braking.")]
         [SerializeField, Min(0f)] private float sprayPerBrakeMetre = 12f;
         [Tooltip("The most flakes per second.")]
@@ -73,7 +73,12 @@ namespace FirstChair.Riding
         [Tooltip("A flake's lifetime, seconds (each varies by 30% either way).")]
         [SerializeField, Min(0.05f)] private float sprayLifetime = 0.7f;
         [Tooltip("A flake's size, metres (each varies by 40% either way).")]
-        [SerializeField, Min(0.01f)] private float spraySize = 0.25f;
+        [SerializeField, Min(0.01f)] private float spraySize = 0.3f;
+        [Tooltip("Flakes take a colour between this one, snow in shade, and the next. Unlit white alone reads as the sunlit "
+            + "snow behind it once tonemapped (build 40117971068 showed no spray), so the shade is what makes the spray show.")]
+        [SerializeField] private Color sprayShadeColor = new Color(0.60f, 0.68f, 0.84f);
+        [Tooltip("The bright end of the flakes' colours, sunlit snow.")]
+        [SerializeField] private Color sprayLightColor = new Color(0.95f, 0.97f, 1f);
         [Tooltip("Speed the flakes are thrown at the way the skis slide, metres per second (0.5 to 1.5 times this).")]
         [SerializeField, Min(0f)] private float sprayThrow = 2.5f;
         [Tooltip("Speed the flakes are thrown up at, metres per second (0.5 to 1.5 times this).")]
@@ -159,6 +164,10 @@ namespace FirstChair.Riding
         public float SprayLifetime => sprayLifetime;
         /// <summary>A flake's size, metres.</summary>
         public float SpraySize => spraySize;
+        /// <summary>The shaded end of the flakes' colours.</summary>
+        public Color SprayShadeColor => sprayShadeColor;
+        /// <summary>The bright end of the flakes' colours.</summary>
+        public Color SprayLightColor => sprayLightColor;
         /// <summary>Sideways throw speed, m/s.</summary>
         public float SprayThrow => sprayThrow;
         /// <summary>Upward throw speed, m/s.</summary>
