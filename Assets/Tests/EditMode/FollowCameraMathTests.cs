@@ -110,5 +110,30 @@ namespace FirstChair.Riding.Tests
             Assert.That(FollowCameraMath.Pitch(-20.0, 35.0, 30.0, 72.0), Is.EqualTo(30.0).Within(1e-9));
             Assert.That(FollowCameraMath.Pitch(50.0, 35.0, 30.0, 72.0), Is.EqualTo(72.0).Within(1e-9));
         }
+
+        [Test]
+        public void LateralFollow_RiderInsideTheDriftZone_CameraOnlyEasesBack()
+        {
+            // Assert: 1.5 m off centre inside a 2.5 m zone: no catch-up, only the recentring share.
+            Assert.That(FollowCameraMath.LateralFollow(1.5, 2.5, 0.0), Is.EqualTo(0.0));
+            Assert.That(FollowCameraMath.LateralFollow(1.5, 2.5, 0.1), Is.EqualTo(0.15).Within(1e-12));
+            Assert.That(FollowCameraMath.LateralFollow(-1.5, 2.5, 0.1), Is.EqualTo(-0.15).Within(1e-12));
+        }
+
+        [Test]
+        public void LateralFollow_RiderPastTheDriftZone_CameraCatchesUpToItsEdge()
+        {
+            // Assert: 4 m off centre with a 2.5 m zone: the camera moves the 1.5 m overshoot at once, then eases back.
+            Assert.That(FollowCameraMath.LateralFollow(4.0, 2.5, 0.0), Is.EqualTo(1.5).Within(1e-12));
+            Assert.That(FollowCameraMath.LateralFollow(-4.0, 2.5, 0.0), Is.EqualTo(-1.5).Within(1e-12));
+            Assert.That(FollowCameraMath.LateralFollow(4.0, 2.5, 0.1), Is.EqualTo(1.75).Within(1e-12));
+        }
+
+        [Test]
+        public void LateralFollow_NoDriftZone_FollowsFully()
+        {
+            // Assert: a zero zone pins the rider to the centre, as before camera drift.
+            Assert.That(FollowCameraMath.LateralFollow(0.7, 0.0, 0.0), Is.EqualTo(0.7).Within(1e-12));
+        }
     }
 }

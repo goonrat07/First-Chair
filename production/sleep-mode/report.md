@@ -158,3 +158,18 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
   - Old tracks on the groomer and in the bowl, not the park (its kickers and rails) or the glade (its trees).
   - Their colour is lighter than your own live track, so they read as old.
 - Not verified: the look, in a build and in the editor.
+
+## 7. Camera drift
+- Changed:
+  - `Assets/Scripts/Riding/Core/FollowCameraMath.cs`: `LateralFollow`, a dead zone with slow recentring.
+  - `Assets/Scripts/Riding/FollowCameraSettings.cs`: `driftMetres` 2.5 (about 6% of the screen width each way at
+    45 m) and `driftReturnTime` 1.5 s.
+  - `Assets/Scripts/Riding/FollowCamera.cs`: the aim follows smoothly along the view and up. Sideways, the rider
+    has the drift zone's room, and the camera eases back to centre.
+  - `Assets/Tests/EditMode/FollowCameraMathTests.cs`: 3 tests.
+- Tests:
+  - The engine-free EditMode check: 73 passed. The new tests failed (did not compile) first.
+  - The runtime scripts compile against Unity's DLLs.
+- Decisions made for you: 2.5 m of room and a 1.5 s return, a "tiny bit of room" as you described. Both are
+  settings: 0 m puts the old pinned camera back.
+- Not verified: the feel, in a build and in the editor.

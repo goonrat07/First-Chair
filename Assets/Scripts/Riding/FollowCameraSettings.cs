@@ -6,8 +6,9 @@ namespace FirstChair.Riding
     /// The follow camera's tuning, as data, after Grand Mountain Adventure 2's gameplay view as measured from the user's
     /// screenshots (<c>art/reference/style-notes-gma2.md</c>, "Gameplay camera") and the user's first playtest
     /// (2026-10-23): straight behind the rider, uphill, looking down the line of travel about 30° steeper than the snow,
-    /// through a fairly narrow 50 mm lens from 45 m (the rider about 8 percent of the screen height), centred left to
-    /// right and near the bottom of the screen, so more of the mountain ahead is in view.
+    /// through a fairly narrow 50 mm lens from 45 m (the rider about 8 percent of the screen height), near the bottom of
+    /// the screen, so more of the mountain ahead is in view, and roughly centred left to right: the rider may drift a
+    /// little each way before the camera follows.
     /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Follow Camera Settings", fileName = "FollowCameraSettings")]
     public sealed class FollowCameraSettings : ScriptableObject
@@ -50,6 +51,13 @@ namespace FirstChair.Riding
         [SerializeField, Min(0.01f)] private float nearClip = 1f;
         [SerializeField, Min(10f)] private float farClip = 2000f;
 
+        [Header("Drift (the rider has a little room sideways, as in GMA2)")]
+        [Tooltip("How far the rider may drift left or right of the aim before the camera follows, metres. About 2.5 m "
+            + "is 6% of the screen width each way at 45 m; 0 pins the rider to the middle.")]
+        [SerializeField, Min(0f)] private float driftMetres = 2.5f;
+        [Tooltip("How slowly the camera eases back to centre the rider inside the drift zone, seconds.")]
+        [SerializeField, Min(0f)] private float driftReturnTime = 1.5f;
+
         [Header("Smoothing (seconds; 0 snaps)")]
         [SerializeField, Min(0f)] private float positionSmoothTime = 0.15f;
         [Tooltip("A jump of the aim point larger than this, metres (a reset), snaps instead of smoothing.")]
@@ -87,6 +95,10 @@ namespace FirstChair.Riding
         public float NearClip => nearClip;
         /// <summary>Far clip plane, metres.</summary>
         public float FarClip => farClip;
+        /// <summary>Sideways room before the camera follows, metres.</summary>
+        public float DriftMetres => driftMetres;
+        /// <summary>Time to ease back to centre inside the drift zone, seconds.</summary>
+        public float DriftReturnTime => driftReturnTime;
         /// <summary>Aim smoothing time, seconds.</summary>
         public float PositionSmoothTime => positionSmoothTime;
         /// <summary>Snap distance, metres.</summary>

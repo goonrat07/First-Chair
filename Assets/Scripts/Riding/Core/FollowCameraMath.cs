@@ -117,6 +117,23 @@ namespace FirstChair.Riding
             Math.Min(maxMetres, baseMetres + perSpeedSeconds * Math.Max(0.0, speed));
 
         /// <summary>
+        /// Camera drift (the user's playtest, 2026-10-23: GMA2 doesn't pin the rider to the middle of the screen): how
+        /// far the camera's aim moves sideways this frame, given the rider's sideways offset from it. Inside the drift
+        /// zone the aim only eases back toward the rider by <paramref name="recentreFactor"/> of the offset; past it, the
+        /// aim first catches up to the zone's edge, so the rider never leaves the zone.
+        /// </summary>
+        /// <param name="offset">The rider's sideways offset from the aim, metres (positive to the right).</param>
+        /// <param name="halfWidth">How far the rider may drift each way before the camera follows, metres; 0 pins.</param>
+        /// <param name="recentreFactor">The share of the remaining offset the aim closes this frame, 0 to 1
+        /// (<see cref="SmoothingFactor"/> of the recentre time).</param>
+        public static double LateralFollow(double offset, double halfWidth, double recentreFactor)
+        {
+            double width = Math.Max(0.0, halfWidth);
+            double excess = offset > width ? offset - width : (offset < -width ? offset + width : 0.0);
+            return excess + (offset - excess) * recentreFactor;
+        }
+
+        /// <summary>
         /// The frame-rate-independent blend toward a target for exponential smoothing: 1 - e^(-dt / smoothTime).
         /// A smoothing time of 0 or less snaps (returns 1).
         /// </summary>

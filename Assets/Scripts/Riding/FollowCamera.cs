@@ -82,7 +82,13 @@ namespace FirstChair.Riding
             }
             else
             {
-                _aim = Vector3.Lerp(_aim, desiredAim, FollowCameraMath.SmoothingFactor(settings.PositionSmoothTime, dt));
+                // Along the view and up, the aim follows smoothly; sideways, the rider has the drift zone's room.
+                var right = new Vector3(_viewDirection.z, 0f, -_viewDirection.x);
+                Vector3 delta = desiredAim - _aim;
+                float sideways = Vector3.Dot(delta, right);
+                _aim += (delta - right * sideways) * FollowCameraMath.SmoothingFactor(settings.PositionSmoothTime, dt);
+                _aim += right * (float)FollowCameraMath.LateralFollow(
+                    sideways, settings.DriftMetres, FollowCameraMath.SmoothingFactor(settings.DriftReturnTime, dt));
             }
 
             double slopeDown = FollowCameraMath.SlopeDownAlongDegrees(normal.x, normal.y, normal.z, _viewDirection.x, _viewDirection.z);

@@ -111,7 +111,7 @@ To do, in order (the user: fix the skis and poles first, then move to the next s
   screen, as GMA2 does, so more of the mountain ahead is visible and the slope reads as a slope.
 - [x] **Feel: skiing seems slow.** Partly because the test slope is so wide that the skier looks small. Revisit
   after the camera change, then tune speed (story 002's numbers are placeholders until a playtest).
-- [ ] **Later: a less static camera.** GMA2 doesn't pin the rider to the centre; give the rider a little room to
+- [x] **Later: a less static camera.** GMA2 doesn't pin the rider to the centre; give the rider a little room to
   drift side to side (a lag or dead zone) before the camera follows.
 
 Done in commit d455f70 and seen in build 40055981760 on 2026-10-24 (sleep mode; not verified in the editor). The
@@ -146,7 +146,11 @@ Decisions (user, 2026-10-24), for the next work and sleep mode:
   `TestSlopeLook.OldTracks` lays them as 9 cm ribbons 2 cm off the snow over the groomer and the bowl (about one
   per 2300 m^2), at least 1 m clear of any canopy, with no shadows. Tests: `OldTracksTests` (6; two mutations of
   the generator were each caught).
-- [ ] **Camera drift:** the less static camera above; the user moved it into tonight's work.
+- [x] **Camera drift:** the less static camera above; the user moved it into tonight's work.
+  Done 2026-10-24 (sleep mode), not yet seen in a build or the editor. The rider may drift 2.5 m left or right of
+  the aim (about 6% of the screen width each way) before the camera follows, and the camera eases back to centre over
+  1.5 s (`FollowCameraSettings` drift fields; `FollowCameraMath.LateralFollow`, 3 new tests). Set the drift to 0 to
+  pin the rider to the middle again.
 - Also tonight: story 007's art items, and grab and trick poses for the skier (story 007).
 
 ## QA Test Cases
