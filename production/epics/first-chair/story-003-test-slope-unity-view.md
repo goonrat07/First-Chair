@@ -172,7 +172,8 @@ feel this time." To do, in this order:
   the best version. It may differ from the user's suggestion (story 008, "Research").
 - [x] The camera's side-to-side room feels good (item 7 of sleep mode).
 - [ ] **The slope still doesn't read as a slope:** there are no contours in it. Lighting will help later (story 007).
-- [ ] **Trees look good,** maybe a little sparse (story 007, level layout).
+  Rollers added across the slope (story 007's playtest notes); lighting still to do.
+- [x] **Trees look good,** maybe a little sparse (story 007, level layout). Forest added beyond the runs.
 - [ ] **The tracks don't look great.** In GMA2 tracks build up where many skiers pass, not as streaks over a static
   texture (the user's GMA2 screenshot, 2026-10-24). This comes with the custom snow shader (story 007).
 - [x] **Bug: the Japan (Shift+A) and Tail (Shift+S) grabs look broken:** the knees seem to bend 180 degrees backward,

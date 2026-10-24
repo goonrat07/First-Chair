@@ -58,6 +58,20 @@ BASE_GRADIENT = 0.30  # drop per metre on the main slope, about 16.7 degrees
 PITCH_Z_M = (160.0, 260.0)  # a steeper pitch across the whole slope
 PITCH_EXTRA_GRADIENT = 0.12  # added at the middle of the pitch: about 22.8 degrees there
 ROLLOUT_Z_M = (400.0, 460.0)  # the gradient eases to zero over this span; level below it
+# Rollers, the slope's contours (the user's playtest, 2026-10-24: "it's still very hard to see that you're actually on
+# a slope because there aren't contours in the slope"). Each moves some of the base gradient from one half to the
+# other: one half steeper, the other as much flatter. So a roller drops no further overall, the slope never rises, and
+# the bands of steeper and flatter snow across the slope catch the low sun differently. Riders feel them as benches
+# and rollovers, and fast ones catch a little air off the rollovers. Each roller is (start z metres, half length
+# metres, gradient change in the first half; the second half gets the opposite). Negative is a bench then a rollover,
+# positive a steep step then a bench. They keep off the start, the pitch, the kickers' ramps and landings and the
+# roll-out.
+ROLLERS = (
+    (30.0, 25.0, -0.15),
+    (85.0, 25.0, 0.15),
+    (263.0, 20.0, -0.12),
+    (345.0, 22.0, 0.12),
+)
 BOWL_ZONE = "bowl"  # the bowl is carved into this zone's rectangle
 BOWL_DEPTH_M = 18.0  # deepest point of the bowl below the main slope
 BOWL_HEADWALL = 0.3  # fraction of the bowl's length taken by its steep headwall
@@ -79,6 +93,11 @@ ZONES = (
     ("treesWest", "crud", 12_000, 4_000, 36_000, 452_000),  # 4 m off the groomer's left edge
     ("treesMiddle", "crud", 143_000, 4_000, 167_000, 452_000),  # between the groomer and the park, 3 m off each
     ("treesEast", "crud", 233_000, 52_000, 257_000, 408_000),  # between the park and the bowl, 3 m off each
+    # Forest beyond the runs (the user's playtest, 2026-10-24: the trees "maybe a little sparse"). Dense stands in the
+    # crud past the western tree line and east of the bowl and glade, so the mountain reads as wooded without closing
+    # any line through the tree lines or the glade.
+    ("forestWest", "crud", 0, 0, 10_000, 452_000),  # between the map's west edge and the western tree line
+    ("forestEast", "crud", 444_000, 0, 512_000, 452_000),  # east of the bowl and the glade, to the map's east edge
 )
 START_MM = (90_000, 10_000)  # the top of the groomer, on its centre line
 
@@ -114,6 +133,8 @@ TREE_STANDS = (
     ("treesWest", 8_000, 850, 950, 1_500, (200, 400), (1_600, 2_500), 4),
     ("treesMiddle", 8_000, 850, 950, 1_500, (200, 400), (1_600, 2_500), 5),
     ("treesEast", 8_000, 850, 950, 1_500, (200, 400), (1_600, 2_500), 6),
+    ("forestWest", 8_000, 900, 900, 1_500, (200, 400), (1_600, 2_500), 7),
+    ("forestEast", 8_000, 900, 900, 1_500, (200, 400), (1_600, 2_500), 8),
 )
 
 MASK64 = (1 << 64) - 1
@@ -152,9 +173,17 @@ def bump_integral(t):
     return 16.0 * (t3 / 3.0 - 0.5 * t3 * t + t3 * t * t / 5.0)
 
 
+def rollers_drop_m(z):
+    """How much further the rollers have dropped the slope at z, metres: zero before and after each roller."""
+    total = np.zeros_like(np.asarray(z, dtype=np.float64))
+    for start, half, change in ROLLERS:
+        total = total + change * half * (bump_integral((z - start) / half) - bump_integral((z - start - half) / half))
+    return total
+
+
 def drop_m(z):
     """How far the main slope has fallen at z, metres: the base gradient easing to level over
-    the roll-out, plus the pitch."""
+    the roll-out, plus the pitch and the rollers."""
     rollout_start, rollout_end = ROLLOUT_Z_M
     rollout_length = rollout_end - rollout_start
     t = (z - rollout_start) / rollout_length
@@ -162,7 +191,7 @@ def drop_m(z):
     pitch_start, pitch_end = PITCH_Z_M
     pitch_length = pitch_end - pitch_start
     pitch = PITCH_EXTRA_GRADIENT * pitch_length * bump_integral((z - pitch_start) / pitch_length)
-    return base + pitch
+    return base + pitch + rollers_drop_m(z)
 
 
 def bowl_depth_m(x, z):

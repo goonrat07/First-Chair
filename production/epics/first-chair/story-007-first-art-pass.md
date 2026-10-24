@@ -95,8 +95,14 @@
     (`08_poses.py`): the knee now bends about 127 degrees, the shin points down, and the trunk leans 40 degrees forward
     with the legs, as in Mute and Tip. The hand still reaches the ski with zero error, and the round trip passes.
     Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-grab-tail-japan-refolded.png`.
-  - [ ] The slope doesn't read as a slope: give it contours and better lighting.
-  - [ ] Trees maybe a little sparse.
+  - [ ] The slope doesn't read as a slope: give it contours and better lighting. Contours done in the terrain
+    (`tools/terrain/make_test_slope.py`, `ROLLERS`). Four rollers cross the whole slope, a bench then a rollover or a
+    steep step then a bench, about 2 m deep over 40 to 50 m. Each swaps gradient between its halves (8 to 24 degrees),
+    so the slope never rises and drops no further overall. They keep off the start, the pitch, the kickers' ramps and
+    landings and the roll-out. Even a full tuck at 120 km/h stays on the snow over them. Lighting is still to do.
+  - [x] Trees maybe a little sparse. Dense forest beyond the runs: `forestWest` (between the map's west edge and the
+    western tree line) and `forestEast` (east of the bowl and glade), 459 more trees (938 in all). No line through the
+    tree lines or the glade is closed.
   - [ ] Tracks should build up where skiers pass, as in GMA2, not sit as streaks on a static texture. This belongs
     to the custom snow shader.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain

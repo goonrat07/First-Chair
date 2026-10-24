@@ -25,7 +25,7 @@ MAX_CELL_MM = 500  # coarser than this cannot shape a kicker
 HEIGHT_TOLERANCE_MM = 5.0  # two R16 steps at the slope's height range
 RAMP_STEPS = 8
 
-WOODED_ZONES = ("glade", "treesWest", "treesMiddle", "treesEast")  # every tree stands in one of these
+WOODED_ZONES = ("glade", "treesWest", "treesMiddle", "treesEast", "forestWest", "forestEast")  # every tree stands in one of these
 RUN_ZONES = ("groomer", "park", "runout")  # no canopy reaches these
 TREE_LINE_REACH_MM = 10_000  # a tree line's canopies come within this of the run's edge
 TREE_LINE_MAX_GAP_MM = 40_000  # and leave no longer gap along it

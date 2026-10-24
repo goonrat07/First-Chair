@@ -57,7 +57,7 @@ namespace FirstChair.Sim.Tests
         private const double MetresPerSecondToKmh = 3.6;
 
         /// <summary>Every tree stands in one of these zones, and no canopy reaches a run.</summary>
-        private static readonly string[] WoodedZones = { "glade", "treesWest", "treesMiddle", "treesEast" };
+        private static readonly string[] WoodedZones = { "glade", "treesWest", "treesMiddle", "treesEast", "forestWest", "forestEast" };
 
         private static readonly string[] RunZones = { "groomer", "park", "runout" };
 
