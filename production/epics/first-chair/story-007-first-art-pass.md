@@ -48,6 +48,9 @@
 - **Open (2026-10-24):** CH_Skier's trouser seat shows through the lower jacket back in close back views
   (`art/source/CH_Skier/asset-brief.md`); not visible at the follow camera. The skis' and poles' socket orientation
   in Unity is tracked in story 003's playtest feedback.
+- **Next (user, 2026-10-24):** grab and trick poses for CH_Skier (grabs, spins and flips in the air), and this
+  story's open criteria: stamped snow trails with a URP snow shader, blue shadows and sparkle, the tree's billboard
+  with GPU instancing, and equipment colours that read on snow.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).

@@ -114,6 +114,18 @@ To do, in order (the user: fix the skis and poles first, then move to the next s
 - [ ] **Later: a less static camera.** GMA2 doesn't pin the rider to the centre; give the rider a little room to
   drift side to side (a lag or dead zone) before the camera follows.
 
+Done in the cloud, not yet seen in a build (commit d455f70; GitHub Actions minutes ran out before it built): the
+skis and poles are lined up in the Stance pose, and the camera has a 50 mm lens and puts the rider near the bottom.
+
+Decisions (user, 2026-10-24), for the next work and sleep mode:
+- [ ] **Raise the speed now:** retune the sim toward a GMA2-like pace (roughly 40 to 60 km/h on this groomer, not
+  about 25), with tests showing the speeds before and after (story 002's tuning; bump the sim version).
+- [ ] **Real trees along the groomer and park edges:** add tree lines to `tools/terrain/make_test_slope.py`, so they
+  are in the sim's layout and can be hit (story 005's rules).
+- [ ] **Old ski tracks:** scatter GMA2-style curving old track pairs over the groomers and powder, display only.
+- [ ] **Camera drift:** the less static camera above; the user moved it into tonight's work.
+- Also tonight: story 007's art items, and grab and trick poses for the skier (story 007).
+
 ## QA Test Cases
 
 *N/A — no qa-lead specs at this tier; implement against the Acceptance Criteria above*
