@@ -13,6 +13,11 @@ namespace FirstChair.Riding
     /// Powder is soft and bumpy, crud is chunky, ice is grey-blue and streaky, slush is a warmer grey.</para>
     /// <para>Textures are RGBA32, row 0 at the bottom (Unity's <c>Texture2D.SetPixelData</c> order). Normals are tangent
     /// space with +Y up the texture (Unity's convention), encoded as 0.5 + 0.5 n.</para>
+    /// <para>Sparkle (story 007): a few 2 x 2 texel snow crystals (<see cref="SparkleShare"/>) are very smooth and tilted
+    /// 25 to 45 degrees in random directions, so each catches the sun only from some angles and glints as the rider
+    /// moves. Albedo alpha carries the smoothness (the terrain layer reads it with
+    /// <c>TerrainLayerSmoothnessSource.DiffuseAlphaChannel</c>): <see cref="Smoothness"/> for plain snow,
+    /// <see cref="CrystalSmoothness"/> for a crystal.</para>
     /// </remarks>
     /// <example>
     /// <code>
@@ -50,6 +55,23 @@ namespace FirstChair.Riding
                 case SnowType.Slush: return 0.35f;
                 case SnowType.Groomed: return 0.15f;
                 default: return 0.1f;
+            }
+        }
+
+        /// <summary>A snow crystal's smoothness, 0 to 1.</summary>
+        public const float CrystalSmoothness = 0.95f;
+
+        /// <summary>The share of texels that are snow crystals (sparkle), 0 to 1: none in slush, most on ice and powder.</summary>
+        /// <param name="kind">The snow type.</param>
+        public static double SparkleShare(SnowType kind)
+        {
+            switch (kind)
+            {
+                case SnowType.Groomed: return 0.006;
+                case SnowType.Powder: return 0.010;
+                case SnowType.Crud: return 0.004;
+                case SnowType.Ice: return 0.012;
+                default: return 0.0;
             }
         }
 
@@ -96,7 +118,7 @@ namespace FirstChair.Riding
                     albedoRgba[o] = ToByte(baseR * lit);
                     albedoRgba[o + 1] = ToByte(baseG * lit);
                     albedoRgba[o + 2] = ToByte(baseB * lit);
-                    albedoRgba[o + 3] = 255;
+                    albedoRgba[o + 3] = ToByte(Smoothness(kind));
 
                     // Slope per tile (height change across one tile) times the bump strength, so the look doesn't
                     // depend on the texture size.
@@ -107,6 +129,21 @@ namespace FirstChair.Riding
                     normalRgba[o + 1] = ToByte(0.5f + 0.5f * ny * inverse);
                     normalRgba[o + 2] = ToByte(0.5f + 0.5f * inverse);
                     normalRgba[o + 3] = 255;
+
+                    // A crystal: decided per 2 x 2 cell, so it survives the first mipmap.
+                    ulong cell = Hash((ulong)kind, (ulong)(i / 2), (ulong)(j / 2));
+                    if ((cell >> 11) * (1.0 / (1UL << 53)) < SparkleShare(kind))
+                    {
+                        double direction = (Hash(cell, 1, 0) >> 11) * (2.0 * Math.PI / (1UL << 53));
+                        double tilt = (25.0 + 20.0 * ((Hash(cell, 2, 0) >> 11) * (1.0 / (1UL << 53)))) * Math.PI / 180.0;
+                        albedoRgba[o] = ToByte(Math.Min(1f, baseR * 1.04f));
+                        albedoRgba[o + 1] = ToByte(Math.Min(1f, baseG * 1.04f));
+                        albedoRgba[o + 2] = ToByte(Math.Min(1f, baseB * 1.04f));
+                        albedoRgba[o + 3] = ToByte(CrystalSmoothness);
+                        normalRgba[o] = ToByte((float)(0.5 + 0.5 * Math.Sin(tilt) * Math.Cos(direction)));
+                        normalRgba[o + 1] = ToByte((float)(0.5 + 0.5 * Math.Sin(tilt) * Math.Sin(direction)));
+                        normalRgba[o + 2] = ToByte((float)(0.5 + 0.5 * Math.Cos(tilt)));
+                    }
                 }
             }
         }
@@ -270,6 +307,16 @@ namespace FirstChair.Riding
                 h ^= h >> 16;
                 return (h & 0xFFFFFF) / (double)0xFFFFFF;
             }
+        }
+
+        /// <summary>A fixed integer hash of three values (SplitMix64's mixer), the same on every runtime.</summary>
+        private static ulong Hash(ulong a, ulong b, ulong c)
+        {
+            ulong value = a * 0x9E3779B97F4A7C15UL ^ (b + 0x632BE59BD9B4E019UL) * 0xBF58476D1CE4E5B9UL
+                ^ (c + 0x85157AF5UL) * 0x94D049BB133111EBUL;
+            value = (value ^ (value >> 30)) * 0xBF58476D1CE4E5B9UL;
+            value = (value ^ (value >> 27)) * 0x94D049BB133111EBUL;
+            return value ^ (value >> 31);
         }
 
         private static byte ToByte(float value)

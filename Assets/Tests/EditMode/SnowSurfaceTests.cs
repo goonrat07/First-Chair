@@ -1,3 +1,4 @@
+using System;
 using FirstChair.Riding;
 using FirstChair.Sim;
 using NUnit.Framework;
@@ -64,6 +65,61 @@ namespace FirstChair.Riding.Tests
             for (int p = 0; p < size * size; p++)
             {
                 Assert.That(normal[p * 4 + 2], Is.GreaterThan(128));
+            }
+        }
+
+        [TestCase(SnowType.Groomed)]
+        [TestCase(SnowType.Powder)]
+        [TestCase(SnowType.Ice)]
+        public void Texture_Sparkle_FewCrystalsSmoothAndTilted_RestAtTheTypesSmoothness(SnowType kind)
+        {
+            // Arrange
+            const int size = 256;
+            var albedo = new byte[size * size * 4];
+            var normal = new byte[size * size * 4];
+            byte plain = (byte)Math.Round(SnowSurface.Smoothness(kind) * 255f);
+            int crystals = 0;
+
+            // Act
+            SnowSurface.Texture(kind, size, albedo, normal);
+
+            // Assert: every texel is either plain snow at the type's smoothness, or a crystal: smooth and tilted, so it
+            // catches the sun only at some angles (story 007, sparkle).
+            for (int p = 0; p < size * size; p++)
+            {
+                byte alpha = albedo[p * 4 + 3];
+                if (alpha == plain)
+                {
+                    continue;
+                }
+
+                crystals++;
+                Assert.That(alpha, Is.GreaterThanOrEqualTo(230), "crystal smoothness at texel " + p);
+                double nx = normal[p * 4] / 127.5 - 1.0, ny = normal[p * 4 + 1] / 127.5 - 1.0;
+                Assert.That(Math.Sqrt(nx * nx + ny * ny), Is.GreaterThan(0.25), "crystal tilt at texel " + p);
+            }
+
+            double share = (double)crystals / (size * size);
+            Assert.That(share, Is.EqualTo(SnowSurface.SparkleShare(kind)).Within(SnowSurface.SparkleShare(kind) * 0.5));
+        }
+
+        [Test]
+        public void Texture_Slush_HasNoSparkle()
+        {
+            // Arrange
+            const int size = 64;
+            var albedo = new byte[size * size * 4];
+            var normal = new byte[size * size * 4];
+            byte plain = (byte)Math.Round(SnowSurface.Smoothness(SnowType.Slush) * 255f);
+
+            // Act
+            SnowSurface.Texture(SnowType.Slush, size, albedo, normal);
+
+            // Assert
+            Assert.That(SnowSurface.SparkleShare(SnowType.Slush), Is.EqualTo(0.0));
+            for (int p = 0; p < size * size; p++)
+            {
+                Assert.That(albedo[p * 4 + 3], Is.EqualTo(plain));
             }
         }
 

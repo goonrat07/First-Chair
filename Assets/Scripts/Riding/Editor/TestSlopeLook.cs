@@ -79,6 +79,8 @@ namespace FirstChair.Riding.Editor
                 layer.normalScale = 1f;
                 layer.tileSize = new Vector2(tile, tile);
                 layer.smoothness = SnowSurface.Smoothness(kind);
+                // Smoothness per texel from the albedo's alpha, so the snow crystals glint (SnowSurface, sparkle).
+                layer.smoothnessSource = TerrainLayerSmoothnessSource.DiffuseAlphaChannel;
                 layer.metallic = 0f;
                 if (created)
                 {

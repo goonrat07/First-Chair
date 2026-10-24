@@ -19,9 +19,11 @@ commit after every step); none of them closes a story, so there is no `/story-do
 | 7 | Camera drift: let the rider move a little side to side before the camera follows | dev-story | done | (this commit) |
 | 8 | Story 007: equipment colours that read on snow, GPU instancing on the tree | dev-story | done | (this commit) |
 | 9 | Story 007: tree billboard (far LOD) | dev-story | done | (this commit) |
-| 10 | Story 007: stamped snow trails with a URP snow shader, blue shading and sparkle | dev-story | queued | |
+| 10 | Story 007: stamped snow trails with a URP snow shader, blue shading and sparkle | dev-story | done: sparkle; skipped: stamped trails and the snow shader (need the editor) | (this commit) |
 
 ## Left for the PC
 - Story 003: the gamepad check, and the user's own playtest of each new build (feel, look, speed).
 - Story 007: sign-off on the look.
+- Story 007: stamped snow trails and a URP snow shader. They need a custom terrain shader or Shader Graph, checked in
+  the editor; a mistake turns the slope magenta.
 - Feel tuning beyond item 2: the user judges the new speed and says what to change.

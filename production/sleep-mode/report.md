@@ -236,3 +236,22 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
 - Not verified:
   - The LOD switch and the look at a distance, in a build and in the editor.
   - Billboard shadows: the quads cast them (alpha-clipped).
+
+## 10. Snow sparkle (stamped trails left for the PC)
+- Changed:
+  - `Assets/Scripts/Riding/Core/SnowSurface.cs`: each snow type's texture now has a few 2 x 2 texel snow crystals
+    (`SparkleShare`: 0.6% of groomed, 1% of powder, 0.4% of crud, 1.2% of ice, none in slush). They are smooth
+    (0.95) and tilted 25 to 45 degrees in random directions. The albedo alpha now carries the smoothness, so a
+    crystal glints only from some angles.
+  - `Assets/Scripts/Riding/Editor/TestSlopeLook.cs`: the terrain layers read smoothness from the albedo alpha. This
+    still uses URP's own Terrain Lit shader.
+  - `Assets/Tests/EditMode/SnowSurfaceTests.cs`: 4 tests.
+- Tests:
+  - The engine-free EditMode check: 81 passed.
+  - A mutation (untilted crystals) was caught.
+  - The new layer setting compiles against Unity's DLLs.
+- Skipped: the stamped trails (a render texture where the skis touch) and a URP snow shader that reads them. They
+  need a custom terrain shader or Shader Graph made in the editor. A mistake would turn the slope magenta in your
+  next build, so they wait for the PC. Your live ski tracks still draw as before.
+- Decisions made for you: sparkle through the existing terrain shader, and no custom shader tonight.
+- Not verified: whether the glints read at the follow camera (the next build), and the look in the editor.
