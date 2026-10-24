@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace FirstChair.Riding
 {
-    /// <summary>Proportions, attachments, pose easing and ski tracks for the skier views. Presentation only.</summary>
+    /// <summary>Proportions, attachments, pose easing, ski tracks and snow spray for the skier views. Presentation only.</summary>
     [CreateAssetMenu(menuName = "First Chair/Rider View Settings", fileName = "RiderViewSettings")]
     public sealed class RiderViewSettings : ScriptableObject
     {
@@ -59,6 +59,38 @@ namespace FirstChair.Riding
         [Tooltip("Lift above the ski base, metres, so the track doesn't flicker into the snow.")]
         [SerializeField, Min(0f)] private float trackLift = 0.015f;
 
+        [Header("Snow spray (Story 008)")]
+        [Tooltip("Flakes per metre the skis slide sideways (quick turns and skids; a clean carve slides none).")]
+        [SerializeField, Min(0f)] private float sprayPerSlideMetre = 60f;
+        [Tooltip("Flakes per metre travelled while braking.")]
+        [SerializeField, Min(0f)] private float sprayPerBrakeMetre = 12f;
+        [Tooltip("The most flakes per second.")]
+        [SerializeField, Min(0f)] private float sprayMaxRate = 300f;
+        [Tooltip("Powder throws this much more snow.")]
+        [SerializeField, Min(0f)] private float sprayPowderFactor = 1.6f;
+        [Tooltip("Ice throws this much: a few chips.")]
+        [SerializeField, Min(0f)] private float sprayIceFactor = 0.3f;
+        [Tooltip("A flake's lifetime, seconds (each varies by 30% either way).")]
+        [SerializeField, Min(0.05f)] private float sprayLifetime = 0.7f;
+        [Tooltip("A flake's size, metres (each varies by 40% either way).")]
+        [SerializeField, Min(0.01f)] private float spraySize = 0.25f;
+        [Tooltip("Speed the flakes are thrown at the way the skis slide, metres per second (0.5 to 1.5 times this).")]
+        [SerializeField, Min(0f)] private float sprayThrow = 2.5f;
+        [Tooltip("Speed the flakes are thrown up at, metres per second (0.5 to 1.5 times this).")]
+        [SerializeField, Min(0f)] private float sprayLift = 1.8f;
+        [Tooltip("Share of the rider's own velocity the flakes keep.")]
+        [SerializeField, Range(0f, 1f)] private float sprayCarry = 0.6f;
+        [Tooltip("Gravity on the flakes, times Unity's.")]
+        [SerializeField, Min(0f)] private float sprayGravity = 0.9f;
+        [Tooltip("Flakes start up to this far behind the boots, along the skis, metres.")]
+        [SerializeField, Min(0f)] private float sprayBehind = 0.6f;
+        [Tooltip("Flakes start across this width, metres.")]
+        [SerializeField, Min(0f)] private float sprayWidth = 0.5f;
+        [Tooltip("Flakes start this far above the snow, metres.")]
+        [SerializeField, Min(0f)] private float sprayRise = 0.05f;
+        [Tooltip("The most flakes alive at once.")]
+        [SerializeField, Min(1)] private int sprayMaxParticles = 600;
+
         /// <summary>Distance between the two skis' centres.</summary>
         public float StanceWidth => stanceWidth;
         /// <summary>Hip height above the snow.</summary>
@@ -113,5 +145,35 @@ namespace FirstChair.Riding
         public float TrackMinVertexDistance => trackMinVertexDistance;
         /// <summary>Track lift above the ski base, metres.</summary>
         public float TrackLift => trackLift;
+        /// <summary>Spray flakes per metre of sideways slide.</summary>
+        public float SprayPerSlideMetre => sprayPerSlideMetre;
+        /// <summary>Spray flakes per metre travelled while braking.</summary>
+        public float SprayPerBrakeMetre => sprayPerBrakeMetre;
+        /// <summary>The most spray flakes per second.</summary>
+        public float SprayMaxRate => sprayMaxRate;
+        /// <summary>Powder's spray factor.</summary>
+        public float SprayPowderFactor => sprayPowderFactor;
+        /// <summary>Ice's spray factor.</summary>
+        public float SprayIceFactor => sprayIceFactor;
+        /// <summary>A flake's lifetime, seconds.</summary>
+        public float SprayLifetime => sprayLifetime;
+        /// <summary>A flake's size, metres.</summary>
+        public float SpraySize => spraySize;
+        /// <summary>Sideways throw speed, m/s.</summary>
+        public float SprayThrow => sprayThrow;
+        /// <summary>Upward throw speed, m/s.</summary>
+        public float SprayLift => sprayLift;
+        /// <summary>Share of the rider's velocity the flakes keep.</summary>
+        public float SprayCarry => sprayCarry;
+        /// <summary>Gravity on the flakes, times Unity's.</summary>
+        public float SprayGravity => sprayGravity;
+        /// <summary>How far behind the boots flakes start, metres.</summary>
+        public float SprayBehind => sprayBehind;
+        /// <summary>Width flakes start across, metres.</summary>
+        public float SprayWidth => sprayWidth;
+        /// <summary>Height above the snow flakes start at, metres.</summary>
+        public float SprayRise => sprayRise;
+        /// <summary>The most flakes alive at once.</summary>
+        public int SprayMaxParticles => sprayMaxParticles;
     }
 }

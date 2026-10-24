@@ -163,13 +163,15 @@ All in `Tuning`:
   CarveLeft's skis and edges, with the hips lower and further forward and the hands out in front. The racer carve
   blends through the tuck as the edge comes on (`SkierPoseWeights`).
 - Turns without W keep the standing carve poses.
+- Snow spray (`SnowSpray`, `SnowSprayMath`): the skis throw snow the way they slide, in proportion to the sideways
+  slide (speed · sin slip). Brakes throw it ahead. A clean carve slides none, so it throws none, and the two kinds of
+  turn read apart. Powder throws more, ice a few chips. All numbers are in `RiderViewSettings`.
 - Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-race-carve-pose.png`.
 
 ## Out of Scope
 
 - Snowboard turning, and the art and level work (story 007).
-- Visual feedback for speed (snow spray, field of view at speed) is presentation. It follows in the Unity view
-  under story 003.
+- A wider field of view at speed: the user likes the camera as it is, so it stays unchanged until they ask.
 
 ## Test Evidence
 

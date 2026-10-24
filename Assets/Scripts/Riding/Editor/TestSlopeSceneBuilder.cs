@@ -97,6 +97,12 @@ namespace FirstChair.Riding.Editor
                 Set(view, "trackMaterial", trackMaterial);
             }
 
+            // Story 008: quick turns, skids and brakes throw snow; a clean carve throws none.
+            var spray = rider.AddComponent<SnowSpray>();
+            Set(spray, "driver", driver);
+            Set(spray, "settings", viewSettings);
+            Set(spray, "material", TestSlopeLook.SprayMaterial());
+
             Camera camera = FindCamera(scene);
             var follow = camera.gameObject.AddComponent<FollowCamera>();
             Set(follow, "target", rider.transform);

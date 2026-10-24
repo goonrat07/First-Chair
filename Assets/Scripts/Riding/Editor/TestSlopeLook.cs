@@ -127,6 +127,59 @@ namespace FirstChair.Riding.Editor
         public static Material TrackMaterial() =>
             LitMaterial("SkiTrack", "Universal Render Pipeline/Lit", new Color(0.70f, 0.77f, 0.89f), 0f, true);
 
+        /// <summary>
+        /// The snow spray's flake (Story 008): URP's unlit particle shader, white, a round flake cut out by alpha clipping,
+        /// as the tree billboards are.
+        /// </summary>
+        public static Material SprayMaterial()
+        {
+            Material material = LitMaterial("SnowSpray", "Universal Render Pipeline/Particles/Unlit", Color.white, 0f, false);
+            material.SetTexture("_BaseMap", FlakeTexture());
+            material.SetFloat("_AlphaClip", 1f);
+            material.SetFloat("_Cutoff", 0.5f);
+            material.EnableKeyword("_ALPHATEST_ON");
+            material.SetOverrideTag("RenderType", "TransparentCutout");
+            material.renderQueue = (int)RenderQueue.AlphaTest;
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
+
+        // A white disc with a soft rim on a clear ground. The alpha clip cuts it round, and the spray's fade, which scales
+        // the alpha, shrinks it away.
+        private static Texture2D FlakeTexture()
+        {
+            const int size = 64;
+            string path = Folder + "/SnowFlake.png";
+            var rgba = new byte[size * size * 4];
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float dx = (x + 0.5f) / size * 2f - 1f, dy = (y + 0.5f) / size * 2f - 1f;
+                    float alpha = Mathf.Clamp01((1f - Mathf.Sqrt(dx * dx + dy * dy)) / 0.35f);
+                    int i = 4 * (y * size + x);
+                    rgba[i] = rgba[i + 1] = rgba[i + 2] = 255;
+                    rgba[i + 3] = (byte)Mathf.RoundToInt(255f * alpha);
+                }
+            }
+
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.SetPixelData(rgba, 0);
+            texture.Apply(false);
+            File.WriteAllBytes(path, texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+
+            AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(path);
+            importer.textureType = TextureImporterType.Default;
+            importer.alphaIsTransparency = true;
+            importer.wrapMode = TextureWrapMode.Clamp;
+            importer.mipmapEnabled = true;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        }
+
         /// <summary>A low, warm sun with long soft shadows; cool ambient so shade reads blue; haze with distance.</summary>
         /// <param name="sun">The scene's directional light.</param>
         public static void Lighting(Light sun)
