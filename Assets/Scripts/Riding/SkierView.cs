@@ -104,8 +104,8 @@ namespace FirstChair.Riding
             RideSession session = driver.Session;
             RiderPose pose = driver.Pose;
             Vector3 normal = ViewHelpers.SnowNormal(session, driver.InterpolationAlpha);
-            Quaternion tilt = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(Vector3.up, normal), settings.SlopeAlign);
-            transform.SetPositionAndRotation(SimCoordinatesUnity.Position(pose), tilt * Quaternion.Euler(0f, pose.YawDegrees, 0f));
+            RiderPlacement.Place(pose, normal, settings.SlopeAlign, settings.FlipPivotHeight, out Vector3 position, out Quaternion rotation);
+            transform.SetPositionAndRotation(position, rotation);
 
             RiderState current = session.Current;
             Tuning tuning = session.Tuning;

@@ -64,3 +64,24 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
 - Not verified:
   - How 479 trees look and run in Unity (the next CI build shows it).
   - GPU instancing on the tree is item 8.
+
+## 4. Spins and flips in the air
+- Spins already showed: the sim turns the heading with the spin, and the views turn the rider by the heading.
+  Flips never did. Now they do.
+- Changed:
+  - `Assets/Scripts/Riding/Core/RiderPose.cs`: a new `FlipDegrees`, the sim's flip interpolated while in the air.
+    It is zero on the snow, so a landing never shows the flip unwinding, and it starts from zero at takeoff.
+  - `Assets/Scripts/Riding/Core/SimCoordinates.cs`: `FlipAngleToPitchDegrees`.
+  - `Assets/Scripts/Riding/RiderPlacement.cs` (new): tilt, then yaw, then flip about a pivot 0.9 m above the feet.
+    `SkierView` and `RiderView` both use it.
+  - `Assets/Scripts/Riding/RiderViewSettings.cs`: `flipPivotHeight` (0.9 m).
+  - `Assets/Scripts/Riding/FollowCamera.cs`: it aims at the sim's position instead of the view's root, which a flip
+    swings about.
+  - Tests: `Assets/Tests/EditMode/RiderPoseTests.cs` (4) and `RiderPlacementTests.cs` (5).
+- Tests:
+  - The engine-free EditMode check here: 57 passed. The new pose tests failed (did not compile) before the change.
+  - The runtime scripts and the new EditMode tests compile against Unity 6000.3.27f1's player DLLs.
+  - `RiderPlacementTests` uses Unity's math, so it runs only in CI's EditMode job.
+- Decisions made for you: the flip turns about the middle of the body (0.9 m up), not the boots, so the rider turns
+  over in place like GMA2's skier.
+- Not verified: how flips look in a build, and in the editor.

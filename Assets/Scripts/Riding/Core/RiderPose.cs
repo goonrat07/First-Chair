@@ -11,7 +11,7 @@ namespace FirstChair.Riding
         /// <summary>Creates a pose.</summary>
         public RiderPose(
             float x, float y, float z, float yawDegrees, float rollDegrees, bool airborne, bool crashed,
-            float velocityX = 0f, float velocityY = 0f, float velocityZ = 0f)
+            float velocityX = 0f, float velocityY = 0f, float velocityZ = 0f, float flipDegrees = 0f)
         {
             X = x;
             Y = y;
@@ -23,6 +23,7 @@ namespace FirstChair.Riding
             VelocityX = velocityX;
             VelocityY = velocityY;
             VelocityZ = velocityZ;
+            FlipDegrees = flipDegrees;
         }
 
         /// <summary>Unity x, metres.</summary>
@@ -49,6 +50,12 @@ namespace FirstChair.Riding
         /// <summary>Unity velocity z, metres per second.</summary>
         public float VelocityZ { get; }
 
+        /// <summary>
+        /// Flip in the air, degrees, unwrapped; positive is forward (nose down), a Unity pitch about the rider's right
+        /// (+X) axis. Zero on the snow.
+        /// </summary>
+        public float FlipDegrees { get; }
+
         /// <summary>Whether the current state is in the air.</summary>
         public bool Airborne { get; }
 
@@ -57,7 +64,9 @@ namespace FirstChair.Riding
 
         /// <summary>
         /// Interpolates between two consecutive sim states. Position is linear, heading takes the shorter arc, and the
-        /// flags come from <paramref name="current"/>.
+        /// flags come from <paramref name="current"/>. The flip is linear and unwrapped while <paramref name="current"/>
+        /// is in the air, from zero when <paramref name="previous"/> was on the snow, and zero on the snow: a state on
+        /// the snow still holds its last flight's flip.
         /// </summary>
         /// <param name="previous">The state before the last step.</param>
         /// <param name="current">The state after the last step.</param>
@@ -74,6 +83,8 @@ namespace FirstChair.Riding
             double vx = Lerp(SimCoordinates.ToDouble(previous.Velocity.X), SimCoordinates.ToDouble(current.Velocity.X), t);
             double vy = Lerp(SimCoordinates.ToDouble(previous.Velocity.Y), SimCoordinates.ToDouble(current.Velocity.Y), t);
             double vz = Lerp(SimCoordinates.ToDouble(previous.Velocity.Z), SimCoordinates.ToDouble(current.Velocity.Z), t);
+            double flipFrom = previous.Airborne ? SimCoordinates.ToDouble(previous.FlipAngle) : 0.0;
+            double flip = current.Airborne ? Lerp(flipFrom, SimCoordinates.ToDouble(current.FlipAngle), t) : 0.0;
             return new RiderPose(
                 (float)x,
                 (float)y,
@@ -84,7 +95,8 @@ namespace FirstChair.Riding
                 current.Crashed,
                 (float)vx,
                 (float)vy,
-                (float)vz);
+                (float)vz,
+                (float)SimCoordinates.FlipAngleToPitchDegrees(flip));
         }
 
         private static double Lerp(double a, double b, double t) => a + (b - a) * t;

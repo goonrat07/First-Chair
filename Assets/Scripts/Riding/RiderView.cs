@@ -50,8 +50,8 @@ namespace FirstChair.Riding
 
             RiderPose pose = driver.Pose;
             Vector3 normal = ViewHelpers.SnowNormal(driver.Session, driver.InterpolationAlpha);
-            Quaternion tilt = Quaternion.Slerp(Quaternion.identity, Quaternion.FromToRotation(Vector3.up, normal), settings.SlopeAlign);
-            transform.SetPositionAndRotation(SimCoordinatesUnity.Position(pose), tilt * Quaternion.Euler(0f, pose.YawDegrees, 0f));
+            RiderPlacement.Place(pose, normal, settings.SlopeAlign, settings.FlipPivotHeight, out Vector3 position, out Quaternion rotation);
+            transform.SetPositionAndRotation(position, rotation);
             _lean.localRotation = Quaternion.Euler(0f, 0f, pose.RollDegrees * settings.LeanScale);
 
             bool onSnow = !pose.Airborne && !pose.Crashed;

@@ -50,11 +50,14 @@ namespace FirstChair.Riding
 
             Vector3 normal = Vector3.up;
             Vector3 velocity = Vector3.zero;
+            // The rider's feet from the sim, not the view's root, which a flip swings about the middle of the body.
+            Vector3 rider = target.position;
             if (driver != null && driver.Session != null)
             {
                 RiderPose pose = driver.Pose;
                 velocity = new Vector3(pose.VelocityX, 0f, pose.VelocityZ);
-                normal = SnowNormal(driver.Session, target.position);
+                rider = SimCoordinatesUnity.Position(pose);
+                normal = SnowNormal(driver.Session, rider);
             }
 
             // Downhill on the ground: the snow normal's horizontal part (the normal leans toward the fall line).
@@ -71,7 +74,7 @@ namespace FirstChair.Riding
 
             float lookAhead = (float)FollowCameraMath.LookAhead(
                 settings.LookAheadBase, settings.LookAheadPerSpeed, settings.LookAheadMax, velocity.magnitude);
-            Vector3 desiredAim = target.position + Vector3.up * settings.AimHeight + _viewDirection * lookAhead;
+            Vector3 desiredAim = rider + Vector3.up * settings.AimHeight + _viewDirection * lookAhead;
             if (snap || (desiredAim - _aim).sqrMagnitude > settings.SnapDistance * settings.SnapDistance)
             {
                 _aim = desiredAim;

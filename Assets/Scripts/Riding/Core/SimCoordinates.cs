@@ -66,6 +66,12 @@ namespace FirstChair.Riding
         /// </summary>
         public static double EdgeAngleToRollDegrees(double edgeRadians) => -edgeRadians * DegreesPerRadian;
 
+        /// <summary>
+        /// A sim flip angle (radians, positive forward) as a Unity pitch about the rider's right (+X) axis, degrees. A
+        /// positive Unity pitch about +X tips +Z (the ski tips) toward -Y, which is a forward flip, so the sign stays.
+        /// </summary>
+        public static double FlipAngleToPitchDegrees(double flipRadians) => flipRadians * DegreesPerRadian;
+
         /// <summary>Interpolates between two angles in radians along the shorter arc.</summary>
         /// <param name="from">The angle at t = 0.</param>
         /// <param name="to">The angle at t = 1.</param>

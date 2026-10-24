@@ -25,6 +25,9 @@ namespace FirstChair.Riding
         [SerializeField] private float leanScale = 0.5f;
         [Tooltip("0 keeps the body upright; 1 tilts it fully to the snow's normal.")]
         [SerializeField, Range(0f, 1f)] private float slopeAlign = 1f;
+        [Tooltip("A flip in the air turns the rider about a point this high above the feet, metres: about the middle of "
+            + "the body, so the rider turns over instead of swinging about the boots.")]
+        [SerializeField, Min(0f)] private float flipPivotHeight = 0.9f;
 
         [Header("Sockets (names and fallbacks from each asset-manifest.json)")]
         [SerializeField] private string skiSocket = "SOCKET_boot";
@@ -80,6 +83,8 @@ namespace FirstChair.Riding
         public float LeanScale => leanScale;
         /// <summary>Slope alignment, 0 to 1.</summary>
         public float SlopeAlign => slopeAlign;
+        /// <summary>Height of the flip's pivot above the feet, metres.</summary>
+        public float FlipPivotHeight => flipPivotHeight;
         /// <summary>The ski's boot socket name.</summary>
         public string SkiSocket => skiSocket;
         /// <summary>The boot socket in the ski's model space if the FBX has no socket node.</summary>

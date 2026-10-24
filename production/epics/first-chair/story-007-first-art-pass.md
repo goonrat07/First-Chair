@@ -51,6 +51,12 @@
 - **Next (user, 2026-10-24):** grab and trick poses for CH_Skier (grabs, spins and flips in the air), and this
   story's open criteria: stamped snow trails with a URP snow shader, blue shadows and sparkle, the tree's billboard
   with GPU instancing, and equipment colours that read on snow.
+  - Spins and flips, done 2026-10-24 (sleep mode), not verified in the editor. Spins already showed, because the
+    sim's heading turns with the spin. Flips now show too: `RiderPose.FlipDegrees` carries the sim's flip while in
+    the air (zero on the snow, so a landing never unwinds one), and `RiderPlacement` pitches the rider by it about
+    a point 0.9 m above the feet (`RiderViewSettings.flipPivotHeight`). The follow camera aims at the sim's position,
+    not the view's root, so a flip doesn't bob it. Tests: `RiderPoseTests` (engine-free, run here) and
+    `RiderPlacementTests` (Unity math, run in CI's EditMode job).
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).
