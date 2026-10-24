@@ -47,6 +47,12 @@ namespace FirstChair.Riding
 
         /// <summary>Air grab: the right hand on the right ski's outside edge (<see cref="GrabKind.Safety"/>).</summary>
         GrabSafety = 13,
+
+        /// <summary>A low racer's carve on the left edges, hands forward (<see cref="Stance.Carve"/>, Story 008).</summary>
+        RaceCarveLeft = 14,
+
+        /// <summary>A low racer's carve on the right edges.</summary>
+        RaceCarveRight = 15,
     }
 
     /// <summary>
@@ -57,9 +63,11 @@ namespace FirstChair.Riding
     /// Rules, in order: a crash shows <see cref="SkierPose.Crash"/>; in the air, the held grab's pose
     /// (<see cref="GrabPose"/>), else <see cref="SkierPose.Air"/>; on snow, the
     /// stance (<see cref="Stance.Tuck"/>, <see cref="Stance.Brake"/> or <see cref="Stance.Pole"/>) takes over from the
-    /// carve blend, the carve blend goes from <see cref="SkierPose.CarveLeft"/> through <see cref="SkierPose.Stance"/> to
-    /// <see cref="SkierPose.CarveRight"/> with the edge angle, and loading a pop crouches the whole pose. Weights always
-    /// sum to 1. <see cref="Smooth"/> eases the shown weights toward the target so changes don't snap.
+    /// carve blend. The carve blend goes with the edge angle: a carve with W (<see cref="Stance.Carve"/>, Story 008) from
+    /// <see cref="SkierPose.RaceCarveLeft"/> through <see cref="SkierPose.Tuck"/> to <see cref="SkierPose.RaceCarveRight"/>,
+    /// any other turn from <see cref="SkierPose.CarveLeft"/> through <see cref="SkierPose.Stance"/> to
+    /// <see cref="SkierPose.CarveRight"/>. Loading a pop crouches the whole pose. Weights always sum to 1.
+    /// <see cref="Smooth"/> eases the shown weights toward the target so changes don't snap.
     /// </remarks>
     /// <example>
     /// <code>
@@ -71,7 +79,7 @@ namespace FirstChair.Riding
     public static class SkierPoseWeights
     {
         /// <summary>How many poses.</summary>
-        public const int Count = 14;
+        public const int Count = 16;
 
         /// <summary>The clip name of each pose, as exported from Blender.</summary>
         /// <param name="pose">The pose.</param>
@@ -146,9 +154,10 @@ namespace FirstChair.Riding
             float edge = (float)Math.Max(-1.0, Math.Min(1.0, edgeFraction));
             float load = (float)Math.Max(0.0, Math.Min(1.0, popLoadFraction));
             float carve = 1f - load;
-            weights[(int)SkierPose.CarveLeft] = carve * Math.Max(0f, -edge);
-            weights[(int)SkierPose.CarveRight] = carve * Math.Max(0f, edge);
-            weights[(int)SkierPose.Stance] = carve * (1f - Math.Abs(edge));
+            bool low = stance == Stance.Carve;
+            weights[(int)(low ? SkierPose.RaceCarveLeft : SkierPose.CarveLeft)] = carve * Math.Max(0f, -edge);
+            weights[(int)(low ? SkierPose.RaceCarveRight : SkierPose.CarveRight)] = carve * Math.Max(0f, edge);
+            weights[(int)(low ? SkierPose.Tuck : SkierPose.Stance)] = carve * (1f - Math.Abs(edge));
             weights[(int)SkierPose.Crouch] = load;
         }
 

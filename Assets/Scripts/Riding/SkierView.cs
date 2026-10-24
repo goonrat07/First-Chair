@@ -32,7 +32,7 @@ namespace FirstChair.Riding
         [Tooltip("Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx. Tip at the origin, shaft up +Y.")]
         [SerializeField] private GameObject poleModel;
 
-        [Tooltip("The pose clips in SkierPose order: Stance, CarveLeft, CarveRight, Tuck, Crouch, Air, Brake, Pole, Crash.")]
+        [Tooltip("The pose clips in SkierPose order: Stance, CarveLeft, CarveRight, Tuck, Crouch, Air, Brake, Pole, Crash, the five grabs, RaceCarveLeft, RaceCarveRight.")]
         [SerializeField] private AnimationClip[] poseClips = new AnimationClip[SkierPoseWeights.Count];
 
         [Tooltip("Double-sided material for the ski tracks.")]

@@ -52,7 +52,9 @@ DESCR = {"Stance": "athletic ski stance with a 1 s breathing bob", "CarveLeft": 
          "GrabTip": "air grab: a pike, right hand near the right ski's tip (sim GrabKind.Tip)",
          "GrabTail": "air grab: right hand back on the right ski's tail (sim GrabKind.Tail)",
          "GrabJapan": "air grab: left hand behind the left boot, trunk turned (sim GrabKind.Japan)",
-         "GrabSafety": "air grab: right hand on the right ski's outside edge under the boot (sim GrabKind.Safety)"}
+         "GrabSafety": "air grab: right hand on the right ski's outside edge under the boot (sim GrabKind.Safety)",
+         "RaceCarveLeft": "low racer carve on the left edges, hands forward (sim Stance.Carve)",
+         "RaceCarveRight": "mirror of RaceCarveLeft"}
 
 
 def read_takes(path):

@@ -10,7 +10,7 @@ import bpy, os, sys, math, json, argparse
 from mathutils import Vector as V
 
 SNOW = -0.045
-CLIPS = ["Stance", "CarveLeft", "CarveRight", "Tuck", "Crouch", "Air", "Brake", "Pole", "Crash"]
+CLIPS = ["Stance", "CarveLeft", "CarveRight", "Tuck", "Crouch", "Air", "Brake", "Pole", "Crash", "RaceCarveLeft", "RaceCarveRight"]
 GRABS = ["GrabMute", "GrabTip", "GrabTail", "GrabJapan", "GrabSafety"]
 FRAME = {"Pole": 9}
 CYCLE = {"Pole": [0, 6, 12, 18, 24], "Stance": [0, 15]}

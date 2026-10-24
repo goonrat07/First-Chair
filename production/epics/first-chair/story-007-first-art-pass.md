@@ -89,7 +89,12 @@
     reads it as bump and detail. They need a custom terrain shader, or Shader Graph, written and checked in the editor:
     a mistake there turns the whole slope magenta in the next build. That is PC work (sleep mode, 2026-10-24).
 - **Playtest notes (user, 2026-10-24, build 40060424205):**
-  - [ ] Fix the Japan and Tail grabs: the knees look bent backward and the torso doesn't follow the legs.
+  - [x] Fix the Japan and Tail grabs: the knees look bent backward and the torso doesn't follow the legs. The
+    cause: their specs put the feet 10 cm under an upright trunk, so each leg folded flat (170 degrees at the knee)
+    with the shin pointing straight back, which reads as a backward knee from the game camera. Searched again
+    (`08_poses.py`): the knee now bends about 127 degrees, the shin points down, and the trunk leans 40 degrees forward
+    with the legs, as in Mute and Tip. The hand still reaches the ski with zero error, and the round trip passes.
+    Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-grab-tail-japan-refolded.png`.
   - [ ] The slope doesn't read as a slope: give it contours and better lighting.
   - [ ] Trees maybe a little sparse.
   - [ ] Tracks should build up where skiers pass, as in GMA2, not sit as streaks on a static texture. This belongs

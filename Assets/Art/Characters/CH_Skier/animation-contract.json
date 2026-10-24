@@ -148,6 +148,30 @@
       "description": "double-pole push cycle"
     },
     {
+      "name": "RaceCarveLeft",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "RaceCarveLeft",
+      "description": "low racer carve on the left edges, hands forward (sim Stance.Carve)"
+    },
+    {
+      "name": "RaceCarveRight",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "RaceCarveRight",
+      "description": "mirror of RaceCarveLeft"
+    },
+    {
       "name": "Stance",
       "fps": 30,
       "frame_start": 0,

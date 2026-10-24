@@ -1,4 +1,5 @@
-"""CH_Skier Phase 8 subset: fourteen pose clips (nine riding poses and five grabs) as Blender Actions, 0 to 30 at 30 fps, root at the origin.
+"""CH_Skier Phase 8 subset: sixteen pose clips (nine riding poses, five grabs and the two racer carves) as Blender Actions,
+0 to 30 at 30 fps, root at the origin.
 
 Poses are solved, not hand-keyed: each spec gives the hips, trunk bends, wrist targets, elbow and knee pole
 directions, pole shaft directions and the ski placement (yaw, edge roll, pitch). Legs and arms are two-bone IK,
@@ -204,6 +205,12 @@ CARVE_L = {"foot_L": ((0.17, -0.10, None), (0, 50, 0)), "foot_R": ((-0.10, 0.08,
            "neck": (-10, -4, 0), "head": (-8, -4, 0),
            "wrist_L": ("c", (0.30, -0.42, 1.12)), "elbow_L": (0.6, 1, 0), "pole_L": ("dir", (0.30, 0.85, -0.30)),
            "wrist_R": ("c", (-0.34, -0.16, 0.95)), "elbow_R": (-0.6, 1, 0), "pole_R": ("dir", (-0.15, 0.85, -0.35))}
+# Story 008: the carve with W held, low like a racer. CarveLeft's skis and edges, with the hips lower and further forward,
+# the trunk bent more over the skis, the hands out in front and the poles tucked back.
+RACE_CARVE_L = dict(CARVE_L, **{"hips": ("auto", (0, 0.12, 0.58), (30, 26, 0)), "spine": (6, -10, 0), "chest": (8, -8, 0),
+                                "neck": (-24, -4, 0), "head": (-18, -4, 0),
+                                "wrist_L": ("c", (0.30, -0.42, 1.12)), "pole_L": ("dir", (0.25, 0.90, -0.20)),
+                                "wrist_R": ("c", (-0.34, -0.40, 1.09)), "pole_R": ("dir", (-0.15, 0.95, -0.10))})
 TUCK = sym({"hips": ((0, 0.24, 0.56), (50, 0, 0)), "spine": (12, 0, 0), "chest": (12, 0, 0), "neck": (-35, 0, 0),
             "head": (-30, 0, 0), "wrist_L": ("w", (0.07, -0.55, 0.80)), "elbow_L": (0.5, 0.0, -1.0),
             "pole_L": ("dir", (0.38, 0.90, -0.22)), "foot_L": FLAT})
@@ -237,7 +244,13 @@ def on_ski(foot, along, up=0.0, across=0.0):
 # one hand on a ski with its pole trailing back, the other arm out for balance with its pole. Each wrist target sits
 # GRAB_PALM above the ski's base so the palm, not the wrist, meets the ski. The trunk angles and heights below came from
 # a search (every combination on a grid) for the hand reaching its target with the knees clear of the chest and head;
-# all five reach with zero error (the solver's arm_reach_err, logged in review/06_rig/poses.json).
+# all five reach with zero error (the solver's arm_reach_err, logged in review/06_rig/poses.json). Tail and Japan were
+# searched again after the user's playtest (2026-10-24: "the knees are going 180 degrees backwards ... the torso isn't
+# moving with the legs"): their first specs put the feet 10 cm under an upright trunk, so each leg folded flat (170
+# degrees at the knee) with the shin pointing straight back. Now the knee bends 95 to 140 degrees, the shin points down
+# (no more than 0.75 of it backward), the feet are not behind the hips, and the trunk leans 20 to 55 degrees forward
+# with the legs, like Mute and Tip; of those, the pose closest to a 38 degree lean, a 120 degree knee and the thighs
+# 10 degrees above level.
 GRAB_PALM = 0.085
 FREE_ARM_L = {"wrist_L": ("c", (0.62, -0.10, 1.10)), "elbow_L": (0.2, 1, -0.5), "pole_L": ("dir", (0.40, 0.55, -0.73))}
 FREE_ARM_R = {k[:-2] + "_R": mirror_entry(k, v) for k, v in FREE_ARM_L.items()}
@@ -262,10 +275,12 @@ GRABS = {
     "GrabMute": grab("L", "R", -0.16, 0.0, ((0.16, -0.04, 0.55), (-6, 0, 0)), 0.80, 40, (30, 0, 0)),
     # Tip: a pike, skis out in front and tips up; the right hand near the right ski's tip.
     "GrabTip": grab("R", "R", -0.55, 0.0, ((0.16, -0.30, 0.55), (-30, 0, 0)), 0.80, 40, (10, 0, 0)),
-    # Tail: feet up under the seat, tips a little down; the right hand back on the right ski's tail, outside edge.
-    "GrabTail": grab("R", "R", 0.24, -0.07, ((0.16, 0.08, 0.62), (6, 0, 0)), 0.72, 10, (0, -15, 0)),
-    # Japan: knees up, tips down, the left hand behind the left boot on the ski's outside edge, the trunk turned.
-    "GrabJapan": grab("L", "L", 0.16, 0.07, ((0.16, 0.10, 0.62), (14, 0, 0)), 0.72, 10, (0, 0, 15)),
+    # Tail: knees up, tips down so the tails rise; folded forward and leaning right, the right hand reaches back onto the
+    # right ski's tail, outside edge.
+    "GrabTail": grab("R", "R", 0.32, -0.07, ((0.16, -0.06, 0.40), (30, 0, 0)), 0.80, 15, (30, -30, -20)),
+    # Japan: knees up, tips well down; folded forward and leaning left, the trunk turned, the left hand behind the left
+    # boot on the ski's outside edge.
+    "GrabJapan": grab("L", "L", 0.20, 0.07, ((0.16, -0.06, 0.40), (40, 0, 0)), 0.80, 15, (30, 30, 20)),
     # Safety: the right hand on the right ski's outside edge under the boot, leaning down to that side.
     "GrabSafety": grab("R", "R", 0.02, -0.07, ((0.16, -0.04, 0.55), (-6, 0, 0)), 0.80, 10, (10, -30, 0)),
 }
@@ -329,7 +344,10 @@ CLIPS = [  # name, spec function of t in [0, 1], loop, static
     ("Brake", lambda t: BRAKE, False, True),
     ("Pole", pole_at, True, False),
     ("Crash", lambda t: CRASH, False, True),
-] + [(name, (lambda spec: lambda t: spec)(spec), False, True) for name, spec in GRABS.items()]
+] + [(name, (lambda spec: lambda t: spec)(spec), False, True) for name, spec in GRABS.items()] + [
+    ("RaceCarveLeft", lambda t: RACE_CARVE_L, False, True),
+    ("RaceCarveRight", lambda t: mirror_spec(RACE_CARVE_L), False, True),
+]
 
 
 def make_clips(arm):

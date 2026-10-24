@@ -1,6 +1,6 @@
 {
   "asset": "CH_Skier",
-  "generated": "2026-10-24T03:04:47",
+  "generated": "2026-10-24T17:43:24",
   "blender": "5.2.2 LTS",
   "source": "/home/user/First-Chair/art/source/CH_Skier/CH_Skier_master.blend",
   "target_engine": "unity",
@@ -724,6 +724,14 @@
     },
     {
       "name": "GrabSafety",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "RaceCarveLeft",
+      "LocalStop_frame": 30.0
+    },
+    {
+      "name": "RaceCarveRight",
       "LocalStop_frame": 30.0
     }
   ]

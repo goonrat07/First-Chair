@@ -157,6 +157,14 @@ All in `Tuning`:
   `PivotSlipMax`.
 - Per snow type: `Drag`, `CarveGrip` (0 = can't carve), `SkidGrip`, `SkidDrag`, `PivotFactor`.
 
+## Unity view
+
+- `Stance.Carve` shows the new `RaceCarveLeft` / `RaceCarveRight` clips (CH_Skier, `08_poses.py`). They keep
+  CarveLeft's skis and edges, with the hips lower and further forward and the hands out in front. The racer carve
+  blends through the tuck as the edge comes on (`SkierPoseWeights`).
+- Turns without W keep the standing carve poses.
+- Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-race-carve-pose.png`.
+
 ## Out of Scope
 
 - Snowboard turning, and the art and level work (story 007).

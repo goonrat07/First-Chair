@@ -56,6 +56,31 @@ namespace FirstChair.Riding.Tests
             Assert.That(Sum(), Is.EqualTo(1f).Within(1e-6f));
         }
 
+        [Test]
+        public void Target_CarveStanceHalfRightEdge_BlendsTuckAndRaceCarveRight()
+        {
+            // Act: W and steering carve low (Story 008), coming out of the tuck as the edge comes on.
+            SkierPoseWeights.Target(0.5, 0.0, Stance.Carve, false, false, GrabKind.None, _weights);
+
+            // Assert
+            Assert.That(_weights[(int)SkierPose.RaceCarveRight], Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(_weights[(int)SkierPose.Tuck], Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(_weights[(int)SkierPose.CarveRight], Is.EqualTo(0f), "the standing carve is for turns without W");
+            Assert.That(Sum(), Is.EqualTo(1f).Within(1e-6f));
+        }
+
+        [Test]
+        public void Target_CarveStanceFullLeftEdgeLoadingAPop_CrouchesTheRaceCarve()
+        {
+            // Act
+            SkierPoseWeights.Target(-1.0, 0.5, Stance.Carve, false, false, GrabKind.None, _weights);
+
+            // Assert
+            Assert.That(_weights[(int)SkierPose.RaceCarveLeft], Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(_weights[(int)SkierPose.Crouch], Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(Sum(), Is.EqualTo(1f).Within(1e-6f));
+        }
+
         [TestCase(Stance.Tuck, SkierPose.Tuck)]
         [TestCase(Stance.Brake, SkierPose.Brake)]
         [TestCase(Stance.Pole, SkierPose.Pole)]
