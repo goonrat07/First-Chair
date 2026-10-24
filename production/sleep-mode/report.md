@@ -1,13 +1,31 @@
 # Sleep mode report
 
-Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0 (`0f146e0..`)
+Started 2026-10-24T02:38:00Z · Ended 2026-10-24T04:23:00Z · Reason done · Commits 17 (`0f146e0..` this report)
 
 ## Summary
-- Finished: (running)
-- Skipped: (running)
-- Waiting on you: 0 questions in production/sleep-mode/questions.md
-- Needs the PC: the gamepad check and your playtest of each new build; story 007 sign-off
-- Next: (running)
+- Finished:
+  - 1, the playtest fixes, seen in a build: the skis lie flat, the poles hang right, the camera is lower and
+    narrower.
+  - 2, speed: key S-turns hold 44-52 km/h, not about 33. Sim version 6.
+  - 3, tree lines along the groomer and the park: 428 real sim trees.
+  - 4, flips shown in the air.
+  - 5, five grab poses.
+  - 6, old ski tracks.
+  - 7, camera drift.
+  - 8, graphite and red poles that read on snow, and tree instancing.
+  - 9, the tree billboard.
+  - 10, snow sparkle.
+  - 11, the final build checked: run 40060424205, EditMode 93/93, `dotnet test sim/` 341/341.
+- Skipped: from item 10, the stamped snow trails and a custom URP snow shader. They need the editor; a mistake
+  turns the slope magenta.
+- Waiting on you: 0 questions in production/sleep-mode/questions.md.
+- Needs the PC:
+  - Your playtest of the Windows build (run 40060424205, artifact `FirstChair-StandaloneWindows64`): the feel of
+    the new speed and turning, the grabs and flips, and the camera drift.
+  - The gamepad check.
+  - Story 007 sign-off.
+  - The stamped trails and snow shader.
+- Next: play run 40060424205's Windows build and say what to change.
 
 ## 1. The playtest fixes, seen in a build
 - Build 40055981760 (commit 999c2a5) is green: EditMode tests, Linux and Windows. I rode the Linux player here

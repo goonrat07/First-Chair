@@ -1,6 +1,7 @@
 # Sleep mode plan
 
 Started: 2026-10-24T02:38:00Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 0f146e0
+Finished: 2026-10-24T04:23:00Z · Reason: done
 
 The user chose tonight's items on 2026-10-24 (story 003 "Decisions", story 007 "Next"). Unity now builds on GitHub
 Actions (`unity.yml`; the repo is public, so minutes are free), and each Linux build is ridden in this session under
