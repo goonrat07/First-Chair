@@ -1,6 +1,6 @@
 {
   "asset": "PR_SkiPole",
-  "generated": "2026-10-19T23:34:14",
+  "generated": "2026-10-24T03:30:33",
   "blender": "5.2.2 LTS",
   "source": "/home/user/First-Chair/art/source/PR_SkiPole/PR_SkiPole_master.blend",
   "target_engine": "unity",
@@ -86,8 +86,7 @@
   "animation_contract": "animation-contract.json",
   "inferred_from_no_reference": [
     "strap omitted",
-    "grip shape generic",
-    "placeholder colours"
+    "grip shape generic"
   ],
   "dependencies": []
 }

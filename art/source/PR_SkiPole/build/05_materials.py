@@ -1,5 +1,7 @@
 """PR_SkiPole materials: flat colours by role, assigned by height along the pole.
-Colours are placeholders until the art bible exists.
+Chosen against snow (story 007; FIRST-CHAIR.md Lessons: a light-grey shaft almost vanished at the follow camera): a
+graphite shaft (8.5:1 luminance contrast on sunlit snow; the old grey was 1.1:1) and red grips and baskets that match
+the gloves and mark the pole's ends. Placeholders until an art bible exists.
 
   $BLENDER_BIN --background --python build/05_materials.py -- --master PR_SkiPole_master.blend
 """
@@ -21,8 +23,8 @@ def build(scene, args):
     low = bpy.data.objects["PR_SkiPole_LOD0"]
     me = low.data
     mats = [
-        T.material("M_Pole_Shaft", (0.72, 0.74, 0.76, 1), roughness=0.35),   # brushed aluminium, flat colour
-        T.material("M_Pole_Plastic", (0.03, 0.03, 0.03, 1), roughness=0.6),   # grip and basket
+        T.material("M_Pole_Shaft", (0.05, 0.055, 0.065, 1), roughness=0.35),   # graphite, flat colour
+        T.material("M_Pole_Plastic", (0.62, 0.05, 0.06, 1), roughness=0.6),    # grip and basket, red like the gloves
         T.material("M_Pole_Tip", (0.25, 0.25, 0.26, 1), roughness=0.4),       # steel tip
     ]
     me.materials.clear()

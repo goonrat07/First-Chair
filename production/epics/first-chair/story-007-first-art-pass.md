@@ -65,6 +65,14 @@
     air `SkierPoseWeights` shows the held grab's pose instead of Air. Evidence:
     `production/qa/evidence/story-007-first-art-pass/2026-10-24-grab-poses-*.png`. The skier's grab names follow
     the sim's `GrabKind` names, not real ski-trick definitions; the user can rename or reshape any of them.
+  - Equipment colours and tree instancing, done 2026-10-24 (sleep mode), not yet seen in a build or the editor.
+    PR_SkiPole's shaft is graphite now (8.5:1 luminance contrast on sunlit snow; the old light grey was 1.1:1), and
+    its grip and basket are red like the gloves. Re-exported from `05_materials.py` through `export_delivery.py`;
+    the round trip is clean. The skis' orange topsheet already reads on snow in the 4K build crops, so it stays.
+    `EnvironmentModelImport` turns GPU instancing on for every material imported under `Assets/Art/Environment/`,
+    and `EnvironmentImportTests` checks the conifer's in CI. The URP asset has the SRP Batcher on, which takes those
+    materials first. Unity 6's GPU Resident Drawer (URP asset plus Forward+) would instance the trees through the
+    BatchRendererGroup, but it is a renderer change to try on the PC with the profiler.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).

@@ -173,3 +173,25 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
 - Decisions made for you: 2.5 m of room and a 1.5 s return, a "tiny bit of room" as you described. Both are
   settings: 0 m puts the old pinned camera back.
 - Not verified: the feel, in a build and in the editor.
+
+## 8. Equipment colours and tree instancing
+- Changed:
+  - `art/source/PR_SkiPole/build/05_materials.py`:
+    - The shaft is graphite (0.05, 0.055, 0.065), 8.5:1 luminance contrast on sunlit snow. The old light grey
+      was 1.1:1, which is why the poles vanished.
+    - The grip and basket are red (0.62, 0.05, 0.06), like the gloves.
+  - The pole's master blend, `PR_SkiPole.fbx` and `asset-manifest.json` were re-exported with the same command
+    (FBX, LOW and SOCKETS, Unity). "placeholder colours" is no longer an inferred item. The round trip is clean:
+    192 tris, 1.2 m.
+  - `Assets/Scripts/Riding/Editor/EnvironmentModelImport.cs` (new): GPU instancing on for the materials of
+    models under `Assets/Art/Environment/`.
+  - `Assets/Tests/EditMode/EnvironmentImportTests.cs` (new): the conifer's materials have instancing on. This
+    runs in CI's EditMode job, since the editor API isn't available here.
+- Decisions made for you:
+  - The skis keep their orange topsheet, which reads on snow in the 4K crops.
+  - The URP asset has the SRP Batcher on, so it batches the tree materials before instancing applies. Unity 6's
+    GPU Resident Drawer would truly instance the trees, but it changes the renderer (Forward+), so I left it for
+    the PC and the profiler.
+- Not verified:
+  - The editor import (CI will run the test).
+  - How the poles look in a build.
