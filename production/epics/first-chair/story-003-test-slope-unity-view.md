@@ -128,8 +128,15 @@ Decisions (user, 2026-10-24), for the next work and sleep mode:
   at 10 to 20 s: 30° 36-37 → 39-51 km/h, 50° 33-35 → 47-49, 70° 30-33 → 44-48; straight and tucked unchanged.
   `TestSlopeTests.KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_HoldFortyToSixtyKmh` pins it (34 km/h before,
   failing; passes after). Whether it now feels right is the user's call.
-- [ ] **Real trees along the groomer and park edges:** add tree lines to `tools/terrain/make_test_slope.py`, so they
+- [x] **Real trees along the groomer and park edges:** add tree lines to `tools/terrain/make_test_slope.py`, so they
   are in the sim's layout and can be hit (story 005's rules).
+  Done 2026-10-24 (sleep mode): three 24 m strips of crud between the runs, `treesWest` (4 m off the groomer's left
+  edge), `treesMiddle` (between the groomer and the park) and `treesEast` (between the park and the bowl). Each is
+  filled with trees on an 8 m grid, keeping 95% of the cells in the columns that face a run and 85% inside, so 428
+  trees are added to the glade's 51. The strips are crud on crud, so the heightmap and snow map are byte-identical;
+  only `TestSlope.txt` changed. Tests: the generator's (every canopy is in a wooded zone and off every run; each side
+  of the groomer and park has trees within 10 m of its edge with no gap over 40 m) and the sim's (the same placement
+  check, and a rider traversing off the groomer's left edge meets a tree in the line).
 - [ ] **Old ski tracks:** scatter GMA2-style curving old track pairs over the groomers and powder, display only.
 - [ ] **Camera drift:** the less static camera above; the user moved it into tonight's work.
 - Also tonight: story 007's art items, and grab and trick poses for the skier (story 007).

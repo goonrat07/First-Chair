@@ -74,6 +74,11 @@ ZONES = (
     ("ice", "ice", 60_000, 180_000, 120_000, 230_000),  # polished patch on the groomer's pitch
     ("slush", "slush", 50_000, 420_000, 130_000, 450_000),  # sun-softened foot of the groomer
     ("crud", "crud", 320_000, 290_000, 380_000, 335_000),  # tracked-out exit of the bowl
+    # Strips of the background's crud between the runs, filled with tree lines (TREE_LINES below). Being crud on
+    # crud, they leave the snow map as it was.
+    ("treesWest", "crud", 12_000, 4_000, 36_000, 452_000),  # 4 m off the groomer's left edge
+    ("treesMiddle", "crud", 143_000, 4_000, 167_000, 452_000),  # between the groomer and the park, 3 m off each
+    ("treesEast", "crud", 233_000, 52_000, 257_000, 408_000),  # between the park and the bowl, 3 m off each
 )
 START_MM = (90_000, 10_000)  # the top of the groomer, on its centre line
 
@@ -99,14 +104,17 @@ LANDING_CLEARANCE_MM = 30_000  # a kicker's landing runs this far past its lip; 
 KICKER_SHOULDER_M = 1.0  # the sides fall back to the slope over this distance
 KICKER_BACK_PER_HEIGHT = 2.0  # behind the lip, the kicker falls to the slope over this many heights
 
-# --- Trees: one per kept cell of a grid laid over the glade (millimetres) -----------------------
-TREE_ZONE = "glade"
-TREE_CELL_MM = 12_000
-TREE_KEEP_PER_MILLE = 550  # share of cells that get a tree
-TREE_JITTER_MM = 3_000  # largest offset from the cell centre, each axis
-TREE_TRUNK_RADIUS_MM = (150, 350)
-TREE_BRANCH_RADIUS_MM = (1_200, 2_500)
-TREE_SEED = 3
+# --- Trees: one per kept cell of a grid laid over a wooded zone (millimetres) ------------------
+# The glade's open stand, then the tree lines along the runs: denser, so the runs read as runs (the user's playtest,
+# 2026-10-23: on an open 100 m groomer the skier looked small and slow). Each zone has its own seed.
+TREE_STANDS = (
+    # zone, cell, kept per mille inside, kept per mille in the first and last column (a tree line's edges face the
+    # runs), jitter (largest offset from the cell centre, each axis), trunk radius range, branch radius range, seed
+    ("glade", 12_000, 550, 550, 3_000, (150, 350), (1_200, 2_500), 3),
+    ("treesWest", 8_000, 850, 950, 1_500, (200, 400), (1_600, 2_500), 4),
+    ("treesMiddle", 8_000, 850, 950, 1_500, (200, 400), (1_600, 2_500), 5),
+    ("treesEast", 8_000, 850, 950, 1_500, (200, 400), (1_600, 2_500), 6),
+)
 
 MASK64 = (1 << 64) - 1
 
@@ -236,8 +244,8 @@ def mix64(value: int) -> int:
     return value ^ (value >> 31)
 
 
-def cell_hash(column: int, row: int, salt: int) -> int:
-    return mix64((TREE_SEED << 48) ^ (column << 32) ^ (row << 16) ^ salt)
+def cell_hash(seed: int, column: int, row: int, salt: int) -> int:
+    return mix64((seed << 48) ^ (column << 32) ^ (row << 16) ^ salt)
 
 
 def hashed_in_range(value: int, low: int, high: int) -> int:
@@ -245,23 +253,26 @@ def hashed_in_range(value: int, low: int, high: int) -> int:
 
 
 def place_trees() -> list[tuple[int, int, int, int]]:
-    """Trees as (x, z, trunk radius, branch radius) in millimetres: at most one per grid cell,
-    each canopy wholly inside its own cell, so every tree stands inside the glade and no two
-    canopies overlap."""
-    half_cell = TREE_CELL_MM // 2
-    if TREE_JITTER_MM + TREE_BRANCH_RADIUS_MM[1] > half_cell:
-        raise ValueError("A canopy could leave its cell; shrink TREE_JITTER_MM or the branch radius.")
-    x_min, z_min, x_max, z_max = zone_rect(TREE_ZONE)
+    """Trees as (x, z, trunk radius, branch radius) in millimetres, stand by stand in TREE_STANDS order: at most one
+    per grid cell, each canopy wholly inside its own cell, so every tree stands inside its zone and no two canopies
+    overlap."""
     trees = []
-    for row in range((z_max - z_min) // TREE_CELL_MM):
-        for column in range((x_max - x_min) // TREE_CELL_MM):
-            if cell_hash(column, row, 0) % 1000 >= TREE_KEEP_PER_MILLE:
-                continue
-            x = x_min + column * TREE_CELL_MM + half_cell + hashed_in_range(cell_hash(column, row, 1), -TREE_JITTER_MM, TREE_JITTER_MM)
-            z = z_min + row * TREE_CELL_MM + half_cell + hashed_in_range(cell_hash(column, row, 2), -TREE_JITTER_MM, TREE_JITTER_MM)
-            trunk = hashed_in_range(cell_hash(column, row, 3), *TREE_TRUNK_RADIUS_MM)
-            branch = hashed_in_range(cell_hash(column, row, 4), *TREE_BRANCH_RADIUS_MM)
-            trees.append((x, z, trunk, branch))
+    for zone_name, cell, keep_per_mille, edge_keep_per_mille, jitter, trunk_range, branch_range, seed in TREE_STANDS:
+        half_cell = cell // 2
+        if jitter + branch_range[1] > half_cell:
+            raise ValueError(f"A canopy in {zone_name} could leave its cell; shrink its jitter or branch radius.")
+        x_min, z_min, x_max, z_max = zone_rect(zone_name)
+        columns = (x_max - x_min) // cell
+        for row in range((z_max - z_min) // cell):
+            for column in range(columns):
+                keep = edge_keep_per_mille if column in (0, columns - 1) else keep_per_mille
+                if cell_hash(seed, column, row, 0) % 1000 >= keep:
+                    continue
+                x = x_min + column * cell + half_cell + hashed_in_range(cell_hash(seed, column, row, 1), -jitter, jitter)
+                z = z_min + row * cell + half_cell + hashed_in_range(cell_hash(seed, column, row, 2), -jitter, jitter)
+                trunk = hashed_in_range(cell_hash(seed, column, row, 3), *trunk_range)
+                branch = hashed_in_range(cell_hash(seed, column, row, 4), *branch_range)
+                trees.append((x, z, trunk, branch))
     return trees
 
 

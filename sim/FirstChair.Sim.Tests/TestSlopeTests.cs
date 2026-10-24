@@ -40,6 +40,16 @@ namespace FirstChair.Sim.Tests
 
         private const double MetresPerSecondToKmh = 3.6;
 
+        /// <summary>Every tree stands in one of these zones, and no canopy reaches a run.</summary>
+        private static readonly string[] WoodedZones = { "glade", "treesWest", "treesMiddle", "treesEast" };
+
+        private static readonly string[] RunZones = { "groomer", "park", "runout" };
+
+        /// <summary>The traverse off the groomer's left edge: this far left of the fall line, for up to this long.</summary>
+        private const int TraverseDegrees = 60;
+
+        private const int TraverseSteps = 30 * Simulation.StepsPerSecond;
+
         private static readonly SimInput NoInput = SimInput.Pack(SimButtons.None, 0);
 
         [Test]
@@ -164,21 +174,75 @@ namespace FirstChair.Sim.Tests
         }
 
         [Test]
-        public void EachTree_StandsInsideTheGlade()
+        public void EachTree_StandsInsideAWoodedZoneClearOfEveryRun()
         {
             // Arrange
             (SlopeLayout layout, _, _) = LoadSlope();
-            Assert.That(layout.TryGetZone("glade", out SlopeZone glade), Is.True);
+            var wooded = new List<SlopeZone>();
+            foreach (string name in WoodedZones)
+            {
+                Assert.That(layout.TryGetZone(name, out SlopeZone zone), Is.True, "zone " + name);
+                wooded.Add(zone);
+            }
+
+            var runs = new List<SlopeZone>();
+            foreach (string name in RunZones)
+            {
+                Assert.That(layout.TryGetZone(name, out SlopeZone zone), Is.True, "zone " + name);
+                runs.Add(zone);
+            }
 
             foreach (SlopeTree tree in layout.Trees)
             {
-                // Act: the four extremes of the canopy.
-                bool inside = glade.Contains(tree.X - tree.BranchRadius, tree.Z - tree.BranchRadius)
-                    && glade.Contains(tree.X + tree.BranchRadius, tree.Z + tree.BranchRadius);
+                // Act: the canopy's square, against each zone.
+                Fix64 west = tree.X - tree.BranchRadius, east = tree.X + tree.BranchRadius;
+                Fix64 north = tree.Z - tree.BranchRadius, south = tree.Z + tree.BranchRadius;
+                bool inWood = wooded.Exists(zone => zone.Contains(west, north) && zone.Contains(east, south));
+                bool onRun = runs.Exists(zone => east >= zone.XMin && west <= zone.XMax && south >= zone.ZMin && north <= zone.ZMax);
 
                 // Assert
-                Assert.That(inside, Is.True, "tree at (" + tree.XMm + ", " + tree.ZMm + ")");
+                string name = "tree at (" + tree.XMm + ", " + tree.ZMm + ")";
+                Assert.That(inWood, Is.True, name + " stands in a wooded zone");
+                Assert.That(onRun, Is.False, name + " stays off the runs");
             }
+        }
+
+        /// <summary>
+        /// The tree lines are in the sim's layout, not scenery (story 003 decisions, 2026-10-24): a rider who steers off
+        /// the groomer's left edge rides into the trees there and clips or hits one (story 005's rules).
+        /// </summary>
+        [Test]
+        public void RiderTraversingOffGroomerLeftEdge_RunsIntoTheTreeLine()
+        {
+            // Arrange
+            (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadSlope();
+            Assert.That(layout.TryGetZone("groomer", out SlopeZone groomer), Is.True);
+            Assert.That(layout.TryGetZone("treesWest", out SlopeZone treeLine), Is.True);
+            Forest forest = Forest.FromLayout(layout);
+            var simulation = new Simulation(new RunSetup(Sport.Skis, 0, 7UL, layout.StartX, layout.StartZ), heightmap, snowMap, forest, Tuning.Default);
+            Fix64 traverse = -Fix64.Pi * Fix64.FromRatio(TraverseDegrees, 180);
+            int hitTree = -1;
+
+            // Act: hold left until the skis point the traverse angle left of the fall line, then let go and run on.
+            for (int step = 0; step < TraverseSteps && hitTree < 0; step++)
+            {
+                SimButtons key = simulation.State.Heading > traverse ? SimButtons.Left : SimButtons.None;
+                simulation.Step(SimInput.Pack(key, 0));
+                for (int i = 0; i < simulation.Events.Count; i++)
+                {
+                    SimEvent hit = simulation.Events[i];
+                    if (hit.Kind == SimEventKind.BranchHit || (hit.Kind == SimEventKind.Crash && hit.Cause == CrashCause.Tree))
+                    {
+                        hitTree = hit.Tree;
+                    }
+                }
+            }
+
+            // Assert
+            Assert.That(hitTree, Is.GreaterThanOrEqualTo(0), "the rider must meet a tree");
+            SlopeTree tree = forest[hitTree];
+            Assert.That(treeLine.Contains(tree.X, tree.Z), Is.True, "the tree is in the line along the groomer's left edge");
+            Assert.That(groomer.Contains(tree.X, tree.Z), Is.False);
         }
 
         [Test]

@@ -25,6 +25,11 @@ MAX_CELL_MM = 500  # coarser than this cannot shape a kicker
 HEIGHT_TOLERANCE_MM = 5.0  # two R16 steps at the slope's height range
 RAMP_STEPS = 8
 
+WOODED_ZONES = ("glade", "treesWest", "treesMiddle", "treesEast")  # every tree stands in one of these
+RUN_ZONES = ("groomer", "park", "runout")  # no canopy reaches these
+TREE_LINE_REACH_MM = 10_000  # a tree line's canopies come within this of the run's edge
+TREE_LINE_MAX_GAP_MM = 40_000  # and leave no longer gap along it
+
 
 def read_layout(path: Path) -> dict:
     layout = {"zones": [], "kickers": [], "trees": [], "rails": []}
@@ -170,12 +175,35 @@ def test_each_kicker_is_a_ramp_in_the_park(layout, heights_mm):
         assert all(later > earlier for earlier, later in zip(rises, rises[1:])), "the ramp rises all the way to the lip"
 
 
-def test_each_tree_canopy_is_inside_the_glade(layout):
-    glade = zone(layout, "glade")
+def test_each_tree_canopy_is_inside_a_wooded_zone(layout):
+    wooded = [zone(layout, name) for name in WOODED_ZONES]
     assert layout["trees"]
     for x, z, trunk, branch in layout["trees"]:
         assert 0 < trunk <= branch
-        assert inside(glade, x - branch, z - branch) and inside(glade, x + branch, z + branch)
+        assert any(inside(rect, x - branch, z - branch) and inside(rect, x + branch, z + branch) for rect in wooded), (x, z)
+
+
+def test_no_tree_canopy_reaches_a_run(layout):
+    runs = [zone(layout, name) for name in RUN_ZONES]
+    for x, z, _trunk, branch in layout["trees"]:
+        for x_min, z_min, x_max, z_max in runs:
+            apart = x + branch < x_min or x - branch > x_max or z + branch < z_min or z - branch > z_max
+            assert apart, (x, z, (x_min, z_min, x_max, z_max))
+
+
+@pytest.mark.parametrize("run", ["groomer", "park"])
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_trees_line_each_side_of_the_groomer_and_the_park(layout, run, side):
+    """The user's playtest (2026-10-23, story 003): on an open 100 m groomer the skier looked small and slow. Trees
+    standing close along both edges, with no long gap, show the run's width and the rider's speed."""
+    x_min, z_min, x_max, z_max = zone(layout, run)
+    if side == "left":
+        along = sorted(z for x, z, _t, branch in layout["trees"] if x_min - TREE_LINE_REACH_MM <= x + branch < x_min)
+    else:
+        along = sorted(z for x, z, _t, branch in layout["trees"] if x_max < x - branch <= x_max + TREE_LINE_REACH_MM)
+    assert along, "no trees along the " + side + " edge"
+    gaps = np.diff([z_min] + along + [z_max])
+    assert gaps.max() <= TREE_LINE_MAX_GAP_MM, (run, side, int(gaps.max()))
 
 
 def test_each_rail_and_box_is_on_the_kicker_line_clear_of_every_ramp_and_landing(layout):
