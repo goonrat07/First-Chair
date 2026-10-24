@@ -3,25 +3,26 @@ using UnityEngine;
 namespace FirstChair.Riding
 {
     /// <summary>
-    /// The follow camera's tuning, as data. The defaults match Grand Mountain Adventure 2's gameplay view as measured
-    /// from the user's screenshots (<c>art/reference/style-notes-gma2.md</c>, "Gameplay camera"): straight behind the
-    /// rider, uphill, looking down the line of travel about 35° steeper than the snow, far enough that the rider is about 5 percent of the
-    /// screen height, centred left to right and a little below the middle.
+    /// The follow camera's tuning, as data, after Grand Mountain Adventure 2's gameplay view as measured from the user's
+    /// screenshots (<c>art/reference/style-notes-gma2.md</c>, "Gameplay camera") and the user's first playtest
+    /// (2026-10-23): straight behind the rider, uphill, looking down the line of travel about 30° steeper than the snow,
+    /// through a fairly narrow 50 mm lens from 45 m (the rider about 8 percent of the screen height), centred left to
+    /// right and near the bottom of the screen, so more of the mountain ahead is in view.
     /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Follow Camera Settings", fileName = "FollowCameraSettings")]
     public sealed class FollowCameraSettings : ScriptableObject
     {
         [Header("Placement")]
-        [Tooltip("How far the camera looks down past the slope's own angle along the view, degrees. Measured from GMA2: "
-            + "about 35 above the snow, so on a 17 degree groomer the camera looks down 52 degrees.")]
-        [SerializeField, Range(5f, 85f)] private float pitchAboveSlopeDegrees = 35f;
+        [Tooltip("How far the camera looks down past the slope's own angle along the view, degrees. About 30 above the "
+            + "snow, so on a 17 degree groomer the camera looks down 47 degrees and sees well ahead.")]
+        [SerializeField, Range(5f, 85f)] private float pitchAboveSlopeDegrees = 30f;
         [Tooltip("Least and most the camera looks down below the horizon, degrees.")]
         [SerializeField, Range(5f, 89f)] private float minPitchDegrees = 30f;
         [SerializeField, Range(5f, 89f)] private float maxPitchDegrees = 72f;
         [Tooltip("How slowly the pitch follows the slope, seconds.")]
         [SerializeField, Min(0f)] private float pitchSmoothTime = 1f;
-        [Tooltip("Distance from the aim point, metres. 50 m with the 35 mm lens makes the rider about 5% of the screen height.")]
-        [SerializeField, Min(1f)] private float distance = 50f;
+        [Tooltip("Distance from the aim point, metres. 45 m with the 50 mm lens makes the rider about 8% of the screen height.")]
+        [SerializeField, Min(1f)] private float distance = 45f;
         [Tooltip("Aim point height above the rider's feet, metres.")]
         [SerializeField] private float aimHeight = 1f;
 
@@ -34,16 +35,16 @@ namespace FirstChair.Riding
         [Tooltip("How slowly the view direction follows, seconds.")]
         [SerializeField, Min(0f)] private float yawSmoothTime = 1.2f;
 
-        [Header("Look-ahead (puts the rider below the middle of the screen)")]
+        [Header("Look-ahead (puts the rider near the bottom of the screen)")]
         [Tooltip("Aim this far ahead of the rider along the view direction when stopped, metres.")]
-        [SerializeField, Min(0f)] private float lookAheadBase = 3f;
+        [SerializeField, Min(0f)] private float lookAheadBase = 7f;
         [Tooltip("Extra look-ahead per metre per second of speed, seconds.")]
-        [SerializeField, Min(0f)] private float lookAheadPerSpeed = 0.2f;
+        [SerializeField, Min(0f)] private float lookAheadPerSpeed = 0.25f;
         [Tooltip("Most look-ahead, metres.")]
-        [SerializeField, Min(0f)] private float lookAheadMax = 10f;
+        [SerializeField, Min(0f)] private float lookAheadMax = 13f;
 
         [Header("Lens")]
-        [SerializeField, Min(1f)] private float focalLengthMm = 35f;
+        [SerializeField, Min(1f)] private float focalLengthMm = 50f;
         [Tooltip("24 mm is full-frame height.")]
         [SerializeField, Min(1f)] private float sensorHeightMm = 24f;
         [SerializeField, Min(0.01f)] private float nearClip = 1f;

@@ -67,11 +67,6 @@ namespace FirstChair.Riding
             skier.transform.localPosition = new Vector3(0f, settings.SkierRootLift, 0f);
             skier.transform.localRotation = Quaternion.identity;
 
-            _trackLeft = AttachSki(skier.transform, settings.SkierSkiSocketLeft);
-            _trackRight = AttachSki(skier.transform, settings.SkierSkiSocketRight);
-            AttachPole(skier.transform, settings.SkierHandSocketLeft);
-            AttachPole(skier.transform, settings.SkierHandSocketRight);
-
             Animator animator = skier.GetComponent<Animator>();
             if (animator == null)
             {
@@ -80,8 +75,15 @@ namespace FirstChair.Riding
 
             animator.applyRootMotion = false;
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
-            BuildGraph(animator);
             _shown[(int)SkierPose.Stance] = 1f;
+            BuildGraph(animator);
+
+            // The props are attached in the Stance pose, where both feet are flat and point forward (see AttachSki).
+            Quaternion skierRotation = skier.transform.rotation;
+            _trackLeft = AttachSki(skier.transform, settings.SkierSkiSocketLeft, skierRotation, out Quaternion leftFrame);
+            _trackRight = AttachSki(skier.transform, settings.SkierSkiSocketRight, skierRotation, out Quaternion rightFrame);
+            AttachPole(skier.transform, settings.SkierHandSocketLeft, leftFrame);
+            AttachPole(skier.transform, settings.SkierHandSocketRight, rightFrame);
         }
 
         private void OnDestroy()
@@ -166,11 +168,21 @@ namespace FirstChair.Riding
 
             var output = AnimationPlayableOutput.Create(_graph, "Skier", animator);
             output.SetSourcePlayable(_mixer);
+            for (int i = 0; i < SkierPoseWeights.Count; i++)
+            {
+                _mixer.SetInputWeight(i, _shown[i]);
+            }
+
             _graph.Evaluate(0f);
         }
 
-        private TrailRenderer AttachSki(Transform skier, string socketName)
+        // CH_Skier keeps Blender's axes on its armature (its sockets' Unity axes are not the props' Unity axes), so a prop
+        // attached with an identity rotation stood the skis on end and laid the poles along the fingers (playtest,
+        // 2026-10-23). Instead the ski is lined up with the skier itself in the Stance pose, where the feet are flat and
+        // point forward, and the resulting frame (skier socket to prop socket) is handed to the pole on the same side.
+        private TrailRenderer AttachSki(Transform skier, string socketName, Quaternion skierRotation, out Quaternion socketFrame)
         {
+            socketFrame = Quaternion.identity;
             Transform socket = ViewHelpers.FindSocket(skier, socketName);
             if (socket == null)
             {
@@ -183,11 +195,15 @@ namespace FirstChair.Riding
                 return null;
             }
 
-            Transform ski = ViewHelpers.Attach(skiModel, socket, settings.SkiSocket, settings.SkiSocketFallback, this);
+            Transform ski = Instantiate(skiModel, socket, false).transform;
+            ReadSocket(ski, settings.SkiSocket, settings.SkiSocketFallback, out Vector3 bootPosition, out Quaternion bootRotation);
+            Quaternion local = Quaternion.Inverse(socket.rotation) * skierRotation;
+            Place(ski, local, bootPosition);
+            socketFrame = local * bootRotation;
             return SkiTrack.Create(ski, trackMaterial, settings);
         }
 
-        private void AttachPole(Transform skier, string socketName)
+        private void AttachPole(Transform skier, string socketName, Quaternion socketFrame)
         {
             Transform socket = ViewHelpers.FindSocket(skier, socketName);
             if (socket == null)
@@ -196,10 +212,37 @@ namespace FirstChair.Riding
                 return;
             }
 
-            if (poleModel != null)
+            if (poleModel == null)
             {
-                ViewHelpers.Attach(poleModel, socket, settings.PoleSocket, settings.PoleSocketFallback, this);
+                return;
             }
+
+            Transform pole = Instantiate(poleModel, socket, false).transform;
+            ReadSocket(pole, settings.PoleSocket, settings.PoleSocketFallback, out Vector3 gripPosition, out Quaternion gripRotation);
+            Place(pole, socketFrame * Quaternion.Inverse(gripRotation), gripPosition);
+        }
+
+        // A prop's own socket (SOCKET_boot, SOCKET_grip) in its model space; the manifest fallback if the node is missing.
+        private void ReadSocket(Transform prop, string socketName, Vector3 fallback, out Vector3 position, out Quaternion rotation)
+        {
+            Transform socket = ViewHelpers.FindSocket(prop, socketName);
+            if (socket == null)
+            {
+                Debug.LogWarning("SkierView: " + prop.name + " has no " + socketName + " node; using the manifest fallback.", this);
+                position = fallback;
+                rotation = Quaternion.identity;
+                return;
+            }
+
+            position = prop.InverseTransformPoint(socket.position);
+            rotation = Quaternion.Inverse(prop.rotation) * socket.rotation;
+        }
+
+        // Rotates a prop under its parent socket and moves it so its own socket lands on the parent's origin.
+        private static void Place(Transform prop, Quaternion localRotation, Vector3 socketInModel)
+        {
+            prop.localRotation = localRotation;
+            prop.localPosition = -(localRotation * Vector3.Scale(prop.localScale, socketInModel));
         }
 
         private static void SetEmitting(TrailRenderer track, bool emitting)
