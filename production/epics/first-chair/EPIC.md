@@ -28,4 +28,4 @@ story and Mountain Ops; lifts and the full mountain; online play (see the brief)
 | 005 | [Trees and Flow](story-005-trees-and-flow.md) | Logic | Ready | N/A (minimal) |
 | 006 | [Rails, boxes and single-trick scoring](story-006-rails-and-trick-scoring.md) | Logic | Ready | N/A (minimal) |
 | 007 | [First art pass toward the target look](story-007-first-art-pass.md) | Visual/Feel | Ready | N/A (minimal) |
-| 008 | [Turn styles and speed: carve, quick turns, powder, faster slopes](story-008-turn-styles-and-speed.md) | Logic | In Progress | N/A (minimal) |
+| 008 | [Turn styles and speed: carve, quick turns, powder, faster slopes](story-008-turn-styles-and-speed.md) | Logic | In Review | N/A (minimal) |

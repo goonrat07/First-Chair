@@ -1,7 +1,7 @@
 # Story 008: Turn styles and speed: carve, quick turns, powder, faster slopes
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review (sim and view done; the user's playtest of the feel is open)
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
@@ -133,21 +133,26 @@ the tree lines and glade are fast without W.
 
 ## Acceptance Criteria
 
-- [ ] Holding W while steering on groomed snow carves. The velocity stays on the ski heading with no skid, and the
+- [x] Holding W while steering on groomed snow carves. The velocity stays on the ski heading with no skid, and the
   speed stays within friction and drag of a straight run.
-- [ ] A carve's tightest radius grows with speed: at full edge the radius is CarveRadiusMin when slow, and
+- [x] A carve's tightest radius grows with speed: at full edge the radius is CarveRadiusMin when slow, and
   v² / CarveGrip at speed.
-- [ ] Below CarveMinSpeed, W plus steering pivots like a quick turn.
-- [ ] Steering without W pivots the skis faster than a carve turns at the same moderate speed, loses more speed
+- [x] Below CarveMinSpeed, W plus steering pivots like a quick turn.
+- [x] Steering without W pivots the skis faster than a carve turns at the same moderate speed, loses more speed
   than a carve over the same change of direction, and pivots more slowly the faster the rider goes.
-- [ ] Powder and crud never carve: W plus steering there turns like a quick turn. Each snow type reads its own
+- [x] Powder and crud never carve: W plus steering there turns like a quick turn. Each snow type reads its own
   carve grip, skid grip, skid drag, pivot factor and friction from tuning data.
-- [ ] On the test slope, from the start with no input, the rider passes 50 km/h within 8 s and 75 km/h within 12 s on
+- [x] On the test slope, from the start with no input, the rider passes 50 km/h within 8 s and 75 km/h within 12 s on
   the groomer, and straight down the tree lines and the glade passes 50 km/h within 8 s without W.
-- [ ] Key S-turns down the groomer hold a higher average speed carving (W) than with quick turns (no W). Quick
+- [x] Key S-turns down the groomer hold a higher average speed carving (W) than with quick turns (no W). Quick
   turns are the speed control.
-- [ ] No riding number is inline in logic. The sim version is bumped, and the Story 001 determinism test still
+- [x] No riding number is inline in logic. The sim version is bumped, and the Story 001 determinism test still
   passes.
+
+All eight are pinned by tests in `sim/FirstChair.Sim.Tests/` (`SnowRidingTests`, `TestSlopeTests`, `TuningValidationTests`,
+`DeterminismTests`): `dotnet test sim/` 381/381 (2026-10-24). Each new test was seen failing first, against the
+playtested sim (version 6) or a deliberately broken one. Seen in Linux builds 40116719127 and 40117608164 under Xvfb.
+Software rendering there runs the sim in slow motion, so on-screen speeds are not real time.
 
 ## Tuning Knobs
 
