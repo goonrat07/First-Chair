@@ -101,6 +101,19 @@ EditMode tests pass, and the Linux and Windows players build and run. Evidence i
 `production/qa/evidence/story-003-test-slope-unity-view/`. The gamepad and the Windows playtest still need the
 user's PC.
 
+## Playtest feedback (user, 2026-10-23, Windows build from run 40032472712)
+
+To do, in order (the user: fix the skis and poles first, then move to the next step):
+- [ ] **Skis and poles point the wrong way.** The skis stand vertical under the boots and the poles stick backward
+  and up, with odd shadows. CH_Skier's sockets come in with Blender's axes on the armature (story 007 notes), so
+  attaching the props with an identity rotation is wrong. The skier model itself "looks really good".
+- [ ] **Camera framing.** The view is a little too wide: narrow the lens. Put the rider near the bottom of the
+  screen, as GMA2 does, so more of the mountain ahead is visible and the slope reads as a slope.
+- [ ] **Feel: skiing seems slow.** Partly because the test slope is so wide that the skier looks small. Revisit
+  after the camera change, then tune speed (story 002's numbers are placeholders until a playtest).
+- [ ] **Later: a less static camera.** GMA2 doesn't pin the rider to the centre; give the rider a little room to
+  drift side to side (a lag or dead zone) before the camera follows.
+
 ## QA Test Cases
 
 *N/A — no qa-lead specs at this tier; implement against the Acceptance Criteria above*

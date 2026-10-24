@@ -45,6 +45,12 @@
 - Skis and poles already exist (`Assets/Art/Equipment/`). This story recolours them if needed; it doesn't rebuild them.
 - The skier is the first rigged asset. Its FBX keeps Blender's default axes on the armature (the documented Unity export rule). Check the first import in the Unity editor.
 - An art bible (`/art-bible`) before this story would settle the palette. It isn't required at `minimal`.
+- **Open (2026-10-24):** CH_Skier's trouser seat shows through the lower jacket back in close back views
+  (`art/source/CH_Skier/asset-brief.md`); not visible at the follow camera. The skis' and poles' socket orientation
+  in Unity is tracked in story 003's playtest feedback.
+- **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
+  shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
+  whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).
 
 ---
 

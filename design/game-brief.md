@@ -40,6 +40,15 @@ after this MVP. What the user says in session overrides both. -->
 5. Trees and Flow, then rails and trick scoring.
 6. Art pass toward the target look.
 
+## After a rough gameplay demo (user's ideas, 2026-10-23)
+- **Custom snow and terrain shaders** for GMA2's semi-realistic look (story 007 holds the first part).
+- **Procedural generation of trees and props** where it makes sense (`.claude/skills/tree-kit/` already builds
+  trees from parameters).
+- **A mountain-making tool:** shape the terrain and place props such as trees, usable by the user, later by players
+  for custom mountains (GMA2's coming Steam version has custom mountains), and directly by Claude through a data
+  format and scripts, so building a mountain is quicker and looks better. Add the AI side only if it pays for itself
+  in quality or speed. If it would cost much more time or tokens for little gain, leave it out.
+
 ---
 **Who it's for / what they feel:** Players who love the flow of skiing a mountain and want it warm and forgiving, where a crash costs a second, not a run.
 
