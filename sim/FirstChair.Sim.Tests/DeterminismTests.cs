@@ -40,8 +40,13 @@ namespace FirstChair.Sim.Tests
         // Re-pinned for version 6 (playtest retune, 2026-10-24): a quarter more grip on every snow type and a slower turn
         // change every carve and skid, so the whole ride moves; ScriptedRide.Rails' box moved 2 m to stay on the line after
         // the reset. Pinned only after record/replay, interleaving and zero allocation passed with the new numbers.
-        private const ushort GoldenSimVersion = 6;
-        private const string GoldenTraceSha256 = "0E326B1D3ED2A32A31C944F97974AD049531E797541699C29F56C44B62105184";
+        // Re-pinned for version 7 (Story 008): carves and quick turns, turning by speed and snow, and faster slopes change
+        // the whole ride. It runs faster, so the third jump crashes sooner: the reset tap moved into that jump's air window
+        // (step 1200), while the rider still lies crashed, and ScriptedRide.Rails' box moved onto the new line after the
+        // reset, past the crash, on the level ground beyond the map's edge. The ride now also carves and poles, so it takes
+        // every stance. Pinned only after record/replay, interleaving and zero allocation passed with the new numbers.
+        private const ushort GoldenSimVersion = 7;
+        private const string GoldenTraceSha256 = "9181C0B3D642BF25642681EC31647E2BD0C6CAD450FCE0E220DCEDCBD997ABC2";
 
         [Test]
         public void ScriptedRide_RecordedThenReplayedFromBytes_MatchesBitForBitEveryStep()
@@ -324,12 +329,12 @@ namespace FirstChair.Sim.Tests
                 stances.Add(state.Stance);
                 snows.Add(state.Snow);
                 skidded |= state.Skidding;
-                carved |= !state.Skidding && state.EdgeAngle != Fix64.Zero && state.Velocity != Vec3.Zero;
+                carved |= state.Stance == Stance.Carve && !state.Skidding;
             }
 
             Assert.That(carved, Is.True, "the ride must carve");
             Assert.That(skidded, Is.True, "the ride must skid");
-            Assert.That(stances, Is.EquivalentTo(new[] { Stance.Stand, Stance.Tuck, Stance.Brake }), "the ride must stand, tuck and brake");
+            Assert.That(stances, Is.EquivalentTo((Stance[])Enum.GetValues(typeof(Stance))), "the ride must take every stance");
             Assert.That(snows, Is.EquivalentTo((SnowType[])Enum.GetValues(typeof(SnowType))), "the ride must cross every snow type");
             Assert.That(trace.Exists(snapshot => snapshot.State.Airborne), Is.True, "the ride must fly");
             Assert.That(trace.Exists(snapshot => snapshot.State.Crashed), Is.True, "the ride must crash");

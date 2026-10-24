@@ -9,8 +9,8 @@ namespace FirstChair.Sim
         Stand = 0,
 
         /// <summary>
-        /// Tucked: forward held on a slope, or on a flat at or above <see cref="Tuning.PoleSpeedMax"/>. Less air
-        /// drag (<see cref="Tuning.TuckAirDragFactor"/>) and slower turning (<see cref="Tuning.TuckTurnFactor"/>).
+        /// Tucked: forward held without steering, on a slope, or on a flat at or above <see cref="Tuning.PoleSpeedMax"/>.
+        /// Less air drag (<see cref="Tuning.TuckAirDragFactor"/>); on snow that carves, any edge left still carves.
         /// </summary>
         Tuck = 1,
 
@@ -19,6 +19,13 @@ namespace FirstChair.Sim
 
         /// <summary>Poling: forward held on a flat below <see cref="Tuning.PoleSpeedMax"/>.</summary>
         Pole = 3,
+
+        /// <summary>
+        /// Carving: forward held while steering, on snow that carves (<see cref="Tuning.CarveGrip"/> above 0) at or above
+        /// <see cref="Tuning.CarveMinSpeed"/>. Low like a racer (<see cref="Tuning.CarveAirDragFactor"/>); the skis follow
+        /// their own arc and keep speed (Story 008).
+        /// </summary>
+        Carve = 4,
     }
 
     /// <summary>The grab held in the air (see <see cref="SimButtons.Grab"/>).</summary>
@@ -65,7 +72,7 @@ namespace FirstChair.Sim
     /// simulation.Step(input);
     /// RiderState current = simulation.State;
     /// // A view interpolates between previous and current position and heading,
-    /// // leans the skier by current.EdgeAngle and sprays snow while current.Skidding.
+    /// // leans the skier by current.EdgeAngle and sprays snow by current.SlipAngle and speed.
     /// </code>
     /// </example>
     public struct RiderState : IEquatable<RiderState>
@@ -85,12 +92,15 @@ namespace FirstChair.Sim
         /// </summary>
         public Fix64 EdgeAngle;
 
-        /// <summary>True when the edges could not hold in the last step and the skis skidded.</summary>
+        /// <summary>
+        /// True when the snow could not hold the skis in the last step: a carve past its grip, or pivoted skis past their
+        /// skid grip. The skis slid.
+        /// </summary>
         public bool Skidding;
 
         /// <summary>
-        /// After a skidding step, the angle left between the velocity and the skis, radians, 0 to pi/2; zero
-        /// while carving.
+        /// The angle left between the velocity and the skis after the last step, radians, 0 to pi/2. Zero in a clean carve;
+        /// a quick turn always slips a little, more the harder it turns, and a skid most (Story 008).
         /// </summary>
         public Fix64 SlipAngle;
 

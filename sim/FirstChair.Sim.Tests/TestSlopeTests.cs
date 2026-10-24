@@ -32,11 +32,27 @@ namespace FirstChair.Sim.Tests
         /// <summary>How far each key turn swings from the fall line before the other key is pressed, degrees.</summary>
         private const int KeyTurnDegrees = 50;
 
-        /// <summary>The pace is averaged from here, once the rider is up to speed, to here, above the ice patch.</summary>
-        private const int PaceStartSecond = 8, PaceEndSecond = 18;
+        /// <summary>The pace is averaged over this stretch of the groomer, metres down it: up to speed, above the ice patch.</summary>
+        private const int PaceStartZ = 60, PaceEndZ = 170;
 
-        /// <summary>GMA2's pace on a groomer, km/h: the boundary values are the point of the test.</summary>
-        private const double PaceMinKmh = 40, PaceMaxKmh = 60;
+        /// <summary>GMA2's slowest pace on a groomer, km/h: quick turns, the speed control, must still hold it.</summary>
+        private const double QuickPaceMinKmh = 40;
+
+        /// <summary>Story 008: from rest with no input, the slope alone passes this speed, km/h, within this time, s.</summary>
+        private const double BriskKmh = 50;
+
+        private const int BriskWithinSeconds = 8;
+
+        /// <summary>
+        /// Story 008: and down the groomer it keeps accelerating past this speed, km/h, within this time, s. The playtested
+        /// build (sim version 6) took 15 s, held back by air drag.
+        /// </summary>
+        private const double FastKmh = 75;
+
+        private const int FastWithinSeconds = 12;
+
+        /// <summary>A wooded zone's straight run starts on its centre line this far below its top edge, metres.</summary>
+        private const int WoodedStartDepth = 6;
 
         private const double MetresPerSecondToKmh = 3.6;
 
@@ -271,49 +287,67 @@ namespace FirstChair.Sim.Tests
         }
 
         /// <summary>
-        /// The user's playtest (2026-10-23, story 003): riding felt slow. On a keyboard every turn is full lock, and at
-        /// the first tuning a full-lock turn out-turned groomed grip above 32 km/h, so key turns skidded down to about
-        /// 33 km/h. GMA2's pace on a groomer is 40 to 60 km/h; the 2026-10-24 retune keeps key S-turns inside it.
+        /// Story 008, from the user's playtest of build 40060424205: "The slope alone should accelerate me like in Grand
+        /// Mountain Adventure 2." From the start, with no input, the rider passes 50 km/h within 8 s and 75 km/h within 12 s.
         /// </summary>
         [Test]
-        public void KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_HoldFortyToSixtyKmh()
+        public void RiderAtStart_NoInput_PassesFiftyKmhWithinEightSecondsAndSeventyFiveWithinTwelve()
+        {
+            // Arrange
+            (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadSlope();
+
+            // Act
+            double brisk = SecondsToSpeed(heightmap, snowMap, layout.StartX, layout.StartZ, SnowType.Groomed, BriskKmh);
+            double fast = SecondsToSpeed(heightmap, snowMap, layout.StartX, layout.StartZ, SnowType.Groomed, FastKmh);
+
+            // Assert
+            Assert.That(brisk, Is.LessThanOrEqualTo(BriskWithinSeconds));
+            Assert.That(fast, Is.LessThanOrEqualTo(FastWithinSeconds));
+        }
+
+        /// <summary>
+        /// Story 008: "I should be able to go fast in the tree section without even having to hold W." Straight down each
+        /// tree line and the glade, on their own snow, with no input, the rider passes 50 km/h within 8 s.
+        /// </summary>
+        [TestCase("treesWest")]
+        [TestCase("treesMiddle")]
+        [TestCase("treesEast")]
+        [TestCase("glade")]
+        public void WoodedZone_NoInput_PassesFiftyKmhWithinEightSeconds(string zoneName)
+        {
+            // Arrange
+            (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadSlope();
+            Assert.That(layout.TryGetZone(zoneName, out SlopeZone zone), Is.True);
+            Fix64 x = (zone.XMin + zone.XMax) / Fix64.FromInt(2);
+            Fix64 z = zone.ZMin + Fix64.FromInt(WoodedStartDepth);
+
+            // Act
+            double seconds = SecondsToSpeed(heightmap, snowMap, x, z, snowMap.TypeAt(x, z), BriskKmh);
+
+            // Assert
+            Assert.That(snowMap.TypeAt(x, z), Is.AnyOf(SnowType.Crud, SnowType.Powder), "the run must be on the trees' snow");
+            Assert.That(seconds, Is.LessThanOrEqualTo(BriskWithinSeconds));
+        }
+
+        /// <summary>
+        /// Story 008: carving (W) keeps speed, and quick turns (no W) are the speed control. On a keyboard every turn is full
+        /// lock. Over the same stretch of the groomer, key S-turns fifty degrees each way hold a higher pace carving than
+        /// quick-turning, and quick turns still hold GMA2's slowest groomer pace.
+        /// </summary>
+        [Test]
+        public void KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_CarvingHoldsAHigherPaceThanQuickTurns()
         {
             // Arrange
             (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadSlope();
             Assert.That(layout.TryGetZone("groomer", out SlopeZone groomer), Is.True);
-            var simulation = new Simulation(new RunSetup(Sport.Skis, 0, 7UL, layout.StartX, layout.StartZ), heightmap, snowMap, Tuning.Default);
-            Fix64 headingLimit = Fix64.Pi * Fix64.FromRatio(KeyTurnDegrees, 180);
-            SimButtons key = SimButtons.Right;
-            double speedSum = 0;
-            int measured = 0;
 
-            // Act: straight for the first second, then hold one key until the heading passes the limit, then the other.
-            for (int step = 0; step < PaceEndSecond * Simulation.StepsPerSecond; step++)
-            {
-                Fix64 heading = simulation.State.Heading;
-                if (key == SimButtons.Right && heading > headingLimit)
-                {
-                    key = SimButtons.Left;
-                }
-                else if (key == SimButtons.Left && heading < -headingLimit)
-                {
-                    key = SimButtons.Right;
-                }
-
-                simulation.Step(step < Simulation.StepsPerSecond ? NoInput : SimInput.Pack(key, 0));
-                RiderState state = simulation.State;
-                Assert.That(groomer.Contains(state.Position.X, state.Position.Z) && state.Snow == SnowType.Groomed, Is.True,
-                    "the turns must stay on the groomer's own snow, at step " + step);
-                if (step >= PaceStartSecond * Simulation.StepsPerSecond)
-                {
-                    speedSum += TestTerrain.ToDouble(Fix64.Sqrt(Vec3.Dot(state.Velocity, state.Velocity)));
-                    measured++;
-                }
-            }
+            // Act
+            double carvePace = KeyTurnPace(layout, heightmap, snowMap, groomer, SimButtons.Forward);
+            double quickPace = KeyTurnPace(layout, heightmap, snowMap, groomer, SimButtons.None);
 
             // Assert
-            double meanKmh = speedSum / measured * MetresPerSecondToKmh;
-            Assert.That(meanKmh, Is.InRange(PaceMinKmh, PaceMaxKmh));
+            Assert.That(carvePace, Is.GreaterThan(quickPace));
+            Assert.That(quickPace, Is.GreaterThanOrEqualTo(QuickPaceMinKmh));
         }
 
         [Test]
@@ -338,6 +372,67 @@ namespace FirstChair.Sim.Tests
 
             Assert.That(points, Is.GreaterThan(0));
         }
+
+        /// <summary>
+        /// Rides straight from rest at (<paramref name="x"/>, <paramref name="z"/>) with no input until the speed passes
+        /// <paramref name="kmh"/>; returns the time taken, seconds. Every step must be on <paramref name="snow"/>.
+        /// </summary>
+        private static double SecondsToSpeed(Heightmap heightmap, SnowMap snowMap, Fix64 x, Fix64 z, SnowType snow, double kmh)
+        {
+            var simulation = new Simulation(new RunSetup(Sport.Skis, 0, 7UL, x, z), heightmap, snowMap, Tuning.Default);
+            int steps = 0;
+            while (Kmh(simulation.State) < kmh)
+            {
+                Assert.That(steps, Is.LessThan(2 * FastWithinSeconds * Simulation.StepsPerSecond), "the rider never got up to speed");
+                simulation.Step(NoInput);
+                steps++;
+                Assert.That(simulation.State.Snow, Is.EqualTo(snow), "the run must stay on its own snow, at step " + steps);
+            }
+
+            return (double)steps / Simulation.StepsPerSecond;
+        }
+
+        /// <summary>
+        /// From the start: straight for a second, then hold one key with <paramref name="extra"/> until the heading passes
+        /// fifty degrees, then the other. Returns the mean speed, km/h, from z = <see cref="PaceStartZ"/> to
+        /// <see cref="PaceEndZ"/>. Every step must be on the groomer's own snow.
+        /// </summary>
+        private static double KeyTurnPace(SlopeLayout layout, Heightmap heightmap, SnowMap snowMap, SlopeZone groomer, SimButtons extra)
+        {
+            var simulation = new Simulation(new RunSetup(Sport.Skis, 0, 7UL, layout.StartX, layout.StartZ), heightmap, snowMap, Tuning.Default);
+            Fix64 headingLimit = Fix64.Pi * Fix64.FromRatio(KeyTurnDegrees, 180);
+            SimButtons key = SimButtons.Right;
+            double speedSum = 0;
+            int measured = 0;
+            for (int step = 0; simulation.State.Position.Z < Fix64.FromInt(PaceEndZ); step++)
+            {
+                Assert.That(step, Is.LessThan(60 * Simulation.StepsPerSecond), "the turns never reached the end of the stretch");
+                Fix64 heading = simulation.State.Heading;
+                if (key == SimButtons.Right && heading > headingLimit)
+                {
+                    key = SimButtons.Left;
+                }
+                else if (key == SimButtons.Left && heading < -headingLimit)
+                {
+                    key = SimButtons.Right;
+                }
+
+                simulation.Step(step < Simulation.StepsPerSecond ? NoInput : SimInput.Pack(key | extra, 0));
+                RiderState state = simulation.State;
+                Assert.That(groomer.Contains(state.Position.X, state.Position.Z) && state.Snow == SnowType.Groomed, Is.True,
+                    "the turns must stay on the groomer's own snow, at step " + step);
+                if (state.Position.Z >= Fix64.FromInt(PaceStartZ))
+                {
+                    speedSum += Kmh(state);
+                    measured++;
+                }
+            }
+
+            return speedSum / measured;
+        }
+
+        private static double Kmh(RiderState state) =>
+            TestTerrain.ToDouble(Fix64.Sqrt(Vec3.Dot(state.Velocity, state.Velocity))) * MetresPerSecondToKmh;
 
         private static (SlopeLayout Layout, Heightmap Heightmap, SnowMap SnowMap) LoadSlope()
         {

@@ -88,6 +88,12 @@
   - Still open: the stamped snow trails (a render texture stamped where the skis touch) and a URP snow shader that
     reads it as bump and detail. They need a custom terrain shader, or Shader Graph, written and checked in the editor:
     a mistake there turns the whole slope magenta in the next build. That is PC work (sleep mode, 2026-10-24).
+- **Playtest notes (user, 2026-10-24, build 40060424205):**
+  - [ ] Fix the Japan and Tail grabs: the knees look bent backward and the torso doesn't follow the legs.
+  - [ ] The slope doesn't read as a slope: give it contours and better lighting.
+  - [ ] Trees maybe a little sparse.
+  - [ ] Tracks should build up where skiers pass, as in GMA2, not sit as streaks on a static texture. This belongs
+    to the custom snow shader.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).

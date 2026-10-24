@@ -34,6 +34,16 @@ namespace FirstChair.Sim.Tests
         [TestCase("GrabSteeringThreshold above one")]
         [TestCase("FlowTrickBonus above 10")]
         [TestCase("MinScoredAirTime negative")]
+        [TestCase("CarveRadiusMin zero")]
+        [TestCase("CarveMinSpeed zero")]
+        [TestCase("CarveBlendSpeed zero")]
+        [TestCase("CarveTurnShare above one")]
+        [TestCase("PivotFadeSpeed zero")]
+        [TestCase("SkidStiffness zero")]
+        [TestCase("PivotSlipMax zero")]
+        [TestCase("PivotSlipMax a right angle")]
+        [TestCase("GroomedCarveGrip negative")]
+        [TestCase("CrudSkidGrip negative")]
         public void NewRun_TuningARideCannotRunOn_ThrowsArgumentException(string badValue)
         {
             // Arrange
@@ -55,6 +65,16 @@ namespace FirstChair.Sim.Tests
                 case "GrabSteeringThreshold above one": tuning.GrabSteeringThreshold = Fix64.One + Fix64.FromRaw(1); break;
                 case "FlowTrickBonus above 10": tuning.FlowTrickBonus = Fix64.FromInt(10) + Fix64.FromRaw(1); break;
                 case "MinScoredAirTime negative": tuning.MinScoredAirTime = -Fix64.FromRaw(1); break;
+                case "CarveRadiusMin zero": tuning.CarveRadiusMin = Fix64.Zero; break;
+                case "CarveMinSpeed zero": tuning.CarveMinSpeed = Fix64.Zero; break;
+                case "CarveBlendSpeed zero": tuning.CarveBlendSpeed = Fix64.Zero; break;
+                case "CarveTurnShare above one": tuning.CarveTurnShare = Fix64.One + Fix64.FromRaw(1); break;
+                case "PivotFadeSpeed zero": tuning.PivotFadeSpeed = Fix64.Zero; break;
+                case "SkidStiffness zero": tuning.SkidStiffness = Fix64.Zero; break;
+                case "PivotSlipMax zero": tuning.PivotSlipMax = Fix64.Zero; break;
+                case "PivotSlipMax a right angle": tuning.PivotSlipMax = Fix64.HalfPi; break;
+                case "GroomedCarveGrip negative": tuning.GroomedCarveGrip = -Fix64.FromRaw(1); break;
+                case "CrudSkidGrip negative": tuning.CrudSkidGrip = -Fix64.FromRaw(1); break;
                 default: throw new ArgumentOutOfRangeException(nameof(badValue), badValue, "no such case");
             }
 

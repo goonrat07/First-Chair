@@ -153,6 +153,28 @@ Decisions (user, 2026-10-24), for the next work and sleep mode:
   pin the rider to the middle again.
 - Also tonight: story 007's art items, and grab and trick poses for the skier (story 007).
 
+## Playtest feedback (user, 2026-10-24, Windows build from run 40060424205)
+
+The riding still doesn't feel right, so this story stays open. The user: "just do your best to nail the skiing
+feel this time." To do, in this order:
+- [ ] **Speed is still far too slow.** The trees are practically impossible to ski. The slope alone should
+  accelerate the rider, as in GMA2: fast in the tree section without holding W. Story 008.
+- [ ] **Turning feels a little weird.** It needs two kinds of turn (story 008):
+  - Carving keeps speed on a groomer. The user suggests holding W to get low and carve like a racer.
+  - Quicker turns trade speed for tighter turns in the trees.
+  - Turning depends on speed: no sharp turns when bombing, no carving when very slow.
+  - Turning depends on the snow. Groomers carve. Powder turns differently (research it). On the packed, overskied
+    paths at the sides of runs every turn is a quick speed check. Big picture: no carving in the trees.
+- [ ] **Research** the kinds of turn and how ski games make their physics feel smooth and realistic, then build
+  the best version. It may differ from the user's suggestion (story 008).
+- [x] The camera's side-to-side room feels good (item 7 of sleep mode).
+- [ ] **The slope still doesn't read as a slope:** there are no contours in it. Lighting will help later (story 007).
+- [ ] **Trees look good,** maybe a little sparse (story 007, level layout).
+- [ ] **The tracks don't look great.** In GMA2 tracks build up where many skiers pass, not as streaks over a static
+  texture (the user's GMA2 screenshot, 2026-10-24). This comes with the custom snow shader (story 007).
+- [ ] **Bug: the Japan (Shift+A) and Tail (Shift+S) grabs look broken:** the knees seem to bend 180 degrees backward,
+  perhaps because the torso doesn't move with the legs (story 007).
+
 ## QA Test Cases
 
 *N/A — no qa-lead specs at this tier; implement against the Acceptance Criteria above*

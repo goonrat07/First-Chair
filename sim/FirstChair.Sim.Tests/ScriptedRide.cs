@@ -11,10 +11,11 @@ namespace FirstChair.Sim.Tests
     /// the +Z incline over banded snow (all five types), with a fixed, varied input pattern built from integer
     /// arithmetic (no random source). It carves, skids, tucks and brakes, and since Story 004 (18 s) it pops three
     /// times: a Japan grab and a 360 that land, and a flip that crashes, with a reset tap while the rider lies
-    /// crashed. It leaves the 128 m map once. Since Story 005 it rides among two trees (<see cref="Trees"/>): it passes
+    /// crashed. It leaves the 128 m map. Since Story 005 it rides among two trees (<see cref="Trees"/>): it passes
     /// the first close (a near miss) and clips the second's branches (a branch hit, and a near miss of its trunk). Since
     /// Story 006 it rides onto a low box (<see cref="Rails"/>) after the reset, grinds it and leaves it, and its landed jumps
-    /// fold to scored tricks.
+    /// fold to scored tricks. Since Story 008 (sim version 7) it carves and quick-turns, poles on the level ground past
+    /// the map's edge, and falls off the end of the grind.
     /// </summary>
     internal static class ScriptedRide
     {
@@ -36,7 +37,7 @@ namespace FirstChair.Sim.Tests
         public const int FlipSteps = 20;
 
         /// <summary>The step whose input taps reset: the rider is lying crashed after the third jump.</summary>
-        public const int ResetStep = 1300;
+        public const int ResetStep = 1200;
 
         private static bool Loading(int step, int release) => step >= release - PopLoadSteps && step < release;
 
@@ -56,12 +57,13 @@ namespace FirstChair.Sim.Tests
         });
 
         /// <summary>
-        /// One ride-on box (Story 006) across the line the rider takes after the reset tap, 8 m long from about 116.7 m
-        /// down, clear of the trees, the jumps and the map's edge: the rider rides onto it at about 6 m/s.
+        /// One ride-on box (Story 006) across the line the rider takes after the reset tap, 8 m long from about 131.6 m
+        /// down: past the third jump's crash, on the level ground beyond the map's edge (version 7 rides faster, so the
+        /// reset spot is near the edge). The rider rides onto it at about 4 m/s.
         /// </summary>
         public static readonly RailSet Rails = new RailSet(new[]
         {
-            new SlopeRail(49_550, 116_650, 48_270, 124_650, 300, 600, true),
+            new SlopeRail(57_850, 131_550, 54_450, 138_790, 300, 600, true),
         });
 
         /// <summary>
@@ -84,7 +86,9 @@ namespace FirstChair.Sim.Tests
 
             if (InWindow(step, CrashJumpRelease))
             {
-                return SimInput.Pack(step - CrashJumpRelease < FlipSteps ? SimButtons.Forward : SimButtons.None, 0);
+                // The reset tap falls inside this window, while the rider lies crashed.
+                SimButtons air = step - CrashJumpRelease < FlipSteps ? SimButtons.Forward : SimButtons.None;
+                return SimInput.Pack(step == ResetStep ? air | SimButtons.Reset : air, 0);
             }
 
             SimButtons buttons = SimButtons.None;

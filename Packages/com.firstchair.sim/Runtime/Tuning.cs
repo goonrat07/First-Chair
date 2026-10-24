@@ -18,7 +18,7 @@ namespace FirstChair.Sim
     /// <example>
     /// <code>
     /// Tuning tuning = Tuning.Default;
-    /// tuning.IceGrip = Fix64.FromInt(4); // a test variant: ice lets go even earlier
+    /// tuning.IceCarveGrip = Fix64.FromInt(4); // a test variant: carves on ice let go even earlier
     /// var simulation = new Simulation(setup, heightmap, snowMap, tuning);
     /// </code>
     /// </example>
@@ -27,48 +27,79 @@ namespace FirstChair.Sim
         /// <summary>Gravitational acceleration, metres per second squared.</summary>
         public Fix64 Gravity;
 
-        /// <summary>Grip on groomed snow: the most sideways acceleration (m/s^2) the edges hold before the skis skid.</summary>
-        public Fix64 GroomedGrip;
-
-        /// <summary>Grip on powder, m/s^2 (see <see cref="GroomedGrip"/>).</summary>
-        public Fix64 PowderGrip;
-
-        /// <summary>Grip on crud, m/s^2 (see <see cref="GroomedGrip"/>).</summary>
-        public Fix64 CrudGrip;
-
-        /// <summary>Grip on ice, m/s^2 (see <see cref="GroomedGrip"/>).</summary>
-        public Fix64 IceGrip;
-
-        /// <summary>Grip on slush, m/s^2 (see <see cref="GroomedGrip"/>).</summary>
-        public Fix64 SlushGrip;
-
         /// <summary>
-        /// Drag of groomed snow: a sliding-friction coefficient. The snow slows the rider by
-        /// drag * <see cref="Gravity"/> * (cosine of the slope) m/s^2, and holds a resting rider on slopes
-        /// gentler than its friction angle.
+        /// Carve grip on groomed snow, m/s^2: the most sideways acceleration a carve's edges hold, which caps how tight a
+        /// carve can be at speed (radius at least speed^2 / CarveGrip). 0 means the snow can't be carved: W plus steering
+        /// pivots there, as in powder and crud (Story 008).
+        /// </summary>
+        public Fix64 GroomedCarveGrip;
+        /// <summary>Carve grip on powder, m/s^2 (see <see cref="GroomedCarveGrip"/>); 0 means it can't be carved.</summary>
+        public Fix64 PowderCarveGrip;
+        /// <summary>Carve grip on crud, m/s^2 (see <see cref="GroomedCarveGrip"/>); 0 means it can't be carved.</summary>
+        public Fix64 CrudCarveGrip;
+        /// <summary>Carve grip on ice, m/s^2 (see <see cref="GroomedCarveGrip"/>); 0 means it can't be carved.</summary>
+        public Fix64 IceCarveGrip;
+        /// <summary>Carve grip on slush, m/s^2 (see <see cref="GroomedCarveGrip"/>); 0 means it can't be carved.</summary>
+        public Fix64 SlushCarveGrip;
+        /// <summary>
+        /// Skid grip on groomed snow, m/s^2: the most sideways acceleration the snow puts on skis that are turned across
+        /// the travel (a quick turn or a skid). It drags the velocity round after the skis; past it the skis slide.
+        /// </summary>
+        public Fix64 GroomedSkidGrip;
+        /// <summary>Skid grip on powder, m/s^2 (see <see cref="GroomedSkidGrip"/>).</summary>
+        public Fix64 PowderSkidGrip;
+        /// <summary>Skid grip on crud, m/s^2 (see <see cref="GroomedSkidGrip"/>).</summary>
+        public Fix64 CrudSkidGrip;
+        /// <summary>Skid grip on ice, m/s^2 (see <see cref="GroomedSkidGrip"/>).</summary>
+        public Fix64 IceSkidGrip;
+        /// <summary>Skid grip on slush, m/s^2 (see <see cref="GroomedSkidGrip"/>).</summary>
+        public Fix64 SlushSkidGrip;
+        /// <summary>
+        /// Drag of groomed snow: a sliding-friction coefficient. The snow slows the rider by drag times the load: gravity's
+        /// part normal to the snow, plus the sideways acceleration of a carve (Story 008). It holds a resting rider on
+        /// slopes gentler than its friction angle.
         /// </summary>
         public Fix64 GroomedDrag;
-
         /// <summary>Drag of powder (see <see cref="GroomedDrag"/>).</summary>
         public Fix64 PowderDrag;
-
         /// <summary>Drag of crud (see <see cref="GroomedDrag"/>).</summary>
         public Fix64 CrudDrag;
-
         /// <summary>Drag of ice (see <see cref="GroomedDrag"/>).</summary>
         public Fix64 IceDrag;
-
         /// <summary>Drag of slush (see <see cref="GroomedDrag"/>).</summary>
         public Fix64 SlushDrag;
-
+        /// <summary>
+        /// Skid speed loss on groomed snow, per radian per second: skis sliding at a slip angle to the travel plow snow
+        /// and lose SkidDrag * slip angle of their speed, as a fraction, each second, on top of the skid grip's own
+        /// braking.
+        /// </summary>
+        public Fix64 GroomedSkidDrag;
+        /// <summary>Skid speed loss on powder (see <see cref="GroomedSkidDrag"/>).</summary>
+        public Fix64 PowderSkidDrag;
+        /// <summary>Skid speed loss on crud (see <see cref="GroomedSkidDrag"/>).</summary>
+        public Fix64 CrudSkidDrag;
+        /// <summary>Skid speed loss on ice (see <see cref="GroomedSkidDrag"/>).</summary>
+        public Fix64 IceSkidDrag;
+        /// <summary>Skid speed loss on slush (see <see cref="GroomedSkidDrag"/>).</summary>
+        public Fix64 SlushSkidDrag;
+        /// <summary>How readily the skis pivot on groomed snow: a factor on <see cref="PivotRate"/>.</summary>
+        public Fix64 GroomedPivotFactor;
+        /// <summary>How readily the skis pivot on powder (see <see cref="GroomedPivotFactor"/>).</summary>
+        public Fix64 PowderPivotFactor;
+        /// <summary>How readily the skis pivot on crud (see <see cref="GroomedPivotFactor"/>).</summary>
+        public Fix64 CrudPivotFactor;
+        /// <summary>How readily the skis pivot on ice (see <see cref="GroomedPivotFactor"/>).</summary>
+        public Fix64 IcePivotFactor;
+        /// <summary>How readily the skis pivot on slush (see <see cref="GroomedPivotFactor"/>).</summary>
+        public Fix64 SlushPivotFactor;
         /// <summary>Air drag, per metre: the air slows a standing rider by AirDrag * speed^2 m/s^2.</summary>
         public Fix64 AirDrag;
 
-        /// <summary>Fraction of <see cref="AirDrag"/> left while tucked. Below 1 it raises terminal speed.</summary>
+        /// <summary>Fraction of <see cref="AirDrag"/> left while tucked (W held, no steering). Below 1 it raises terminal speed.</summary>
         public Fix64 TuckAirDragFactor;
 
-        /// <summary>Fraction of the turn rate left while tucked.</summary>
-        public Fix64 TuckTurnFactor;
+        /// <summary>Fraction of <see cref="AirDrag"/> left while carving (W held and steering): low, but not a full tuck.</summary>
+        public Fix64 CarveAirDragFactor;
 
         /// <summary>Edge angle at full steering, radians.</summary>
         public Fix64 MaxEdgeAngle;
@@ -77,16 +108,51 @@ namespace FirstChair.Sim
         public Fix64 EdgeRate;
 
         /// <summary>
-        /// Heading change at full edge (<see cref="MaxEdgeAngle"/>), radians per second. It scales linearly with
-        /// the edge angle and does not depend on speed, so a slow rider can pivot.
+        /// The tightest carve, metres: the radius at full edge when slow enough for the grip to hold it (a carving ski's
+        /// sidecut radius times the cosine of its edge angle).
         /// </summary>
-        public Fix64 TurnRate;
+        public Fix64 CarveRadiusMin;
 
         /// <summary>
-        /// Skid speed loss, per radian per second: a skidding rider loses SkidDrag * slip angle of their speed,
-        /// as a fraction, each second.
+        /// Speed below which a carve can't hold, m/s: too slow to lean the skis over, so W plus steering pivots instead.
+        /// Must be positive.
         /// </summary>
-        public Fix64 SkidDrag;
+        public Fix64 CarveMinSpeed;
+
+        /// <summary>
+        /// Speed band over which a carve takes over from the pivot, m/s: at CarveMinSpeed a W turn still pivots, and from
+        /// CarveMinSpeed + CarveBlendSpeed it is a pure carve. Must be positive.
+        /// </summary>
+        public Fix64 CarveBlendSpeed;
+
+        /// <summary>
+        /// Share of the carve grip left after gravity's pull across the slope that a carve turns with, 0 to 1. The rest
+        /// is headroom, so a carve at its tightest stays clean on a tilted slope instead of sliding a fraction of a degree.
+        /// </summary>
+        public Fix64 CarveTurnShare;
+
+        /// <summary>
+        /// How fast the skis pivot in a quick turn at full steering when stopped, radians per second. It falls with speed,
+        /// divided by 1 + speed / <see cref="PivotFadeSpeed"/>, and is scaled by the snow's pivot factor.
+        /// </summary>
+        public Fix64 PivotRate;
+
+        /// <summary>Speed at which the pivot rate has fallen to half, m/s. Must be positive.</summary>
+        public Fix64 PivotFadeSpeed;
+
+        /// <summary>
+        /// How hard the snow pushes back on pivoted skis per radian of slip, m/s^2 per radian, up to the snow's skid grip:
+        /// a tyre's linear region before its limit. A quick turn always slips a little, slip angle = sideways
+        /// acceleration / SkidStiffness, and the slip is what makes a hard quick turn cost speed. A carve's edges don't
+        /// slip. Must be positive.
+        /// </summary>
+        public Fix64 SkidStiffness;
+
+        /// <summary>
+        /// The most a quick turn's skis lead the path, radians. Past it the skis stop pivoting further across the travel,
+        /// so a quick turn held at speed is a steady skid that checks speed, not a spin to a stop.
+        /// </summary>
+        public Fix64 PivotSlipMax;
 
         /// <summary>Deceleration while braking, m/s^2, on top of snow and air drag.</summary>
         public Fix64 BrakeDeceleration;
@@ -268,26 +334,49 @@ namespace FirstChair.Sim
         public static Tuning Default => new Tuning
         {
             Gravity = Fix64.FromRatio(981, 100),
-            // Grip and TurnRate after the user's first playtest (2026-10-23, story 003): key turns are full lock, so the
-            // full-lock carve limit GroomedGrip / TurnRate (13.3 m/s, 48 km/h) sets the pace of key S-turns on a groomer,
-            // GMA2's 40 to 60 km/h. Every type's grip rose by the same quarter, so the order between them is unchanged.
-            GroomedGrip = Fix64.FromInt(20),
-            PowderGrip = Fix64.FromRatio(65, 4),
-            CrudGrip = Fix64.FromRatio(25, 2),
-            IceGrip = Fix64.FromRatio(15, 2),
-            SlushGrip = Fix64.FromInt(15),
-            GroomedDrag = Fix64.FromRatio(5, 100),
-            PowderDrag = Fix64.FromRatio(18, 100),
-            CrudDrag = Fix64.FromRatio(10, 100),
-            IceDrag = Fix64.FromRatio(3, 100),
-            SlushDrag = Fix64.FromRatio(14, 100),
-            AirDrag = Fix64.FromRatio(5, 1000),
-            TuckAirDragFactor = Fix64.FromRatio(1, 2),
-            TuckTurnFactor = Fix64.FromRatio(1, 2),
+            // Story 008 (the user's playtest, 2026-10-24: "the slope alone should accelerate me like in GMA2"; carve on
+            // groomers, quicker turns in the trees, no carving in the trees). Research values, then tuned by the probes in
+            // the story: carving grip near 2 g and an 8 m tightest carve (a 14 m sidecut at about 55 degrees of edge);
+            // groomed friction 0.035 (the research's 0.04); air drag for C_d A 0.4 m^2 at 80 kg. Powder and crud don't
+            // carve. Powder pivots more slowly but holds the skis sideways well, and plowing it costs speed. Ice slides.
+            GroomedCarveGrip = Fix64.FromInt(20),
+            PowderCarveGrip = Fix64.Zero,
+            CrudCarveGrip = Fix64.Zero,
+            IceCarveGrip = Fix64.FromInt(8),
+            SlushCarveGrip = Fix64.FromInt(12),
+            GroomedSkidGrip = Fix64.FromInt(22),
+            PowderSkidGrip = Fix64.FromInt(16),
+            CrudSkidGrip = Fix64.FromInt(20),
+            IceSkidGrip = Fix64.FromInt(4),
+            SlushSkidGrip = Fix64.FromInt(16),
+            GroomedDrag = Fix64.FromRatio(35, 1000),
+            PowderDrag = Fix64.FromRatio(75, 1000),
+            CrudDrag = Fix64.FromRatio(45, 1000),
+            IceDrag = Fix64.FromRatio(20, 1000),
+            SlushDrag = Fix64.FromRatio(90, 1000),
+            GroomedSkidDrag = Fix64.FromRatio(15, 100),
+            PowderSkidDrag = Fix64.FromRatio(45, 100),
+            CrudSkidDrag = Fix64.FromRatio(25, 100),
+            IceSkidDrag = Fix64.FromRatio(5, 100),
+            SlushSkidDrag = Fix64.FromRatio(35, 100),
+            GroomedPivotFactor = Fix64.One,
+            PowderPivotFactor = Fix64.FromRatio(7, 10),
+            CrudPivotFactor = Fix64.One,
+            IcePivotFactor = Fix64.FromRatio(11, 10),
+            SlushPivotFactor = Fix64.FromRatio(85, 100),
+            AirDrag = Fix64.FromRatio(28, 10000),
+            TuckAirDragFactor = Fix64.FromRatio(55, 100),
+            CarveAirDragFactor = Fix64.FromRatio(8, 10),
             MaxEdgeAngle = Fix64.FromRatio(105, 100),
-            EdgeRate = Fix64.FromInt(5),
-            TurnRate = Fix64.FromRatio(15, 10),
-            SkidDrag = Fix64.FromRatio(4, 10),
+            EdgeRate = Fix64.FromInt(7),
+            CarveRadiusMin = Fix64.FromInt(9),
+            CarveMinSpeed = Fix64.FromInt(5),
+            CarveBlendSpeed = Fix64.FromInt(4),
+            CarveTurnShare = Fix64.FromRatio(9, 10),
+            PivotRate = Fix64.FromRatio(9, 2),
+            PivotFadeSpeed = Fix64.FromInt(8),
+            SkidStiffness = Fix64.FromInt(400),
+            PivotSlipMax = Fix64.FromRatio(15, 100),
             BrakeDeceleration = Fix64.FromInt(8),
             PoleAcceleration = Fix64.FromRatio(15, 10),
             PoleSpeedMax = Fix64.FromInt(4),
@@ -350,15 +439,27 @@ namespace FirstChair.Sim
             GrindFallFactor = Fix64.FromRatio(1, 2),
         };
 
-        /// <summary>The grip of a snow type, m/s^2.</summary>
+        /// <summary>The carve grip of a snow type, m/s^2; 0 if it can't be carved.</summary>
         /// <param name="snow">The snow type.</param>
-        public readonly Fix64 Grip(SnowType snow) => snow switch
+        public readonly Fix64 CarveGrip(SnowType snow) => snow switch
         {
-            SnowType.Groomed => GroomedGrip,
-            SnowType.Powder => PowderGrip,
-            SnowType.Crud => CrudGrip,
-            SnowType.Ice => IceGrip,
-            SnowType.Slush => SlushGrip,
+            SnowType.Groomed => GroomedCarveGrip,
+            SnowType.Powder => PowderCarveGrip,
+            SnowType.Crud => CrudCarveGrip,
+            SnowType.Ice => IceCarveGrip,
+            SnowType.Slush => SlushCarveGrip,
+            _ => throw new ArgumentOutOfRangeException(nameof(snow)),
+        };
+
+        /// <summary>The skid grip of a snow type, m/s^2.</summary>
+        /// <param name="snow">The snow type.</param>
+        public readonly Fix64 SkidGrip(SnowType snow) => snow switch
+        {
+            SnowType.Groomed => GroomedSkidGrip,
+            SnowType.Powder => PowderSkidGrip,
+            SnowType.Crud => CrudSkidGrip,
+            SnowType.Ice => IceSkidGrip,
+            SnowType.Slush => SlushSkidGrip,
             _ => throw new ArgumentOutOfRangeException(nameof(snow)),
         };
 
@@ -374,6 +475,30 @@ namespace FirstChair.Sim
             _ => throw new ArgumentOutOfRangeException(nameof(snow)),
         };
 
+        /// <summary>The skid speed loss of a snow type, per radian per second.</summary>
+        /// <param name="snow">The snow type.</param>
+        public readonly Fix64 SkidDrag(SnowType snow) => snow switch
+        {
+            SnowType.Groomed => GroomedSkidDrag,
+            SnowType.Powder => PowderSkidDrag,
+            SnowType.Crud => CrudSkidDrag,
+            SnowType.Ice => IceSkidDrag,
+            SnowType.Slush => SlushSkidDrag,
+            _ => throw new ArgumentOutOfRangeException(nameof(snow)),
+        };
+
+        /// <summary>The pivot factor of a snow type.</summary>
+        /// <param name="snow">The snow type.</param>
+        public readonly Fix64 PivotFactor(SnowType snow) => snow switch
+        {
+            SnowType.Groomed => GroomedPivotFactor,
+            SnowType.Powder => PowderPivotFactor,
+            SnowType.Crud => CrudPivotFactor,
+            SnowType.Ice => IcePivotFactor,
+            SnowType.Slush => SlushPivotFactor,
+            _ => throw new ArgumentOutOfRangeException(nameof(snow)),
+        };
+
         /// <summary>The trick-point multiplier at a Flow level: 1 + <see cref="FlowTrickBonus"/> * flow.</summary>
         /// <param name="flow">The Flow meter, 0 to 1 (<see cref="RiderState.Flow"/>).</param>
         public readonly Fix64 TrickMultiplier(Fix64 flow) => Fix64.One + FlowTrickBonus * flow;
@@ -383,23 +508,44 @@ namespace FirstChair.Sim
         {
             ulong hash = Fnv1a64.OffsetBasis;
             hash = Fnv1a64.AddInt64(hash, Gravity.Raw);
-            hash = Fnv1a64.AddInt64(hash, GroomedGrip.Raw);
-            hash = Fnv1a64.AddInt64(hash, PowderGrip.Raw);
-            hash = Fnv1a64.AddInt64(hash, CrudGrip.Raw);
-            hash = Fnv1a64.AddInt64(hash, IceGrip.Raw);
-            hash = Fnv1a64.AddInt64(hash, SlushGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, GroomedCarveGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, PowderCarveGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, CrudCarveGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, IceCarveGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, SlushCarveGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, GroomedSkidGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, PowderSkidGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, CrudSkidGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, IceSkidGrip.Raw);
+            hash = Fnv1a64.AddInt64(hash, SlushSkidGrip.Raw);
             hash = Fnv1a64.AddInt64(hash, GroomedDrag.Raw);
             hash = Fnv1a64.AddInt64(hash, PowderDrag.Raw);
             hash = Fnv1a64.AddInt64(hash, CrudDrag.Raw);
             hash = Fnv1a64.AddInt64(hash, IceDrag.Raw);
             hash = Fnv1a64.AddInt64(hash, SlushDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, GroomedSkidDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, PowderSkidDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, CrudSkidDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, IceSkidDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, SlushSkidDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, GroomedPivotFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, PowderPivotFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, CrudPivotFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, IcePivotFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, SlushPivotFactor.Raw);
             hash = Fnv1a64.AddInt64(hash, AirDrag.Raw);
             hash = Fnv1a64.AddInt64(hash, TuckAirDragFactor.Raw);
-            hash = Fnv1a64.AddInt64(hash, TuckTurnFactor.Raw);
+            hash = Fnv1a64.AddInt64(hash, CarveAirDragFactor.Raw);
             hash = Fnv1a64.AddInt64(hash, MaxEdgeAngle.Raw);
             hash = Fnv1a64.AddInt64(hash, EdgeRate.Raw);
-            hash = Fnv1a64.AddInt64(hash, TurnRate.Raw);
-            hash = Fnv1a64.AddInt64(hash, SkidDrag.Raw);
+            hash = Fnv1a64.AddInt64(hash, CarveRadiusMin.Raw);
+            hash = Fnv1a64.AddInt64(hash, CarveMinSpeed.Raw);
+            hash = Fnv1a64.AddInt64(hash, CarveBlendSpeed.Raw);
+            hash = Fnv1a64.AddInt64(hash, CarveTurnShare.Raw);
+            hash = Fnv1a64.AddInt64(hash, PivotRate.Raw);
+            hash = Fnv1a64.AddInt64(hash, PivotFadeSpeed.Raw);
+            hash = Fnv1a64.AddInt64(hash, SkidStiffness.Raw);
+            hash = Fnv1a64.AddInt64(hash, PivotSlipMax.Raw);
             hash = Fnv1a64.AddInt64(hash, BrakeDeceleration.Raw);
             hash = Fnv1a64.AddInt64(hash, PoleAcceleration.Raw);
             hash = Fnv1a64.AddInt64(hash, PoleSpeedMax.Raw);
