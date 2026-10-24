@@ -9,6 +9,26 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
 - Needs the PC: the gamepad check and your playtest of each new build; story 007 sign-off
 - Next: (running)
 
+## 1. The playtest fixes, seen in a build
+- Build 40055981760 (commit 999c2a5) is green: EditMode tests, Linux and Windows. I rode the Linux player here
+  under Xvfb, at 4K for detail.
+  - Skis: flat under the boots, pointing along the line. Before, they stood vertical.
+  - Poles: hanging to the snow. Before, they pointed backward and up.
+  - Carving: in a left carve the skis follow the tracks on edge and the body leans in.
+  - Camera: narrower, with the rider near the bottom of the screen.
+  - Tree lines: they show, with their shadows.
+- Changed:
+  - `.github/workflows/unity.yml`: a build in progress now finishes instead of being cancelled by the next push.
+    Two runs, 40054775510 and 40055604010, were lost to that before the change.
+  - Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-build-40055981760-*.png`, plus
+    a new section in its `evidence.md`.
+  - Story 003's to-do list: the skis and poles, the camera and the speed are ticked.
+- Not verified:
+  - The speed in the build. Software rendering runs the game slower than real time, so the sim test is the
+    measure.
+  - The editor, and the feel.
+  - The Windows build is in the run's artifacts for your playtest.
+
 ## 2. Speed retune (sim version 6)
 - Why it felt slow: on a keyboard every turn is full lock, and a full-lock turn out-turned groomed grip above
   32 km/h (GroomedGrip 16 / TurnRate 1.8 rad/s = 8.9 m/s). So key turns always skidded, and the skid drag held the

@@ -24,3 +24,20 @@ Bugs found by these runs and fixed:
 See commits ccd4f5b, 757dced and 442cdb6.
 
 `stamp.txt` holds the content hashes of the files these screenshots prove.
+
+## 2026-10-24: the user's 2026-10-23 playtest fixes, seen in a build
+
+Build `unity.yml` run 40055981760 (commit 999c2a5): EditMode tests, the Linux player and the Windows player all
+pass. I rode the Linux player under Xvfb and twm with xdotool, at 1280x720 and at 3840x2160 to get enough pixels on
+the rider. These are not verified in the Unity Editor, and the feel is still the user's call.
+
+| What | Result | Source |
+|---|---|---|
+| Skis lie flat under the boots and point down the line (they stood vertical before) | Seen | `2026-10-24-build-40055981760-straight-skis-poles-4k-crop.png` |
+| Poles hang from the hands with the baskets at the snow, trailing a little (they pointed backward and up before) | Seen | same, and the carve crops |
+| In a left carve the skis follow the curving tracks on edge and the body leans in, inside the feet | Seen | `2026-10-24-build-40055981760-left-carve-4k-crops.png` (A held from a straight run; 0.5 s apart) |
+| Narrower lens; rider near the bottom of the screen, so more slope ahead is visible | Seen | `2026-10-24-build-40055981760-follow-camera.png` (captured on the runner) |
+| Tree lines along the runs, with their shadows | Seen | `2026-10-24-build-40055981760-tree-line.png` (the line between the groomer and the park) |
+| Speed (40-60 km/h on key S-turns) | Not measurable here | Software rendering runs the game slower than real time, so the HUD's km/h after a given wall time is low. The sim test `KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_HoldFortyToSixtyKmh` pins it instead. |
+
+Flips and grab poses (commits a0eae79 and db9337b) came after this build. Run 40056335843 builds them.

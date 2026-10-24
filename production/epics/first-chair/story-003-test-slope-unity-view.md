@@ -104,18 +104,21 @@ user's PC.
 ## Playtest feedback (user, 2026-10-23, Windows build from run 40032472712)
 
 To do, in order (the user: fix the skis and poles first, then move to the next step):
-- [ ] **Skis and poles point the wrong way.** The skis stand vertical under the boots and the poles stick backward
+- [x] **Skis and poles point the wrong way.** The skis stand vertical under the boots and the poles stick backward
   and up, with odd shadows. CH_Skier's sockets come in with Blender's axes on the armature (story 007 notes), so
   attaching the props with an identity rotation is wrong. The skier model itself "looks really good".
-- [ ] **Camera framing.** The view is a little too wide: narrow the lens. Put the rider near the bottom of the
+- [x] **Camera framing.** The view is a little too wide: narrow the lens. Put the rider near the bottom of the
   screen, as GMA2 does, so more of the mountain ahead is visible and the slope reads as a slope.
-- [ ] **Feel: skiing seems slow.** Partly because the test slope is so wide that the skier looks small. Revisit
+- [x] **Feel: skiing seems slow.** Partly because the test slope is so wide that the skier looks small. Revisit
   after the camera change, then tune speed (story 002's numbers are placeholders until a playtest).
 - [ ] **Later: a less static camera.** GMA2 doesn't pin the rider to the centre; give the rider a little room to
   drift side to side (a lag or dead zone) before the camera follows.
 
-Done in the cloud, not yet seen in a build (commit d455f70; GitHub Actions minutes ran out before it built): the
-skis and poles are lined up in the Stance pose, and the camera has a 50 mm lens and puts the rider near the bottom.
+Done in commit d455f70 and seen in build 40055981760 on 2026-10-24 (sleep mode; not verified in the editor). The
+skis and poles are lined up in the Stance pose: the skis lie flat and point along the line, and the poles hang to
+the snow. The camera has a 50 mm lens and puts the rider near the bottom. The speed was retuned in sim version 6
+(below). Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-build-40055981760-*.png` and
+`evidence.md`. The user's own playtest of the feel is still open.
 
 Decisions (user, 2026-10-24), for the next work and sleep mode:
 - [x] **Raise the speed now:** retune the sim toward a GMA2-like pace (roughly 40 to 60 km/h on this groomer, not

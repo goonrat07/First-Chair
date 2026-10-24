@@ -10,7 +10,7 @@ commit after every step); none of them closes a story, so there is no `/story-do
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
-| 1 | Story 003 playtest fixes: ride build 40055981760 (40054775510 and 40055604010 were cancelled by later pushes), confirm skis, poles and the lower, narrower camera | dev-story (verify) | running | 82d24de (CI queues instead of cancelling) |
+| 1 | Story 003 playtest fixes: ride build 40055981760 (40054775510 and 40055604010 were cancelled by later pushes), confirm skis, poles and the lower, narrower camera | dev-story (verify) | done | 82d24de (CI queues instead of cancelling), (this commit) |
 | 2 | Speed: retune story 002's numbers toward a GMA2-like pace (40-60 km/h on the groomer), tests show before and after, sim version bump | dev-story | done | (this commit) |
 | 3 | Tree lines along the groomer and park edges in `make_test_slope.py` (real, collidable trees in the sim layout) | dev-story | done | (this commit) |
 | 4 | Show tricks: rotate the skier by the sim's spin and flip angles in the air | dev-story | done | (this commit) |
