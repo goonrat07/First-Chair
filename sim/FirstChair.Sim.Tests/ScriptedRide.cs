@@ -61,7 +61,7 @@ namespace FirstChair.Sim.Tests
         /// </summary>
         public static readonly RailSet Rails = new RailSet(new[]
         {
-            new SlopeRail(47_440, 116_650, 46_440, 124_650, 300, 600, true),
+            new SlopeRail(49_550, 116_650, 48_270, 124_650, 300, 600, true),
         });
 
         /// <summary>

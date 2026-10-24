@@ -135,8 +135,8 @@ namespace FirstChair.Sim.Tests
         [Test]
         public void SteeringPastGripLimit_OnGroomedFlat_SkidsLosingMoreSpeedTheBiggerTheSlipAngle()
         {
-            // Arrange: rides onto the level run-out, then straight, 1.3 times the grip limit, and full lock,
-            // plus full lock again with no skid drag.
+            // Arrange: rides onto the level run-out, then straight, halfway from the grip limit to full lock, and full
+            // lock, plus full lock again with no skid drag.
             Tuning tuning = Tuning.Default;
             Tuning noSkidDrag = tuning;
             noSkidDrag.SkidDrag = Fix64.Zero;
@@ -149,7 +149,8 @@ namespace FirstChair.Sim.Tests
                 RideOntoFlat(simulation);
             }
 
-            var overSteering = (int)Math.Round(1.3 * LimitSteering(tuning, SnowType.Groomed, Speed(over.State)));
+            double limitSteering = LimitSteering(tuning, SnowType.Groomed, Speed(over.State));
+            var overSteering = (int)Math.Round((limitSteering + SimInput.SteeringMax) / 2);
             SimInput fullLock = SimInput.Pack(SimButtons.Right, 0);
             double overSlip = 0, fullSlip = 0;
             int overSkids = 0, fullSkids = 0;
@@ -168,7 +169,7 @@ namespace FirstChair.Sim.Tests
             }
 
             // Assert
-            Assert.That(overSteering, Is.LessThan(SimInput.SteeringMax), "the moderate skid must steer less than full lock");
+            Assert.That(limitSteering, Is.LessThan(SimInput.SteeringMax - 8), "the entry speed must leave room between the grip limit and full lock");
             Assert.That(overSkids, Is.GreaterThan(0));
             Assert.That(fullSkids, Is.GreaterThan(0));
             Assert.That(overSlip, Is.GreaterThan(0.0));

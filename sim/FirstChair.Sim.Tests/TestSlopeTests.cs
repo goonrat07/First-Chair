@@ -29,6 +29,17 @@ namespace FirstChair.Sim.Tests
 
         private const int RampSteps = 8;
 
+        /// <summary>How far each key turn swings from the fall line before the other key is pressed, degrees.</summary>
+        private const int KeyTurnDegrees = 50;
+
+        /// <summary>The pace is averaged from here, once the rider is up to speed, to here, above the ice patch.</summary>
+        private const int PaceStartSecond = 8, PaceEndSecond = 18;
+
+        /// <summary>GMA2's pace on a groomer, km/h: the boundary values are the point of the test.</summary>
+        private const double PaceMinKmh = 40, PaceMaxKmh = 60;
+
+        private const double MetresPerSecondToKmh = 3.6;
+
         private static readonly SimInput NoInput = SimInput.Pack(SimButtons.None, 0);
 
         [Test]
@@ -193,6 +204,52 @@ namespace FirstChair.Sim.Tests
             Assert.That(end.Velocity.Z.Raw, Is.GreaterThan(0L));
             Assert.That(end.Position.X, Is.EqualTo(start.Position.X), "the groomer has no cross-slope");
             Assert.That(groomer.Contains(end.Position.X, end.Position.Z), Is.True, "the rider is still on the groomer");
+        }
+
+        /// <summary>
+        /// The user's playtest (2026-10-23, story 003): riding felt slow. On a keyboard every turn is full lock, and at
+        /// the first tuning a full-lock turn out-turned groomed grip above 32 km/h, so key turns skidded down to about
+        /// 33 km/h. GMA2's pace on a groomer is 40 to 60 km/h; the 2026-10-24 retune keeps key S-turns inside it.
+        /// </summary>
+        [Test]
+        public void KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_HoldFortyToSixtyKmh()
+        {
+            // Arrange
+            (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadSlope();
+            Assert.That(layout.TryGetZone("groomer", out SlopeZone groomer), Is.True);
+            var simulation = new Simulation(new RunSetup(Sport.Skis, 0, 7UL, layout.StartX, layout.StartZ), heightmap, snowMap, Tuning.Default);
+            Fix64 headingLimit = Fix64.Pi * Fix64.FromRatio(KeyTurnDegrees, 180);
+            SimButtons key = SimButtons.Right;
+            double speedSum = 0;
+            int measured = 0;
+
+            // Act: straight for the first second, then hold one key until the heading passes the limit, then the other.
+            for (int step = 0; step < PaceEndSecond * Simulation.StepsPerSecond; step++)
+            {
+                Fix64 heading = simulation.State.Heading;
+                if (key == SimButtons.Right && heading > headingLimit)
+                {
+                    key = SimButtons.Left;
+                }
+                else if (key == SimButtons.Left && heading < -headingLimit)
+                {
+                    key = SimButtons.Right;
+                }
+
+                simulation.Step(step < Simulation.StepsPerSecond ? NoInput : SimInput.Pack(key, 0));
+                RiderState state = simulation.State;
+                Assert.That(groomer.Contains(state.Position.X, state.Position.Z) && state.Snow == SnowType.Groomed, Is.True,
+                    "the turns must stay on the groomer's own snow, at step " + step);
+                if (step >= PaceStartSecond * Simulation.StepsPerSecond)
+                {
+                    speedSum += TestTerrain.ToDouble(Fix64.Sqrt(Vec3.Dot(state.Velocity, state.Velocity)));
+                    measured++;
+                }
+            }
+
+            // Assert
+            double meanKmh = speedSum / measured * MetresPerSecondToKmh;
+            Assert.That(meanKmh, Is.InRange(PaceMinKmh, PaceMaxKmh));
         }
 
         [Test]

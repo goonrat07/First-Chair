@@ -106,6 +106,8 @@
 **Criteria**: 9/9 passing (none deferred). Each is covered by a test that ran, in `SnowRidingTests`, `SnowMapTests`, `TuningTests` and `DeterminismTests`. 201 tests pass, and `sim-tests` CI is green. The key tests were seen failing on deliberate breaks.
 **Deviations**: ADVISORY:
 - The riding numbers are placeholders until a playtest; the tests pin behaviour, not values (story Implementation Notes).
+  First playtest retune (2026-10-24, sim version 6): a quarter more grip on every snow type and TurnRate 1.8 → 1.5,
+  so key turns carve to 48 km/h instead of skidding down to about 33 (story 003, "Decisions").
 - `Fix64.WrapAngle` can return up to 3 raw steps past pi. It is deterministic, and changing it would change ride bits.
 - Not verified in Unity. Run the golden trace in the Editor and in an IL2CPP build.
 - From the engine review: bad `Tuning` (a non-positive `MaxEdgeAngle`, or a negative drag at rest) is now guarded (`41e4a12`).

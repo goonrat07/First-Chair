@@ -37,8 +37,11 @@ namespace FirstChair.Sim.Tests
         // and leaves it; the trace gained the switch flag, the grind state and the events' touchdown Flow, rail and grind
         // summary. Pinned only after record/replay (with the run score folded from the replayed events), interleaving and
         // zero allocation passed with the box in the ride.
-        private const ushort GoldenSimVersion = 5;
-        private const string GoldenTraceSha256 = "B03A28E0EF44098C3FC097D8373C8F4216A430ABC5E1BE3771244FEF33644E89";
+        // Re-pinned for version 6 (playtest retune, 2026-10-24): a quarter more grip on every snow type and a slower turn
+        // change every carve and skid, so the whole ride moves; ScriptedRide.Rails' box moved 2 m to stay on the line after
+        // the reset. Pinned only after record/replay, interleaving and zero allocation passed with the new numbers.
+        private const ushort GoldenSimVersion = 6;
+        private const string GoldenTraceSha256 = "0E326B1D3ED2A32A31C944F97974AD049531E797541699C29F56C44B62105184";
 
         [Test]
         public void ScriptedRide_RecordedThenReplayedFromBytes_MatchesBitForBitEveryStep()

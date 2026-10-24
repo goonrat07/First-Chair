@@ -140,9 +140,9 @@ namespace FirstChair.Sim
         /// brake, poling and snow types (Story 002). Version 3: pops, takeoff, spins, flips, grabs, graded landings,
         /// crashes and reset (Story 004). Version 4: trees (trunk crashes, branch clips, near misses) and Flow
         /// (Story 005). Version 5: rails, boxes and grinds, and the switch flag and touchdown Flow in the flight summary
-        /// (Story 006).
+        /// (Story 006). Version 6: more grip and a slower turn, so key turns carve to 48 km/h (playtest retune, 2026-10-24).
         /// </summary>
-        public const ushort Version = 5;
+        public const ushort Version = 6;
 
         /// <summary>Fixed steps per simulated second.</summary>
         public const int StepsPerSecond = 120;

@@ -268,11 +268,14 @@ namespace FirstChair.Sim
         public static Tuning Default => new Tuning
         {
             Gravity = Fix64.FromRatio(981, 100),
-            GroomedGrip = Fix64.FromInt(16),
-            PowderGrip = Fix64.FromInt(13),
-            CrudGrip = Fix64.FromInt(10),
-            IceGrip = Fix64.FromInt(6),
-            SlushGrip = Fix64.FromInt(12),
+            // Grip and TurnRate after the user's first playtest (2026-10-23, story 003): key turns are full lock, so the
+            // full-lock carve limit GroomedGrip / TurnRate (13.3 m/s, 48 km/h) sets the pace of key S-turns on a groomer,
+            // GMA2's 40 to 60 km/h. Every type's grip rose by the same quarter, so the order between them is unchanged.
+            GroomedGrip = Fix64.FromInt(20),
+            PowderGrip = Fix64.FromRatio(65, 4),
+            CrudGrip = Fix64.FromRatio(25, 2),
+            IceGrip = Fix64.FromRatio(15, 2),
+            SlushGrip = Fix64.FromInt(15),
             GroomedDrag = Fix64.FromRatio(5, 100),
             PowderDrag = Fix64.FromRatio(18, 100),
             CrudDrag = Fix64.FromRatio(10, 100),
@@ -283,7 +286,7 @@ namespace FirstChair.Sim
             TuckTurnFactor = Fix64.FromRatio(1, 2),
             MaxEdgeAngle = Fix64.FromRatio(105, 100),
             EdgeRate = Fix64.FromInt(5),
-            TurnRate = Fix64.FromRatio(18, 10),
+            TurnRate = Fix64.FromRatio(15, 10),
             SkidDrag = Fix64.FromRatio(4, 10),
             BrakeDeceleration = Fix64.FromInt(8),
             PoleAcceleration = Fix64.FromRatio(15, 10),

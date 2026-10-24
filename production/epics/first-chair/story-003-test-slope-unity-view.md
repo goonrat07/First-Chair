@@ -118,8 +118,16 @@ Done in the cloud, not yet seen in a build (commit d455f70; GitHub Actions minut
 skis and poles are lined up in the Stance pose, and the camera has a 50 mm lens and puts the rider near the bottom.
 
 Decisions (user, 2026-10-24), for the next work and sleep mode:
-- [ ] **Raise the speed now:** retune the sim toward a GMA2-like pace (roughly 40 to 60 km/h on this groomer, not
+- [x] **Raise the speed now:** retune the sim toward a GMA2-like pace (roughly 40 to 60 km/h on this groomer, not
   about 25), with tests showing the speeds before and after (story 002's tuning; bump the sim version).
+  Done in sim version 6 (2026-10-24, sleep mode). The cause was the keyboard: every key turn is full lock, and a
+  full-lock turn out-turned groomed grip above 32 km/h (GroomedGrip 16 / TurnRate 1.8 = 8.9 m/s), so key turns
+  skidded the rider down to about 33 km/h however hard they were held. Straight runs already reached 80 km/h
+  (105 tucked). Now every snow type has a quarter more grip (groomed 20) and TurnRate is 1.5 rad/s, so key turns
+  carve to 48 km/h. Key S-turns down the groomer, held until the skis point this far from the fall line, measured
+  at 10 to 20 s: 30° 36-37 → 39-51 km/h, 50° 33-35 → 47-49, 70° 30-33 → 44-48; straight and tucked unchanged.
+  `TestSlopeTests.KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_HoldFortyToSixtyKmh` pins it (34 km/h before,
+  failing; passes after). Whether it now feels right is the user's call.
 - [ ] **Real trees along the groomer and park edges:** add tree lines to `tools/terrain/make_test_slope.py`, so they
   are in the sim's layout and can be hit (story 005's rules).
 - [ ] **Old ski tracks:** scatter GMA2-style curving old track pairs over the groomers and powder, display only.
