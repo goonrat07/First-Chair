@@ -117,6 +117,35 @@ namespace FirstChair.Riding
             Math.Min(maxMetres, baseMetres + perSpeedSeconds * Math.Max(0.0, speed));
 
         /// <summary>
+        /// The farthest the aim may lead the rider along the view, metres, for the rider's feet to sit no lower on screen
+        /// than <paramref name="lowestOnScreen"/>. The look-ahead grows with speed and only the smoothing's lag pulls the
+        /// rider back up the screen, so without this cap a fast rider at a low frame rate, where the smoothing barely lags,
+        /// fell off the bottom of the screen (cloud build check, 2026-10-24).
+        /// </summary>
+        /// <remarks>
+        /// The camera sits <paramref name="distance"/> behind the aim, looking down the view at the pitch p. A point
+        /// <c>lead</c> metres behind the aim along the view and <c>a</c> metres above it sits <c>lead sin p - a cos p</c>
+        /// below the screen's centre at depth <c>distance - lead cos p + a sin p</c>; it is on the line when that ratio is
+        /// <c>t = (2 lowestOnScreen - 1) tan(fov / 2)</c>, which is linear in the lead.
+        /// </remarks>
+        /// <param name="pitchDegrees">The camera's pitch below the horizon, degrees (above 0).</param>
+        /// <param name="distance">The camera's distance from the aim, metres.</param>
+        /// <param name="verticalFovDegrees">The vertical field of view, degrees.</param>
+        /// <param name="riderAboveAim">How far the rider's feet are above the aim, metres: negative, as the aim is above
+        /// them, unless the rider is in the air.</param>
+        /// <param name="lowestOnScreen">The lowest the feet may sit, as a share of the screen height from the top: 0.5 is
+        /// the middle and 1 the bottom edge.</param>
+        public static double MaxLead(
+            double pitchDegrees, double distance, double verticalFovDegrees, double riderAboveAim, double lowestOnScreen)
+        {
+            double pitch = pitchDegrees / DegreesPerRadian;
+            double sin = Math.Sin(pitch);
+            double cos = Math.Cos(pitch);
+            double t = (2.0 * lowestOnScreen - 1.0) * Math.Tan(verticalFovDegrees / (2.0 * DegreesPerRadian));
+            return (t * distance + riderAboveAim * (cos - t * sin)) / (sin + t * cos);
+        }
+
+        /// <summary>
         /// Camera drift (the user's playtest, 2026-10-23: GMA2 doesn't pin the rider to the middle of the screen): how
         /// far the camera's aim moves sideways this frame, given the rider's sideways offset from it. Inside the drift
         /// zone the aim only eases back toward the rider by <paramref name="recentreFactor"/> of the offset; past it, the

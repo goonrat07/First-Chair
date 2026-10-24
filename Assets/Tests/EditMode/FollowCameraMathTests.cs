@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace FirstChair.Riding.Tests
 {
-    /// <summary>The GMA2-style follow camera's math: view direction, look-ahead and yaw (Story 003).</summary>
+    /// <summary>The GMA2-style follow camera's math: view direction, look-ahead, yaw and how low the rider may sit (Stories 003, 008).</summary>
     public sealed class FollowCameraMathTests
     {
         [Test]
@@ -134,6 +134,72 @@ namespace FirstChair.Riding.Tests
         {
             // Assert: a zero zone pins the rider to the centre, as before camera drift.
             Assert.That(FollowCameraMath.LateralFollow(0.7, 0.0, 0.0), Is.EqualTo(0.7).Within(1e-12));
+        }
+
+        [Test]
+        public void MaxLead_RiderThatFarBehindTheAim_SitsOnTheLowestLine()
+        {
+            // Arrange: the default view (47 degrees down on a 17 degree groomer, 45 m, 50 mm lens), aim 1 m above the feet.
+            double fov = FollowCameraMath.VerticalFovDegrees(50.0, 24.0);
+
+            // Act
+            double lead = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.85);
+
+            // Assert (to 1e-6: Offset places the camera in single precision)
+            Assert.That(ScreenHeight(47.0, 45.0, fov, -lead, -1.0), Is.EqualTo(0.85).Within(1e-6));
+            Assert.That(ScreenHeight(30.0, 45.0, fov, -FollowCameraMath.MaxLead(30.0, 45.0, fov, -1.0, 0.7), -1.0),
+                Is.EqualTo(0.7).Within(1e-6));
+        }
+
+        [Test]
+        public void MaxLead_FullLookAheadAtSpeedWithNoSmoothingLag_IsPastIt()
+        {
+            // Arrange: at 25 m/s the look-ahead is its 13 m cap (7 m + 0.25 s * v). A camera whose smoothing barely lags (a
+            // low frame rate) aims the full 13 m ahead, which put the rider's feet below the bottom of the screen (cloud
+            // build check, 2026-10-24); stopped, the 7 m look-ahead put them 80 percent of the way down.
+            double fov = FollowCameraMath.VerticalFovDegrees(50.0, 24.0);
+            double atSpeed = FollowCameraMath.LookAhead(7.0, 0.25, 13.0, 25.0);
+            double stopped = FollowCameraMath.LookAhead(7.0, 0.25, 13.0, 0.0);
+
+            // Act
+            double lead = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.85);
+
+            // Assert: the cap binds at speed and leaves the stopped view alone.
+            Assert.That(ScreenHeight(47.0, 45.0, fov, -atSpeed, -1.0), Is.GreaterThan(1.0));
+            Assert.That(lead, Is.LessThan(atSpeed));
+            Assert.That(ScreenHeight(47.0, 45.0, fov, -stopped, -1.0), Is.EqualTo(0.8).Within(0.01));
+            Assert.That(lead, Is.GreaterThan(stopped));
+        }
+
+        [Test]
+        public void MaxLead_LowerLineOrRiderHigherThanUsual_AllowsALongerLead()
+        {
+            // Arrange
+            double fov = FollowCameraMath.VerticalFovDegrees(50.0, 24.0);
+            double usual = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.85);
+
+            // Act
+            double lowerLine = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.95);
+            double inTheAir = FollowCameraMath.MaxLead(47.0, 45.0, fov, 2.0, 0.85);
+
+            // Assert
+            Assert.That(lowerLine, Is.GreaterThan(usual));
+            Assert.That(inTheAir, Is.GreaterThan(usual));
+        }
+
+        // How far down the screen (0 top, 1 bottom) a point sits, for a camera FollowCameraMath.Offset places behind an aim
+        // at the origin, looking down +Z: alongView metres along +Z from the aim and aboveAim metres above it.
+        private static double ScreenHeight(double pitchDegrees, double distance, double fovDegrees, double alongView, double aboveAim)
+        {
+            FollowCameraMath.Offset(0.0, pitchDegrees, distance, out float cx, out float cy, out float cz);
+            double length = System.Math.Sqrt(cx * cx + cy * cy + cz * cz);
+            double fx = -cx / length, fy = -cy / length, fz = -cz / length;
+            double ux = -fy * fx, uy = 1.0 - fy * fy, uz = -fy * fz;
+            double ul = System.Math.Sqrt(ux * ux + uy * uy + uz * uz);
+            double rx = -cx, ry = aboveAim - cy, rz = alongView - cz;
+            double up = (rx * ux + ry * uy + rz * uz) / ul;
+            double depth = rx * fx + ry * fy + rz * fz;
+            return 0.5 - 0.5 * (up / depth) / System.Math.Tan(fovDegrees * System.Math.PI / 360.0);
         }
     }
 }

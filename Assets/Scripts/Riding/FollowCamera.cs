@@ -6,7 +6,7 @@ namespace FirstChair.Riding
     /// <summary>
     /// A high, pulled-back follow camera like Grand Mountain Adventure 2's: behind the rider, uphill, looking down the
     /// line of travel a fixed angle steeper than the snow (so steep and gentle slopes frame the same), with the aim point
-    /// a little ahead so the rider sits below the middle of the screen. The view direction blends the slope's fall line with the rider's travel direction and turns slowly.
+    /// a little ahead so the rider sits below the middle of the screen, never lower than a set line. The view direction blends the slope's fall line with the rider's travel direction and turns slowly.
     /// Presentation only; it reads the rider view's transform and the sim's state, and writes nothing back.
     /// </summary>
     [DefaultExecutionOrder(100)]
@@ -95,6 +95,17 @@ namespace FirstChair.Riding
             float pitch = (float)FollowCameraMath.Pitch(
                 slopeDown, settings.PitchAboveSlopeDegrees, settings.MinPitchDegrees, settings.MaxPitchDegrees);
             _pitch = snap || _pitch < 0f ? pitch : Mathf.Lerp(_pitch, pitch, FollowCameraMath.SmoothingFactor(settings.PitchSmoothTime, dt));
+
+            // The look-ahead grows with speed and only the smoothing's lag pulls the rider back up the screen, so at a low
+            // frame rate a fast rider fell off its bottom: the aim never leads the rider past the lowest line.
+            Vector3 toRider = rider - _aim;
+            float lead = -Vector3.Dot(toRider, _viewDirection);
+            float maxLead = (float)FollowCameraMath.MaxLead(
+                _pitch, settings.Distance, _camera.fieldOfView, toRider.y, settings.LowestRiderOnScreen);
+            if (lead > maxLead)
+            {
+                _aim += _viewDirection * (maxLead - lead);
+            }
 
             float yaw = (float)FollowCameraMath.YawDegrees(_viewDirection.x, _viewDirection.z);
             FollowCameraMath.Offset(yaw, _pitch, settings.Distance, out float x, out float y, out float z);

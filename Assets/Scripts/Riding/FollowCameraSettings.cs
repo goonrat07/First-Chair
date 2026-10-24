@@ -8,7 +8,8 @@ namespace FirstChair.Riding
     /// (2026-10-23): straight behind the rider, uphill, looking down the line of travel about 30° steeper than the snow,
     /// through a fairly narrow 50 mm lens from 45 m (the rider about 8 percent of the screen height), near the bottom of
     /// the screen, so more of the mountain ahead is in view, and roughly centred left to right: the rider may drift a
-    /// little each way before the camera follows.
+    /// little each way before the camera follows. However fast the rider goes, the feet stay above
+    /// <see cref="LowestRiderOnScreen"/>.
     /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Follow Camera Settings", fileName = "FollowCameraSettings")]
     public sealed class FollowCameraSettings : ScriptableObject
@@ -43,6 +44,10 @@ namespace FirstChair.Riding
         [SerializeField, Min(0f)] private float lookAheadPerSpeed = 0.25f;
         [Tooltip("Most look-ahead, metres.")]
         [SerializeField, Min(0f)] private float lookAheadMax = 13f;
+        [Tooltip("The lowest the rider's feet may sit on screen, as a share of the screen height from the top (0.5 is the "
+            + "middle). The look-ahead never carries the rider lower, whatever the speed and frame rate; stopped, the "
+            + "rider sits about 0.8 of the way down.")]
+        [SerializeField, Range(0.55f, 0.98f)] private float lowestRiderOnScreen = 0.85f;
 
         [Header("Lens")]
         [SerializeField, Min(1f)] private float focalLengthMm = 50f;
@@ -87,6 +92,8 @@ namespace FirstChair.Riding
         public float LookAheadPerSpeed => lookAheadPerSpeed;
         /// <summary>Most look-ahead, metres.</summary>
         public float LookAheadMax => lookAheadMax;
+        /// <summary>The lowest the rider's feet may sit on screen, as a share of the screen height from the top.</summary>
+        public float LowestRiderOnScreen => lowestRiderOnScreen;
         /// <summary>Focal length, millimetres.</summary>
         public float FocalLengthMm => focalLengthMm;
         /// <summary>Sensor height, millimetres.</summary>
