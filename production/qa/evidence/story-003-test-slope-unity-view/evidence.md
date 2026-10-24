@@ -41,3 +41,20 @@ the rider. These are not verified in the Unity Editor, and the feel is still the
 | Speed (40-60 km/h on key S-turns) | Not measurable here | Software rendering runs the game slower than real time, so the HUD's km/h after a given wall time is low. The sim test `KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_HoldFortyToSixtyKmh` pins it instead. |
 
 Flips and grab poses (commits a0eae79 and db9337b) came after this build. Run 40056335843 builds them.
+
+## 2026-10-24: sim version 7, ridden at speed
+
+Builds `unity.yml` run 40120266835 (commit 49f7058) and run 40122603687 (commit cec99b1): EditMode tests, the Linux
+player and the Windows player all pass. I rode the Linux player at 960x540 with a 45 s straight before the turns,
+because software rendering runs the game in slow motion. A first ride at 1920x1080 reached only 0 to 6 km/h at the
+turns. Not verified in the Unity Editor; the feel is the user's call.
+
+| What | Result | Source |
+|---|---|---|
+| Quick turns and brakes throw snow; a clean W carve throws none | Seen | `2026-10-24-build-40120266835-spray-brake-and-clean-carve.png`, `2026-10-24-build-40122603687-quick-turn-spray-at-speed.png` |
+| The follow camera keeps a fast rider on screen (before: off the bottom from about 73 km/h) | Seen: 80 to 83% down the screen from 22 to 90 km/h | `2026-10-24-build-40122603687-camera-at-speed-before-and-after.png` |
+| Speed and turn feel | Not measurable here | The sim tests pin the speeds (`TestSlopeTests`) and the two kinds of turn (`SnowRidingTests`). |
+
+In these rides the spray drifts ahead of the rider, because the particles keep wall-clock time while the sim is held
+to 12 steps a frame. At full frame rate the spray trails behind.
+

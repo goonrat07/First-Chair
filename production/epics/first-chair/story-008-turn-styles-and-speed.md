@@ -178,12 +178,16 @@ All in `Tuning`:
     game in slow motion, and a first ride at 0 to 6 km/h threw almost nothing, as the spray scales with speed). Quick
     turns at about 83 km/h and a brake from 66 km/h throw a cloud of shaded flakes. A clean W carve throws none and
     leaves two thin tracks.
-- Evidence: `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-race-carve-pose.png` and
-  `2026-10-24-build-40120266835-spray-brake-and-clean-carve.png` in the same folder.
+- Evidence, all in `production/qa/evidence/story-003-test-slope-unity-view/`: `2026-10-24-race-carve-pose.png`,
+  `2026-10-24-build-40120266835-spray-brake-and-clean-carve.png` and
+  `2026-10-24-build-40122603687-quick-turn-spray-at-speed.png`. In these slow-motion rides the flakes drift ahead of
+  the rider: they move on wall-clock time while the sim is held to 12 steps a frame. At full frame rate both keep the
+  same time and the spray trails behind.
 - The same ride showed the camera losing the rider at speed: the look-ahead grows with speed to 13 m, which put the
   feet below the bottom of the screen from about 73 km/h when the camera's smoothing barely lagged (as at a low frame
   rate). The look-ahead is now capped so the feet stay at or above 85% of the screen height (story 003's camera,
-  `FollowCameraSettings.LowestRiderOnScreen`). Stopped, the rider still sits 80% of the way down.
+  `FollowCameraSettings.LowestRiderOnScreen`). Stopped, the rider still sits 80% of the way down. Seen in build
+  40122603687.
 
 ## Out of Scope
 

@@ -171,6 +171,14 @@ feel this time." To do, in this order:
 - [x] **Research** the kinds of turn and how ski games make their physics feel smooth and realistic, then build
   the best version. It may differ from the user's suggestion (story 008, "Research").
 - [x] The camera's side-to-side room feels good (item 7 of sleep mode).
+- [x] **Found in the cloud check, not by the user: a fast rider fell off the bottom of the screen.** At version 7
+  speeds the look-ahead (7 m + 0.25 s × speed, up to 13 m) put the feet below the screen whenever the camera's
+  smoothing barely lagged, as at a low frame rate (gone from about 73 km/h). On a fast PC the lag pulls the rider back
+  up, but only to about 91% of the screen height at worst. The aim now never leads the rider far enough to put the
+  feet below 85% (`FollowCameraSettings.LowestRiderOnScreen`, `FollowCameraMath.MaxLead`, three new tests, commit
+  cec99b1). Stopped, the rider still sits 80% of the way down, and the drift is unchanged. Seen in build
+  40122603687: the rider stays 80 to 83% down the screen (the jacket) from 22 to 90 km/h. Evidence:
+  `production/qa/evidence/story-003-test-slope-unity-view/2026-10-24-build-40122603687-camera-at-speed-before-and-after.png`.
 - [ ] **The slope still doesn't read as a slope:** there are no contours in it. Lighting will help later (story 007).
   Rollers added across the slope (story 007's playtest notes); lighting still to do.
 - [x] **Trees look good,** maybe a little sparse (story 007, level layout). Forest added beyond the runs.
