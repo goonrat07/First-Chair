@@ -140,7 +140,12 @@ Decisions (user, 2026-10-24), for the next work and sleep mode:
   only `TestSlope.txt` changed. Tests: the generator's (every canopy is in a wooded zone and off every run; each side
   of the groomer and park has trees within 10 m of its edge with no gap over 40 m) and the sim's (the same placement
   check, and a rider traversing off the groomer's left edge meets a tree in the line).
-- [ ] **Old ski tracks:** scatter GMA2-style curving old track pairs over the groomers and powder, display only.
+- [x] **Old ski tracks:** scatter GMA2-style curving old track pairs over the groomers and powder, display only.
+  Done 2026-10-24 (sleep mode), not yet seen in a build or the editor. `OldTracks` (Core, engine-free) generates
+  seeded S-turn track pairs that run down the fall line, stay inside their zone and stop at anything blocked.
+  `TestSlopeLook.OldTracks` lays them as 9 cm ribbons 2 cm off the snow over the groomer and the bowl (about one
+  per 2300 m^2), at least 1 m clear of any canopy, with no shadows. Tests: `OldTracksTests` (6; two mutations of
+  the generator were each caught).
 - [ ] **Camera drift:** the less static camera above; the user moved it into tonight's work.
 - Also tonight: story 007's art items, and grab and trick poses for the skier (story 007).
 

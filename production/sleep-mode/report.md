@@ -137,3 +137,24 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
     of those names for skis, not a reference you gave.
 - Not verified: how the grabs look in a build and in the editor, and their feel. They are a first pass for you
   to judge.
+
+## 6. Old ski tracks
+- Changed:
+  - `Assets/Scripts/Riding/Core/OldTracks.cs` (new, engine-free): S-turn track pairs from a seed, using its own
+    SplitMix64 so they come out the same on every runtime. Each pair is two lines 0.24 m apart, running down the
+    fall line. A track stops at its zone's edge or at a blocked point.
+  - `Assets/Scripts/Riding/Editor/TestSlopeLook.cs`: `OldTracks()` lays them over the groomer and the bowl, about
+    20 and 22 tracks. Each line is a 9 cm ribbon 2 cm off the snow, a little bluer than the snow, with no shadow,
+    1 m clear of the trees. There is one mesh per zone, saved in the generated Look folder.
+    `TestSlopeSceneBuilder` calls it.
+  - `Assets/Tests/EditMode/OldTracksTests.cs`: 6 tests.
+- Tests:
+  - The engine-free EditMode check: 70 passed.
+  - A test found a real bug before the commit: one ski's line could poke 2.5 cm past the zone, because only the
+    centre line was checked. Both lines are checked now.
+  - Mutations caught: ignoring blocked points, and a zero swing.
+  - The new editor methods compile against Unity's DLLs, with stubs for the two AssetDatabase calls.
+- Decisions made for you:
+  - Old tracks on the groomer and in the bowl, not the park (its kickers and rails) or the glade (its trees).
+  - Their colour is lighter than your own live track, so they read as old.
+- Not verified: the look, in a build and in the editor.

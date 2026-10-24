@@ -109,6 +109,7 @@ namespace FirstChair.Riding.Editor
 
             var scenery = new GameObject("Scenery");
             TestSlopeLook.Trees(scenery.transform, slope);
+            TestSlopeLook.OldTracks(scenery.transform, slope);
             TestSlopeLook.RailsAndBoxes(scenery.transform, slope);
 
             EnsureFolder("Assets/Scenes");

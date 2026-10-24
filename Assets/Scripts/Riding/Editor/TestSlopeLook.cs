@@ -11,7 +11,7 @@ namespace FirstChair.Riding.Editor
     /// The test slope's look, built by script so the slope reads at the follow camera the way Grand Mountain Adventure 2's
     /// does (<c>art/reference/style-notes-gma2.md</c>): snow layers painted from the sim's snow map (corduroy on the
     /// groomers), a low warm sun with long blue shadows, distance haze, a tilt-shift blur toward the top of the screen,
-    /// the spruce at the sim's tree positions, and the rails and boxes. Everything it makes goes in <see cref="Folder"/>,
+    /// the spruce at the sim's tree positions, old ski tracks on the groomer and in the bowl, and the rails and boxes. Everything it makes goes in <see cref="Folder"/>,
     /// which is generated and not committed. Presentation only: the sim reads none of it.
     /// </summary>
     /// <example>
@@ -33,6 +33,15 @@ namespace FirstChair.Riding.Editor
 
         // EN_Conifer asset-manifest.json: crown width 3.6958 m at LOD0.
         private const float TreeCrownRadius = 1.848f;
+
+        // Old tracks (story 003 decisions, 2026-10-24): on the groomer and in the bowl, about one track per 2300 m^2 (20 on
+        // the groomer), each ski's line 9 cm wide like the live track, 2 cm off the snow, and 1 m clear of any canopy.
+        private static readonly string[] OldTrackZones = { "groomer", "bowl" };
+        private const double OldTrackAreaPerTrack = 2300.0;
+        private const ulong OldTrackSeed = 2026_10_24;
+        private const float OldTrackWidth = 0.09f;
+        private const float OldTrackLift = 0.02f;
+        private const double OldTrackTreeClearance = 1.0;
 
         /// <summary>Generates one terrain layer per <see cref="SnowType"/>, in its numeric order.</summary>
         public static TerrainLayer[] SnowLayers()
@@ -256,6 +265,97 @@ namespace FirstChair.Riding.Editor
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Lays old ski tracks (<see cref="FirstChair.Riding.OldTracks"/>) over the groomer and the bowl: each ski's line
+        /// is a thin ribbon a little bluer than the snow, following the snow, clear of the trees. One mesh per zone, saved
+        /// in <see cref="Folder"/>. Display only: they cast no shadow, and the sim never reads them.
+        /// </summary>
+        /// <param name="parent">Parent for the track meshes.</param>
+        /// <param name="slope">The slope.</param>
+        public static void OldTracks(Transform parent, TestSlopeData slope)
+        {
+            Material material = LitMaterial("OldTrack", "Universal Render Pipeline/Lit", new Color(0.80f, 0.85f, 0.94f), 0f, false);
+            for (int z = 0; z < OldTrackZones.Length; z++)
+            {
+                if (!slope.Layout.TryGetZone(OldTrackZones[z], out SlopeZone zone))
+                {
+                    Debug.LogWarning("TestSlopeLook: the layout has no " + OldTrackZones[z] + " zone; no old tracks there.");
+                    continue;
+                }
+
+                double xMin = SimCoordinates.ToDouble(zone.XMin), xMax = SimCoordinates.ToDouble(zone.XMax);
+                double zMin = SimCoordinates.ToDouble(zone.ZMin), zMax = SimCoordinates.ToDouble(zone.ZMax);
+                OldTrackSettings settings = OldTrackSettings.Default;
+                settings.Count = Mathf.Max(1, Mathf.RoundToInt((float)((xMax - xMin) * (zMax - zMin) / OldTrackAreaPerTrack)));
+                var lines = FirstChair.Riding.OldTracks.Generate(
+                    OldTrackSeed + (ulong)z, xMin, zMin, xMax, zMax, settings, (x, zz) => NearTree(slope, x, zz));
+                Mesh mesh = TrackRibbons(slope, lines, "OldTracks_" + zone.Name);
+                string path = Folder + "/OldTracks_" + zone.Name + ".asset";
+                AssetDatabase.DeleteAsset(path);
+                AssetDatabase.CreateAsset(mesh, path);
+
+                var tracks = new GameObject("OldTracks_" + zone.Name);
+                tracks.transform.SetParent(parent, false);
+                tracks.AddComponent<MeshFilter>().sharedMesh = mesh;
+                var renderer = tracks.AddComponent<MeshRenderer>();
+                renderer.sharedMaterial = material;
+                renderer.shadowCastingMode = ShadowCastingMode.Off;
+            }
+        }
+
+        private static bool NearTree(TestSlopeData slope, double x, double z)
+        {
+            foreach (SlopeTree tree in slope.Layout.Trees)
+            {
+                double dx = x - tree.XMm / 1000.0, dz = z - tree.ZMm / 1000.0;
+                double reach = tree.BranchRadiusMm / 1000.0 + OldTrackTreeClearance;
+                if (dx * dx + dz * dz < reach * reach)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>One ribbon per line, <see cref="OldTrackWidth"/> wide, lifted off the snow so it never sinks into it.</summary>
+        private static Mesh TrackRibbons(TestSlopeData slope, System.Collections.Generic.List<OldTrackLine> lines, string name)
+        {
+            var vertices = new System.Collections.Generic.List<Vector3>();
+            var normals = new System.Collections.Generic.List<Vector3>();
+            var triangles = new System.Collections.Generic.List<int>();
+            foreach (OldTrackLine line in lines)
+            {
+                int first = vertices.Count;
+                for (int i = 0; i < line.Count; i++)
+                {
+                    int a = Mathf.Max(0, i - 1), b = Mathf.Min(line.Count - 1, i + 1);
+                    var along = new Vector2((float)(line.X[b] - line.X[a]), (float)(line.Z[b] - line.Z[a])).normalized;
+                    var side = new Vector3(along.y, 0f, -along.x) * (OldTrackWidth / 2f);
+                    slope.Heightmap.Sample(
+                        SimCoordinates.FromMetres(line.X[i]), SimCoordinates.FromMetres(line.Z[i]), out Fix64 height, out Vec3 normal);
+                    var up = new Vector3(SimCoordinates.ToFloat(normal.X), SimCoordinates.ToFloat(normal.Y), SimCoordinates.ToFloat(normal.Z));
+                    var centre = new Vector3((float)line.X[i], SimCoordinates.ToFloat(height), (float)line.Z[i]) + up * OldTrackLift;
+                    vertices.Add(centre - side);
+                    vertices.Add(centre + side);
+                    normals.Add(up);
+                    normals.Add(up);
+                    if (i > 0)
+                    {
+                        int v = first + 2 * i;
+                        triangles.AddRange(new[] { v - 2, v, v - 1, v - 1, v, v + 1 });
+                    }
+                }
+            }
+
+            var mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
+            mesh.SetVertices(vertices);
+            mesh.SetNormals(normals);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateBounds();
+            return mesh;
         }
 
         private static GameObject FallbackTree(Material material)

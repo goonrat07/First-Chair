@@ -15,7 +15,7 @@ commit after every step); none of them closes a story, so there is no `/story-do
 | 3 | Tree lines along the groomer and park edges in `make_test_slope.py` (real, collidable trees in the sim layout) | dev-story | done | (this commit) |
 | 4 | Show tricks: rotate the skier by the sim's spin and flip angles in the air | dev-story | done | (this commit) |
 | 5 | Grab poses for CH_Skier (Mute, Tip, Tail, Japan, Safety) and the view blending them in the air | dev-story | done | (this commit) |
-| 6 | Old ski tracks over the groomers and powder (display only) | dev-story | queued | |
+| 6 | Old ski tracks over the groomers and powder (display only) | dev-story | done | (this commit) |
 | 7 | Camera drift: let the rider move a little side to side before the camera follows | dev-story | queued | |
 | 8 | Story 007: equipment colours that read on snow, GPU instancing on the tree | dev-story | queued | |
 | 9 | Story 007: tree billboard (far LOD) | dev-story | queued | |
