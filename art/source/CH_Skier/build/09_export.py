@@ -47,7 +47,12 @@ INFERRED = ("every dimension except height and arm angle (proportion table, brie
 DESCR = {"Stance": "athletic ski stance with a 1 s breathing bob", "CarveLeft": "left-edge carve, skis on left edges ~50 deg",
          "CarveRight": "mirror of CarveLeft", "Tuck": "deep downhill tuck", "Crouch": "loaded before a jump pop",
          "Air": "balanced air, skis off the snow", "Brake": "hard skid stop, feet 60 deg right of the body",
-         "Pole": "double-pole push cycle", "Crash": "fallen on the left side and hip"}
+         "Pole": "double-pole push cycle", "Crash": "fallen on the left side and hip",
+         "GrabMute": "air grab: left hand across onto the right ski, in front of the boot (sim GrabKind.Mute)",
+         "GrabTip": "air grab: a pike, right hand near the right ski's tip (sim GrabKind.Tip)",
+         "GrabTail": "air grab: right hand back on the right ski's tail (sim GrabKind.Tail)",
+         "GrabJapan": "air grab: left hand behind the left boot, trunk turned (sim GrabKind.Japan)",
+         "GrabSafety": "air grab: right hand on the right ski's outside edge under the boot (sim GrabKind.Safety)"}
 
 
 def read_takes(path):

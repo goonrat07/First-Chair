@@ -76,6 +76,66 @@
       "description": "loaded before a jump pop"
     },
     {
+      "name": "GrabJapan",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "GrabJapan",
+      "description": "air grab: left hand behind the left boot, trunk turned (sim GrabKind.Japan)"
+    },
+    {
+      "name": "GrabMute",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "GrabMute",
+      "description": "air grab: left hand across onto the right ski, in front of the boot (sim GrabKind.Mute)"
+    },
+    {
+      "name": "GrabSafety",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "GrabSafety",
+      "description": "air grab: right hand on the right ski's outside edge under the boot (sim GrabKind.Safety)"
+    },
+    {
+      "name": "GrabTail",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "GrabTail",
+      "description": "air grab: right hand back on the right ski's tail (sim GrabKind.Tail)"
+    },
+    {
+      "name": "GrabTip",
+      "fps": 30,
+      "frame_start": 0,
+      "frame_end": 30,
+      "length_s": 1.0,
+      "loop": false,
+      "events_s": {},
+      "root_motion": false,
+      "take_name": "GrabTip",
+      "description": "air grab: a pike, right hand near the right ski's tip (sim GrabKind.Tip)"
+    },
+    {
       "name": "Pole",
       "fps": 30,
       "frame_start": 0,

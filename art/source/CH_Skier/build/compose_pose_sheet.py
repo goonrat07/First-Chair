@@ -5,6 +5,7 @@ import os, argparse
 from PIL import Image, ImageDraw
 
 CLIPS = ["Stance", "CarveLeft", "CarveRight", "Tuck", "Crouch", "Air", "Brake", "Pole", "Crash"]
+GRABS = ["GrabMute", "GrabTip", "GrabTail", "GrabJapan", "GrabSafety"]
 
 
 def label(im, text):
@@ -15,13 +16,14 @@ def label(im, text):
 
 
 def main(a):
-    for view in ("front", "side", "game"):
-        tiles = [Image.open(os.path.join(a.dir, "%s_%s.png" % (c, view))).convert("RGB") for c in CLIPS]
-        w, h = tiles[0].size
-        sheet = Image.new("RGB", (3 * w, 3 * h))
-        for i, (c, t) in enumerate(zip(CLIPS, tiles)):
-            sheet.paste(label(t, "%s (%s)" % (c, view)), ((i % 3) * w, (i // 3) * h))
-        sheet.save(os.path.join(a.out, "pose_sheet_%s.png" % view))
+    for sheet_name, clips in (("pose_sheet", CLIPS), ("grab_sheet", GRABS)):
+        for view in ("front", "side", "game"):
+            tiles = [Image.open(os.path.join(a.dir, "%s_%s.png" % (c, view))).convert("RGB") for c in clips]
+            w, h = tiles[0].size
+            sheet = Image.new("RGB", (3 * w, -(-len(clips) // 3) * h))
+            for i, (c, t) in enumerate(zip(clips, tiles)):
+                sheet.paste(label(t, "%s (%s)" % (c, view)), ((i % 3) * w, (i // 3) * h))
+            sheet.save(os.path.join(a.out, "%s_%s.png" % (sheet_name, view)))
     cell = 280
     sheet = Image.new("RGB", (3 * cell, 9 * cell))
     for r, c in enumerate(CLIPS):

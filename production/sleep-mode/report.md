@@ -85,3 +85,35 @@ Started 2026-10-24T02:38:00Z · Ended (running) · Reason (running) · Commits 0
 - Decisions made for you: the flip turns about the middle of the body (0.9 m up), not the boots, so the rider turns
   over in place like GMA2's skier.
 - Not verified: how flips look in a build, and in the editor.
+
+## 5. Grab poses
+- Changed:
+  - `art/source/CH_Skier/build/08_poses.py`: a `grab()` spec builder and five grabs, one per sim `GrabKind`:
+    - GrabMute: the left hand across onto the right ski.
+    - GrabTip: a pike, the right hand near the right tip.
+    - GrabTail: the right hand back on the right tail.
+    - GrabJapan: the left hand behind the left boot, trunk turned.
+    - GrabSafety: the right hand on the right ski's outside edge.
+
+    The knees come up and spread, so the trunk folds between them. The trunk angles came from a grid search
+    (thousands of solves) for zero reach error with the knees clear of the chest and head. All five hands reach
+    (`arm_reach_err` 0).
+  - `pose_sheet.py` and `compose_pose_sheet.py` render the grabs as their own sheet. `09_export.py` gained clip
+    descriptions.
+  - `CH_Skier_master.blend`, `CH_Skier.fbx`, `asset-manifest.json` and `animation-contract.json` now have 14
+    takes. The round-trip check found no errors; the triangle counts are unchanged.
+  - `Assets/Scripts/Riding/Core/SkierPoseWeights.cs`: five `SkierPose` grab entries, `GrabPose(GrabKind)`, and
+    the held grab shown in the air instead of Air. Count is 14, and the scene builder picks up the new clips by
+    name.
+  - Tests: `SkierPoseWeightsTests` gained 7, including that every pose has a clip in CH_Skier's
+    `animation-contract.json`. `TestSlopeFiles.RepoRoot()` was added for it.
+  - Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-grab-poses-side.png` and
+    `-front-three-quarter.png`.
+- Tests:
+  - The engine-free EditMode check: 64 passed. The new tests failed (did not compile) before the change.
+  - The runtime scripts and EditMode tests compile against Unity's DLLs.
+- Decisions made for you:
+  - Each grab is named after the sim's `GrabKind` (Mute, Tip, Tail, Japan, Safety). The shapes are my reading
+    of those names for skis, not a reference you gave.
+- Not verified: how the grabs look in a build and in the editor, and their feel. They are a first pass for you
+  to judge.

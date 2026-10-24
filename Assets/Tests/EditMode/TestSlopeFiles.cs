@@ -26,6 +26,9 @@ namespace FirstChair.Riding.Tests
             throw new DirectoryNotFoundException("Could not find " + Relative + " above " + Directory.GetCurrentDirectory());
         }
 
+        /// <summary>The repository root: the folder above Assets/Terrain/TestSlope's Assets.</summary>
+        public static string RepoRoot() => Path.GetFullPath(Path.Combine(Folder(), "..", "..", ".."));
+
         /// <summary>Loads the slope the way the sim driver does.</summary>
         public static TestSlopeData Load() => TestSlopeData.Load(Folder());
     }

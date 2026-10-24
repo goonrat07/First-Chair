@@ -11,6 +11,7 @@ from mathutils import Vector as V
 
 SNOW = -0.045
 CLIPS = ["Stance", "CarveLeft", "CarveRight", "Tuck", "Crouch", "Air", "Brake", "Pole", "Crash"]
+GRABS = ["GrabMute", "GrabTip", "GrabTail", "GrabJapan", "GrabSafety"]
 FRAME = {"Pole": 9}
 CYCLE = {"Pole": [0, 6, 12, 18, 24], "Stance": [0, 15]}
 
@@ -76,7 +77,7 @@ def main(a):
         scene.render.filepath = path
         bpy.ops.render.render(write_still=True)
 
-    for clip in CLIPS:
+    for clip in CLIPS + GRABS:
         act = bpy.data.actions[clip]
         ad.action = act
         if hasattr(ad, "action_slot") and len(act.slots):

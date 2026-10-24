@@ -57,6 +57,14 @@
     a point 0.9 m above the feet (`RiderViewSettings.flipPivotHeight`). The follow camera aims at the sim's position,
     not the view's root, so a flip doesn't bob it. Tests: `RiderPoseTests` (engine-free, run here) and
     `RiderPlacementTests` (Unity math, run in CI's EditMode job).
+  - Grab poses, done 2026-10-24 (sleep mode), not verified in the editor. CH_Skier has five more clips, one per
+    sim grab: GrabMute (left hand across onto the right ski), GrabTip (a pike, right hand near the right tip),
+    GrabTail (right hand back on the right tail), GrabJapan (left hand behind the left boot, trunk turned) and
+    GrabSafety (right hand on the right ski's outside edge). `08_poses.py` solves them like the other poses. Their
+    trunk angles came from a grid search for zero reach error with the knees clear of the chest and head. In the
+    air `SkierPoseWeights` shows the held grab's pose instead of Air. Evidence:
+    `production/qa/evidence/story-007-first-art-pass/2026-10-24-grab-poses-*.png`. The skier's grab names follow
+    the sim's `GrabKind` names, not real ski-trick definitions; the user can rename or reshape any of them.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).

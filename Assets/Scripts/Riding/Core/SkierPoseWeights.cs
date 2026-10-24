@@ -32,6 +32,21 @@ namespace FirstChair.Riding
 
         /// <summary>Fallen on the snow.</summary>
         Crash = 8,
+
+        /// <summary>Air grab: the left hand across onto the right ski (<see cref="GrabKind.Mute"/>).</summary>
+        GrabMute = 9,
+
+        /// <summary>Air grab: a pike, the right hand near the right ski's tip (<see cref="GrabKind.Tip"/>).</summary>
+        GrabTip = 10,
+
+        /// <summary>Air grab: the right hand back on the right ski's tail (<see cref="GrabKind.Tail"/>).</summary>
+        GrabTail = 11,
+
+        /// <summary>Air grab: the left hand behind the left boot, trunk turned (<see cref="GrabKind.Japan"/>).</summary>
+        GrabJapan = 12,
+
+        /// <summary>Air grab: the right hand on the right ski's outside edge (<see cref="GrabKind.Safety"/>).</summary>
+        GrabSafety = 13,
     }
 
     /// <summary>
@@ -39,7 +54,8 @@ namespace FirstChair.Riding
     /// pose clips (Story 003). Presentation only: it reads sim state and writes nothing back.
     /// </summary>
     /// <remarks>
-    /// Rules, in order: a crash shows <see cref="SkierPose.Crash"/>; in the air, <see cref="SkierPose.Air"/>; on snow, the
+    /// Rules, in order: a crash shows <see cref="SkierPose.Crash"/>; in the air, the held grab's pose
+    /// (<see cref="GrabPose"/>), else <see cref="SkierPose.Air"/>; on snow, the
     /// stance (<see cref="Stance.Tuck"/>, <see cref="Stance.Brake"/> or <see cref="Stance.Pole"/>) takes over from the
     /// carve blend, the carve blend goes from <see cref="SkierPose.CarveLeft"/> through <see cref="SkierPose.Stance"/> to
     /// <see cref="SkierPose.CarveRight"/> with the edge angle, and loading a pop crouches the whole pose. Weights always
@@ -55,7 +71,7 @@ namespace FirstChair.Riding
     public static class SkierPoseWeights
     {
         /// <summary>How many poses.</summary>
-        public const int Count = 9;
+        public const int Count = 14;
 
         /// <summary>The clip name of each pose, as exported from Blender.</summary>
         /// <param name="pose">The pose.</param>
@@ -72,8 +88,20 @@ namespace FirstChair.Riding
             double edge = maxEdge > 0.0 ? SimCoordinates.ToDouble(state.EdgeAngle) / maxEdge : 0.0;
             double popSteps = SimCoordinates.ToDouble(tuning.PopLoadTime) * Simulation.StepsPerSecond;
             double load = popSteps > 0.0 ? state.PopLoadTicks / popSteps : 0.0;
-            Target(edge, load, state.Stance, state.Airborne, state.Crashed, weights);
+            Target(edge, load, state.Stance, state.Airborne, state.Crashed, state.Grab, weights);
         }
+
+        /// <summary>The pose that shows a grab, or <see cref="SkierPose.Air"/> for <see cref="GrabKind.None"/>.</summary>
+        /// <param name="grab">The grab the sim reports.</param>
+        public static SkierPose GrabPose(GrabKind grab) => grab switch
+        {
+            GrabKind.Mute => SkierPose.GrabMute,
+            GrabKind.Tip => SkierPose.GrabTip,
+            GrabKind.Tail => SkierPose.GrabTail,
+            GrabKind.Japan => SkierPose.GrabJapan,
+            GrabKind.Safety => SkierPose.GrabSafety,
+            _ => SkierPose.Air,
+        };
 
         /// <summary>The target weights from plain numbers (testable without a sim).</summary>
         /// <param name="edgeFraction">Edge angle over the full edge angle: -1 is full left, +1 full right.</param>
@@ -81,9 +109,11 @@ namespace FirstChair.Riding
         /// <param name="stance">The sim's stance.</param>
         /// <param name="airborne">In the air.</param>
         /// <param name="crashed">Crashed.</param>
+        /// <param name="grab">The grab held; shown only in the air.</param>
         /// <param name="weights">Output weights, summing to 1.</param>
         /// <exception cref="ArgumentException"><paramref name="weights"/> is not <see cref="Count"/> long.</exception>
-        public static void Target(double edgeFraction, double popLoadFraction, Stance stance, bool airborne, bool crashed, float[] weights)
+        public static void Target(
+            double edgeFraction, double popLoadFraction, Stance stance, bool airborne, bool crashed, GrabKind grab, float[] weights)
         {
             if (weights == null || weights.Length != Count)
             {
@@ -99,7 +129,7 @@ namespace FirstChair.Riding
 
             if (airborne)
             {
-                weights[(int)SkierPose.Air] = 1f;
+                weights[(int)GrabPose(grab)] = 1f;
                 return;
             }
 

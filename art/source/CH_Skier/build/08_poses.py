@@ -1,4 +1,4 @@
-"""CH_Skier Phase 8 subset: nine pose clips as Blender Actions, 0 to 30 at 30 fps, root at the origin.
+"""CH_Skier Phase 8 subset: fourteen pose clips (nine riding poses and five grabs) as Blender Actions, 0 to 30 at 30 fps, root at the origin.
 
 Poses are solved, not hand-keyed: each spec gives the hips, trunk bends, wrist targets, elbow and knee pole
 directions, pole shaft directions and the ski placement (yaw, edge roll, pitch). Legs and arms are two-bone IK,
@@ -224,6 +224,52 @@ CRASH = {"hips": ((0.0, 0.0, 0.30), (10, 78, 0)), "spine": (0, -15, 0), "chest":
          "pole_L": ("dir", (0.25, 0.95, 0.12)), "wrist_R": ("w", (0.10, -0.28, 0.36)), "elbow_R": (0.0, 0.6, 1.0),
          "pole_R": ("dir", (-0.3, 0.8, 0.3)), "foot_L": ((-0.60, -0.20, None), (0, 70, 0)),
          "foot_R": ((-0.40, 0.12, None), (0, 70, 0))}
+
+
+def on_ski(foot, along, up=0.0, across=0.0):
+    """A point on a ski, in the rig's frame: <along> metres from the boot socket toward the tail (+) or the tip (-),
+    <up> above the ski's base, <across> toward the ski's own +X."""
+    (x, y, z), rot = foot
+    return tuple(V((x, y, z)) + E(*rot) @ V((across, along, SKI_BASE + up)))
+
+
+# Grabs (the sim's GrabKind; story 007, user 2026-10-24): knees pulled up and spread so the trunk folds between them,
+# one hand on a ski with its pole trailing back, the other arm out for balance with its pole. Each wrist target sits
+# GRAB_PALM above the ski's base so the palm, not the wrist, meets the ski. The trunk angles and heights below came from
+# a search (every combination on a grid) for the hand reaching its target with the knees clear of the chest and head;
+# all five reach with zero error (the solver's arm_reach_err, logged in review/06_rig/poses.json).
+GRAB_PALM = 0.085
+FREE_ARM_L = {"wrist_L": ("c", (0.62, -0.10, 1.10)), "elbow_L": (0.2, 1, -0.5), "pole_L": ("dir", (0.40, 0.55, -0.73))}
+FREE_ARM_R = {k[:-2] + "_R": mirror_entry(k, v) for k, v in FREE_ARM_L.items()}
+
+
+def grab(hand, ski, along, across, foot, hips_z, hip_pitch, chest):
+    """A grab: <hand> ("L" or "R") on ski <ski> at <along>/<across> (see on_ski). <foot> is the left foot's
+    ((x, y, z), (pitch, roll, yaw)), mirrored for the right; <chest> is (pitch, roll, yaw), half of it in the spine's
+    roll and yaw and 0.6 of its pitch."""
+    feet = {"foot_L": foot, "foot_R": mirror_entry("foot_L", foot)}
+    cp, cr, cy = chest
+    sg = 1 if hand == "L" else -1
+    return {"hips": ((0, 0.10, hips_z), (hip_pitch, 0, 0)), "spine": (cp * 0.6, cr * 0.5, cy * 0.5),
+            "chest": (cp, cr * 0.5, cy * 0.5), "neck": (-hip_pitch * 0.8, 0, 0), "head": (-hip_pitch * 0.6, 0, 0),
+            **feet, "knee_L": (0.7, -1, 0), "knee_R": (-0.7, -1, 0), **(FREE_ARM_R if hand == "L" else FREE_ARM_L),
+            "wrist_" + hand: ("w", on_ski(feet["foot_" + ski], along, GRAB_PALM, across)),
+            "elbow_" + hand: (sg * 0.6, 0.4, 0.6), "pole_" + hand: ("dir", (sg * 0.25, 0.75, -0.6))}
+
+
+GRABS = {
+    # Mute: the left hand across the body onto the right ski, in front of the boot; folded well forward.
+    "GrabMute": grab("L", "R", -0.16, 0.0, ((0.16, -0.04, 0.55), (-6, 0, 0)), 0.80, 40, (30, 0, 0)),
+    # Tip: a pike, skis out in front and tips up; the right hand near the right ski's tip.
+    "GrabTip": grab("R", "R", -0.55, 0.0, ((0.16, -0.30, 0.55), (-30, 0, 0)), 0.80, 40, (10, 0, 0)),
+    # Tail: feet up under the seat, tips a little down; the right hand back on the right ski's tail, outside edge.
+    "GrabTail": grab("R", "R", 0.24, -0.07, ((0.16, 0.08, 0.62), (6, 0, 0)), 0.72, 10, (0, -15, 0)),
+    # Japan: knees up, tips down, the left hand behind the left boot on the ski's outside edge, the trunk turned.
+    "GrabJapan": grab("L", "L", 0.16, 0.07, ((0.16, 0.10, 0.62), (14, 0, 0)), 0.72, 10, (0, 0, 15)),
+    # Safety: the right hand on the right ski's outside edge under the boot, leaning down to that side.
+    "GrabSafety": grab("R", "R", 0.02, -0.07, ((0.16, -0.04, 0.55), (-6, 0, 0)), 0.80, 10, (10, -30, 0)),
+}
+
 POLE_KEYS = [  # (t, spec) double-pole cycle; t=1 repeats t=0
     (0.0, {"hips": ((0, 0.06, 0.80), (12, 0, 0)), "spine": (4, 0, 0), "chest": (4, 0, 0), "neck": (-8, 0, 0), "head": (-8, 0, 0),
            "wrist_L": ("w", (0.28, -0.45, 1.05)), "pole_L": ("snow", (0.30, -0.15))}),
@@ -283,7 +329,7 @@ CLIPS = [  # name, spec function of t in [0, 1], loop, static
     ("Brake", lambda t: BRAKE, False, True),
     ("Pole", pole_at, True, False),
     ("Crash", lambda t: CRASH, False, True),
-]
+] + [(name, (lambda spec: lambda t: spec)(spec), False, True) for name, spec in GRABS.items()]
 
 
 def make_clips(arm):
