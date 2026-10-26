@@ -24,6 +24,10 @@ namespace FirstChair.Riding
         [Tooltip("Ride within this distance of the boarding point, metres, to get on the lift.")]
         [SerializeField, Min(1f)] private float boardingRadius = 9f;
 
+        [Tooltip("Within this distance of the boarding point, metres, a hint says how to get on: the snow round the bottom "
+            + "station is nearly flat, so a rider who stops short has to push in.")]
+        [SerializeField, Min(1f)] private float hintRadius = 45f;
+
         [Tooltip("The lift runs this many times faster while W is held.")]
         [SerializeField, Min(1f)] private float hurry = 5f;
 
@@ -42,6 +46,7 @@ namespace FirstChair.Riding
         private double _ropeAtStart;
         private double _ropeToCome;
         private GUIStyle _hint;
+        private bool _nearStation;
 
         /// <summary>Whether the rider is at or on the lift.</summary>
         public bool Riding => _phase != Phase.Skiing;
@@ -60,6 +65,7 @@ namespace FirstChair.Riding
                     Vector3 at = SimCoordinatesUnity.ToVector3(state.Position);
                     Vector3 boarding = lift.BoardingPoint;
                     float dx = at.x - boarding.x, dz = at.z - boarding.z;
+                    _nearStation = dx * dx + dz * dz <= hintRadius * hintRadius;
                     if (!state.Airborne && !state.Crashed && dx * dx + dz * dz <= boardingRadius * boardingRadius)
                     {
                         Board();
@@ -108,6 +114,7 @@ namespace FirstChair.Riding
         private void GetOff()
         {
             _phase = Phase.Skiing;
+            _nearStation = false;
             lift.SpeedMultiplier = 1f;
             if (followCamera != null)
             {
@@ -138,7 +145,7 @@ namespace FirstChair.Riding
 
         private void OnGUI()
         {
-            if (_phase == Phase.Skiing)
+            if (_phase == Phase.Skiing && !_nearStation)
             {
                 return;
             }
@@ -152,7 +159,8 @@ namespace FirstChair.Riding
             float scale = Screen.height / 1080f;
             GUI.matrix = Matrix4x4.Scale(new Vector3(scale, scale, 1f));
             float width = 1080f * Screen.width / Mathf.Max(1, Screen.height);
-            string text = _phase == Phase.Waiting ? "Waiting for the next chair" : "On the lift. Hold W to hurry it up";
+            string text = _phase == Phase.Skiing ? "Ski into the lift station to ride up (W pushes on the flat)"
+                : _phase == Phase.Waiting ? "Waiting for the next chair" : "On the lift. Hold W to hurry it up";
             GUI.Label(new Rect(0f, 960f, width, 40f), text, _hint);
         }
     }
