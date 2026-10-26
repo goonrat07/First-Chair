@@ -1,20 +1,20 @@
 # Sleep mode report
 
-Started 2026-10-26T01:32:33Z · Ended (running) · Reason (running) · Commits 0 (`6ad33d0..`)
+Started 2026-10-26T01:32:33Z · Ended 2026-10-26T11:13:38Z · Reason done · Commits 23 (`6ad33d0..` this commit)
 
 ## Summary
 - Finished: story 009 (GMA-style riding, the Feel Lab, speed cues: In Review); ski tracks that stay (story 007);
   story 010, a small test mountain with a chairlift, five runs, a park and forest (In Review); the lighting pass
   (story 007).
 - Skipped: nothing.
-- Waiting on you: 1 question in production/sleep-mode/questions.md
+- Waiting on you: 2 questions in production/sleep-mode/questions.md (close story 009; what next)
 - Needs the PC: story 003's Windows playtest; the feel of story 009 and the look of stories 007 and 010 (yours to
   judge); GMA2-matched numbers (your clips).
 - Next: play the newest build (CI run 40287291873): press ` for the Feel Lab, Controls tab, "Ride the test
   mountain", then "Go to the park" or "Go to the lift".
 - Usage: at 11:05 UTC the binding limit was the seven-day one (resets 2026-11-01 16:00 UTC, status
-  "allowed_warning"). No after-reset wake-up is scheduled for it: if it is hit, the run stops there with no
-  notification, so this report is kept current after every step.
+  "allowed_warning"). With the queue done, I stopped here rather than start new items overnight: more could have used
+  up your week. Ideas for next are in questions.md; `/sleep-mode` starts another run.
 
 ## story-009-gma-style-riding-and-feel-lab: done, In Review
 - Changed: sim version 8 (`Simulation.cs`, `Tuning.cs`, `RiderState.cs`, `SimInput.cs`), keys and poses
