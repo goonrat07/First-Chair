@@ -63,6 +63,28 @@ namespace FirstChair.Riding
         [Tooltip("How slowly the camera eases back to centre the rider inside the drift zone, seconds.")]
         [SerializeField, Min(0f)] private float driftReturnTime = 1.5f;
 
+        [Header("Speed effects (Story 009: speed should look fast)")]
+        [Tooltip("Degrees the view widens per m/s of speed: a wider view makes speed read faster.")]
+        [SerializeField, Min(0f)] private float fovPerSpeed = 0.12f;
+        [Tooltip("The most degrees the view widens.")]
+        [SerializeField, Min(0f)] private float fovSpeedMax = 5f;
+        [Tooltip("How slowly the view's width follows the speed, seconds.")]
+        [SerializeField, Min(0f)] private float fovSmoothTime = 0.6f;
+        [Tooltip("Degrees the camera banks into a turn per g of sideways acceleration.")]
+        [SerializeField, Min(0f)] private float rollPerG = 2.5f;
+        [Tooltip("The most the camera banks, degrees; 0 turns it off.")]
+        [SerializeField, Min(0f)] private float rollMax = 3f;
+        [Tooltip("How slowly the bank follows the turn, seconds.")]
+        [SerializeField, Min(0f)] private float rollSmoothTime = 0.3f;
+        [Tooltip("Speed where a gentle shake starts, m/s.")]
+        [SerializeField, Min(0f)] private float shakeFromSpeed = 18f;
+        [Tooltip("Speed of the full shake, m/s.")]
+        [SerializeField, Min(0f)] private float shakeFullSpeed = 35f;
+        [Tooltip("The full shake's size, degrees; 0 turns it off.")]
+        [SerializeField, Min(0f)] private float shakeDegrees = 0.12f;
+        [Tooltip("The shake's rate, cycles per second.")]
+        [SerializeField, Min(0f)] private float shakeFrequency = 7f;
+
         [Header("Smoothing (seconds; 0 snaps)")]
         [SerializeField, Min(0f)] private float positionSmoothTime = 0.15f;
         [Tooltip("A jump of the aim point larger than this, metres (a reset), snaps instead of smoothing.")]
@@ -106,6 +128,26 @@ namespace FirstChair.Riding
         public float DriftMetres => driftMetres;
         /// <summary>Time to ease back to centre inside the drift zone, seconds.</summary>
         public float DriftReturnTime => driftReturnTime;
+        /// <summary>Degrees the view widens per m/s of speed.</summary>
+        public float FovPerSpeed => fovPerSpeed;
+        /// <summary>The most degrees the view widens.</summary>
+        public float FovSpeedMax => fovSpeedMax;
+        /// <summary>View-width smoothing time, seconds.</summary>
+        public float FovSmoothTime => fovSmoothTime;
+        /// <summary>Degrees of bank per g of sideways acceleration.</summary>
+        public float RollPerG => rollPerG;
+        /// <summary>The most bank, degrees.</summary>
+        public float RollMax => rollMax;
+        /// <summary>Bank smoothing time, seconds.</summary>
+        public float RollSmoothTime => rollSmoothTime;
+        /// <summary>Speed where the shake starts, m/s.</summary>
+        public float ShakeFromSpeed => shakeFromSpeed;
+        /// <summary>Speed of the full shake, m/s.</summary>
+        public float ShakeFullSpeed => shakeFullSpeed;
+        /// <summary>The full shake's size, degrees.</summary>
+        public float ShakeDegrees => shakeDegrees;
+        /// <summary>The shake's rate, cycles per second.</summary>
+        public float ShakeFrequency => shakeFrequency;
         /// <summary>Aim smoothing time, seconds.</summary>
         public float PositionSmoothTime => positionSmoothTime;
         /// <summary>Snap distance, metres.</summary>

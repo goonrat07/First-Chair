@@ -187,6 +187,36 @@ namespace FirstChair.Riding.Tests
             Assert.That(inTheAir, Is.GreaterThan(usual));
         }
 
+        [Test]
+        public void FovAtSpeed_WidensWithSpeed_UpToTheCap()
+        {
+            // Assert: 27 degrees, 0.12 more per m/s, at most 5 more (Story 009: speed reads faster through a wider view).
+            Assert.That(FollowCameraMath.FovAtSpeed(27.0, 0.12, 5.0, 0.0), Is.EqualTo(27.0).Within(1e-12));
+            Assert.That(FollowCameraMath.FovAtSpeed(27.0, 0.12, 5.0, 25.0), Is.EqualTo(30.0).Within(1e-12));
+            Assert.That(FollowCameraMath.FovAtSpeed(27.0, 0.12, 5.0, 100.0), Is.EqualTo(32.0).Within(1e-12));
+            Assert.That(FollowCameraMath.FovAtSpeed(27.0, 0.12, 5.0, -3.0), Is.EqualTo(27.0).Within(1e-12));
+        }
+
+        [Test]
+        public void RollDegrees_BanksIntoTheTurn_ByItsSidewaysG_UpToTheCap()
+        {
+            // Assert: Unity rolls a positive z angle to the left, so a right turn (positive) banks the other way.
+            Assert.That(FollowCameraMath.RollDegrees(9.81, 9.81, 2.5, 3.0), Is.EqualTo(-2.5).Within(1e-12));
+            Assert.That(FollowCameraMath.RollDegrees(-4.905, 9.81, 2.5, 3.0), Is.EqualTo(1.25).Within(1e-12));
+            Assert.That(FollowCameraMath.RollDegrees(30.0, 9.81, 2.5, 3.0), Is.EqualTo(-3.0).Within(1e-12));
+            Assert.That(FollowCameraMath.RollDegrees(5.0, 9.81, 2.5, 0.0), Is.EqualTo(0.0));
+        }
+
+        [Test]
+        public void ShakeAmount_NothingBelowItsSpeed_RisingToOneAtFullSpeed_Squared()
+        {
+            // Assert
+            Assert.That(FollowCameraMath.ShakeAmount(15.0, 18.0, 35.0), Is.EqualTo(0.0));
+            Assert.That(FollowCameraMath.ShakeAmount(26.5, 18.0, 35.0), Is.EqualTo(0.25).Within(1e-12));
+            Assert.That(FollowCameraMath.ShakeAmount(50.0, 18.0, 35.0), Is.EqualTo(1.0));
+            Assert.That(FollowCameraMath.ShakeAmount(50.0, 18.0, 18.0), Is.EqualTo(1.0), "a zero-width band switches on at its speed");
+        }
+
         // How far down the screen (0 top, 1 bottom) a point sits, for a camera FollowCameraMath.Offset places behind an aim
         // at the origin, looking down +Z: alongView metres along +Z from the aim and aboveAim metres above it.
         private static double ScreenHeight(double pitchDegrees, double distance, double fovDegrees, double alongView, double aboveAim)

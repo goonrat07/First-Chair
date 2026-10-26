@@ -61,6 +61,9 @@ namespace FirstChair.Riding
         /// <summary>Every event of this frame's steps, read-only.</summary>
         public IReadOnlyList<SimEvent> FrameEvents => Session?.FrameEvents;
 
+        /// <summary>The riding numbers runs start with: <see cref="Tuning.Default"/> until the Feel Lab changes them.</summary>
+        public Tuning RunTuning { get; private set; } = Tuning.Default;
+
         /// <summary>The folder the slope files are read from.</summary>
         public string SlopeFolder
         {
@@ -89,13 +92,63 @@ namespace FirstChair.Riding
                 return;
             }
 
+            Begin(slope, RunTuning, slope.CreateSetup(unchecked((ulong)seed), (byte)Mathf.Clamp(assistLevel, 0, 255)));
+        }
+
+        /// <summary>
+        /// Starts a new run with <paramref name="tuning"/>: the Feel Lab's "Apply" (Story 009). From the rider's current spot
+        /// (the last safe spot when airborne or crashed), at rest and facing down the fall line, or from the slope's start.
+        /// The new run records its own tuning, so its replay still checks out.
+        /// </summary>
+        /// <param name="tuning">The riding numbers for the new run.</param>
+        /// <param name="fromCurrentSpot">Start where the rider is, rather than at the top.</param>
+        /// <returns>Null, or why the run could not start (the tuning holds a value a ride cannot run on).</returns>
+        /// <example>
+        /// <code>
+        /// string error = driver.RestartRun(FeelLabValues.With(driver.RunTuning, "TurnRateLow", 2.5), true);
+        /// </code>
+        /// </example>
+        public string RestartRun(Tuning tuning, bool fromCurrentSpot)
+        {
+            TestSlopeData slope = Session?.Slope;
+            if (slope == null)
+            {
+                RunTuning = tuning;
+                StartRun();
+                return Session == null ? "the slope could not be loaded" : null;
+            }
+
+            RunSetup setup = slope.CreateSetup(unchecked((ulong)seed), (byte)Mathf.Clamp(assistLevel, 0, 255));
+            if (fromCurrentSpot)
+            {
+                RiderState now = Session.Current;
+                Vec3 at = now.Airborne || now.Crashed || now.Grinding ? now.SafePosition : now.Position;
+                setup = new RunSetup(Sport.Skis, setup.AssistLevel, setup.Seed, at.X, at.Z);
+            }
+
+            try
+            {
+                Begin(slope, tuning, setup);
+            }
+            catch (ArgumentException e)
+            {
+                return e.Message;
+            }
+
+            RunTuning = tuning;
+            return null;
+        }
+
+        private void Begin(TestSlopeData slope, Tuning tuning, RunSetup setup)
+        {
+            // Built before the old session is let go, so a tuning the sim refuses leaves the old run riding.
+            var session = new RideSession(slope, tuning, setup, keepReplayHistory);
             if (Session != null)
             {
                 Session.StepEvents -= ForwardStepEvents;
             }
 
-            RunSetup setup = slope.CreateSetup(unchecked((ulong)seed), (byte)Mathf.Clamp(assistLevel, 0, 255));
-            Session = new RideSession(slope, Tuning.Default, setup, keepReplayHistory);
+            Session = session;
             Session.StepEvents += ForwardStepEvents;
             _clock = new FixedStepClock(Simulation.StepsPerSecond, maxStepsPerFrame);
         }

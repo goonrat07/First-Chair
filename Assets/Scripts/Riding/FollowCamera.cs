@@ -23,6 +23,11 @@ namespace FirstChair.Riding
         private Vector3 _viewDirection = Vector3.forward;
         private float _pitch = -1f;
         private bool _hasAim;
+        private float _fov = -1f;
+        private float _roll;
+        private float _travelYaw;
+        private bool _hasTravelYaw;
+        private float _shakeTime;
 
         private void Awake()
         {
@@ -41,7 +46,6 @@ namespace FirstChair.Riding
                 return;
             }
 
-            _camera.fieldOfView = (float)FollowCameraMath.VerticalFovDegrees(settings.FocalLengthMm, settings.SensorHeightMm);
             _camera.nearClipPlane = settings.NearClip;
             _camera.farClipPlane = settings.FarClip;
 
@@ -59,6 +63,34 @@ namespace FirstChair.Riding
                 rider = SimCoordinatesUnity.Position(pose);
                 normal = SnowNormal(driver.Session, rider);
             }
+
+            // Speed effects (Story 009): the view widens with speed and banks into turns, and a fast rider shakes it gently.
+            float speed = velocity.magnitude;
+            float lens = (float)FollowCameraMath.VerticalFovDegrees(settings.FocalLengthMm, settings.SensorHeightMm);
+            float fov = (float)FollowCameraMath.FovAtSpeed(lens, settings.FovPerSpeed, settings.FovSpeedMax, speed);
+            _fov = snap || _fov < 0f ? fov : Mathf.Lerp(_fov, fov, FollowCameraMath.SmoothingFactor(settings.FovSmoothTime, dt));
+            _camera.fieldOfView = _fov;
+            float turnAcceleration = 0f;
+            if (speed >= settings.MinTravelSpeed && dt > 0f)
+            {
+                float travelYaw = Mathf.Atan2(velocity.x, velocity.z);
+                if (_hasTravelYaw && !snap)
+                {
+                    turnAcceleration = speed * Mathf.DeltaAngle(_travelYaw * Mathf.Rad2Deg, travelYaw * Mathf.Rad2Deg) * Mathf.Deg2Rad / dt;
+                }
+
+                _travelYaw = travelYaw;
+                _hasTravelYaw = true;
+            }
+
+            double gravity = driver != null && driver.Session != null ? SimCoordinates.ToDouble(driver.Session.Tuning.Gravity) : 9.81;
+            float roll = (float)FollowCameraMath.RollDegrees(turnAcceleration, gravity, settings.RollPerG, settings.RollMax);
+            _roll = snap ? 0f : Mathf.Lerp(_roll, roll, FollowCameraMath.SmoothingFactor(settings.RollSmoothTime, dt));
+            _shakeTime += dt;
+            float shake = (float)FollowCameraMath.ShakeAmount(speed, settings.ShakeFromSpeed, settings.ShakeFullSpeed) * settings.ShakeDegrees;
+            float phase = 2f * Mathf.PI * settings.ShakeFrequency * _shakeTime;
+            float shakePitch = shake * (Mathf.Sin(phase) + 0.5f * Mathf.Sin(2.3f * phase + 1f));
+            float shakeYaw = shake * 0.7f * (Mathf.Sin(1.7f * phase + 2f) + 0.5f * Mathf.Sin(3.1f * phase));
 
             // Downhill on the ground: the snow normal's horizontal part (the normal leans toward the fall line).
             var fall = new Vector3(normal.x, 0f, normal.z);
@@ -109,7 +141,7 @@ namespace FirstChair.Riding
 
             float yaw = (float)FollowCameraMath.YawDegrees(_viewDirection.x, _viewDirection.z);
             FollowCameraMath.Offset(yaw, _pitch, settings.Distance, out float x, out float y, out float z);
-            transform.SetPositionAndRotation(_aim + new Vector3(x, y, z), Quaternion.Euler(_pitch, yaw, 0f));
+            transform.SetPositionAndRotation(_aim + new Vector3(x, y, z), Quaternion.Euler(_pitch + shakePitch, yaw + shakeYaw, _roll));
         }
 
         private static Vector3 SnowNormal(RideSession session, Vector3 position)

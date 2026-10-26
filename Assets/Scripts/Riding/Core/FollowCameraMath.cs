@@ -146,6 +146,51 @@ namespace FirstChair.Riding
         }
 
         /// <summary>
+        /// The vertical field of view at a speed, degrees (Story 009): the lens's own plus <paramref name="perSpeed"/> per m/s,
+        /// at most <paramref name="maxExtra"/> more. A wider view makes speed read faster.
+        /// </summary>
+        /// <param name="baseDegrees">The lens's own field of view, degrees.</param>
+        /// <param name="perSpeed">Degrees added per metre per second.</param>
+        /// <param name="maxExtra">The most degrees added.</param>
+        /// <param name="speed">Rider speed, metres per second.</param>
+        public static double FovAtSpeed(double baseDegrees, double perSpeed, double maxExtra, double speed) =>
+            baseDegrees + Math.Min(Math.Max(0.0, maxExtra), Math.Max(0.0, perSpeed) * Math.Max(0.0, speed));
+
+        /// <summary>
+        /// The camera's roll into a turn, degrees (Story 009, after the Bluebird prototype): <paramref name="perG"/> per g of
+        /// sideways acceleration, at most <paramref name="max"/> either way. Positive sideways acceleration turns right, and a
+        /// positive roll in Unity tips the view left, so a right turn gives a negative roll: the camera banks into the turn.
+        /// </summary>
+        /// <param name="sidewaysAcceleration">Speed times the path's turn rate, m/s^2; positive turning right.</param>
+        /// <param name="gravity">Gravity, m/s^2: one g.</param>
+        /// <param name="perG">Degrees per g.</param>
+        /// <param name="max">The most degrees either way; 0 turns the roll off.</param>
+        public static double RollDegrees(double sidewaysAcceleration, double gravity, double perG, double max)
+        {
+            double cap = Math.Max(0.0, max);
+            double roll = gravity > 0.0 ? -perG * sidewaysAcceleration / gravity : 0.0;
+            return Math.Max(-cap, Math.Min(cap, roll));
+        }
+
+        /// <summary>
+        /// How much the camera shakes at a speed, 0 to 1 (Story 009): nothing below <paramref name="fromSpeed"/>, rising to 1
+        /// at <paramref name="fullSpeed"/>, squared so it creeps in.
+        /// </summary>
+        /// <param name="speed">Rider speed, m/s.</param>
+        /// <param name="fromSpeed">Speed where the shake starts, m/s.</param>
+        /// <param name="fullSpeed">Speed of the full shake, m/s; at or below fromSpeed the shake switches on fully there.</param>
+        public static double ShakeAmount(double speed, double fromSpeed, double fullSpeed)
+        {
+            if (!(speed > fromSpeed))
+            {
+                return 0.0;
+            }
+
+            double share = fullSpeed > fromSpeed ? Math.Min(1.0, (speed - fromSpeed) / (fullSpeed - fromSpeed)) : 1.0;
+            return share * share;
+        }
+
+        /// <summary>
         /// Camera drift (the user's playtest, 2026-10-23: GMA2 doesn't pin the rider to the middle of the screen): how
         /// far the camera's aim moves sideways this frame, given the rider's sideways offset from it. Inside the drift
         /// zone the aim only eases back toward the rider by <paramref name="recentreFactor"/> of the offset; past it, the

@@ -35,8 +35,9 @@ namespace FirstChair.Riding
             }
 
             var raw = new RawRiderInput();
+            // While a Feel Lab text box has the keyboard, typing doesn't ride.
             Keyboard keyboard = Keyboard.current;
-            if (keyboard != null)
+            if (keyboard != null && !FeelLab.KeyboardCaptured)
             {
                 raw.SteerLeft = keyboard.aKey.isPressed || keyboard.leftArrowKey.isPressed;
                 raw.SteerRight = keyboard.dKey.isPressed || keyboard.rightArrowKey.isPressed;
