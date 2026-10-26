@@ -41,11 +41,15 @@ namespace FirstChair.Riding.Editor
         private const string BillboardLayoutPath = "Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.json";
         private static readonly float[] TreeLodHeights = { 0.25f, 0.08f, 0.0125f };
 
-        // Old tracks (story 003 decisions, 2026-10-24): on the groomer and in the bowl, about one track per 800 m^2 (58 on
-        // the groomer; one per 2300 m^2 left barely one in view in build 40058662563), each ski's line 10 cm wide, 2 cm
-        // off the snow, and 1 m clear of any canopy.
+        // Old tracks (story 003 decisions, 2026-10-24): on the groomer and in the bowl, each ski's line 10 cm wide, 2 cm off
+        // the snow, and 1 m clear of any canopy. Story 009: about one track per 350 m^2 (one per 800 left the snow too bare
+        // to show motion at speed), swinging wider and more often, so more of them cross the rider's path.
         private static readonly string[] OldTrackZones = { "groomer", "bowl" };
-        private const double OldTrackAreaPerTrack = 800.0;
+        private const double OldTrackAreaPerTrack = 350.0;
+        private const double OldTrackMinSwingDegrees = 25.0;
+        private const double OldTrackMaxSwingDegrees = 70.0;
+        private const double OldTrackMinWavelengthMetres = 14.0;
+        private const double OldTrackMaxWavelengthMetres = 32.0;
         private const ulong OldTrackSeed = 2026_10_24;
         private const float OldTrackWidth = 0.10f;
         private const float OldTrackLift = 0.02f;
@@ -443,6 +447,10 @@ namespace FirstChair.Riding.Editor
                 double zMin = SimCoordinates.ToDouble(zone.ZMin), zMax = SimCoordinates.ToDouble(zone.ZMax);
                 OldTrackSettings settings = OldTrackSettings.Default;
                 settings.Count = Mathf.Max(1, Mathf.RoundToInt((float)((xMax - xMin) * (zMax - zMin) / OldTrackAreaPerTrack)));
+                settings.MinSwingDegrees = OldTrackMinSwingDegrees;
+                settings.MaxSwingDegrees = OldTrackMaxSwingDegrees;
+                settings.MinWavelengthMetres = OldTrackMinWavelengthMetres;
+                settings.MaxWavelengthMetres = OldTrackMaxWavelengthMetres;
                 var lines = FirstChair.Riding.OldTracks.Generate(
                     OldTrackSeed + (ulong)z, xMin, zMin, xMax, zMax, settings, (x, zz) => NearTree(slope, x, zz));
                 Mesh mesh = TrackRibbons(slope, lines, "OldTracks_" + zone.Name);

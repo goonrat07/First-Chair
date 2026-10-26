@@ -234,10 +234,11 @@ namespace FirstChair.Riding
             switch (kind)
             {
                 case SnowType.Groomed:
-                    // Corduroy: 18 straight ridges a tile (33 cm on a 6 m tile) down the fall line (+V), over soft
-                    // large-scale variation so the groomer doesn't read as a printed pattern from the follow camera.
+                    // Corduroy: 18 straight ridges a tile (33 cm on a 6 m tile) down the fall line (+V), over round patches
+                    // about a metre across. The ridges run the way the rider travels, so alone they can't show motion
+                    // (Story 009: the snow measured almost blank at speed); the patches cross the path and stream past.
                     double ridge = 0.5 + 0.5 * Math.Sin(2.0 * Math.PI * 18.0 * u);
-                    return (float)(0.45 * ridge + 0.55 * Fractal(u, v, 3, 3, 11));
+                    return (float)(0.4 * ridge + 0.6 * Fractal(u, v, 5, 2, 11));
                 case SnowType.Powder:
                     return (float)Fractal(u, v, 4, 4, 23);
                 case SnowType.Crud:
@@ -255,9 +256,10 @@ namespace FirstChair.Riding
         {
             switch (kind)
             {
-                case SnowType.Groomed: r = 0.95f; g = 0.96f; b = 0.98f; shade = 0.05f; bump = 0.35f; return;
-                case SnowType.Powder: r = 0.98f; g = 0.985f; b = 1.0f; shade = 0.05f; bump = 3.0f; return;
-                case SnowType.Crud: r = 0.92f; g = 0.93f; b = 0.95f; shade = 0.12f; bump = 0.8f; return;
+                // Story 009: stronger shade and relief on the ridden snow, so its surface shows motion at speed.
+                case SnowType.Groomed: r = 0.95f; g = 0.96f; b = 0.98f; shade = 0.22f; bump = 0.8f; return;
+                case SnowType.Powder: r = 0.98f; g = 0.985f; b = 1.0f; shade = 0.18f; bump = 3.0f; return;
+                case SnowType.Crud: r = 0.92f; g = 0.93f; b = 0.95f; shade = 0.2f; bump = 1.2f; return;
                 case SnowType.Ice: r = 0.78f; g = 0.85f; b = 0.92f; shade = 0.10f; bump = 0.6f; return;
                 default: r = 0.88f; g = 0.88f; b = 0.86f; shade = 0.10f; bump = 0.6f; return;
             }

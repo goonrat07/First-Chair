@@ -53,7 +53,7 @@ namespace FirstChair.Riding
         [Tooltip("Width of each ski's track, metres.")]
         [SerializeField, Min(0.01f)] private float trackWidth = 0.09f;
         [Tooltip("How long a track stays on the snow, seconds.")]
-        [SerializeField, Min(0f)] private float trackLifetime = 45f;
+        [SerializeField, Min(0f)] private float trackLifetime = 120f;
         [Tooltip("Shortest step between track points, metres.")]
         [SerializeField, Min(0.01f)] private float trackMinVertexDistance = 0.3f;
         [Tooltip("Lift above the ski base, metres, so the track doesn't flicker into the snow.")]
