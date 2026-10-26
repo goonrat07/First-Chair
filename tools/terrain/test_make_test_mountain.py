@@ -228,13 +228,19 @@ def test_the_green_run_is_the_gentlest(layout, heights_mm):
 
 
 def test_the_cat_track_is_level_across(layout, heights_mm):
+    """Level across its width wherever it is on its own: where it leaves the summit or crosses another run, it rides
+    that run's surface."""
     run = next(run for run in layout["runs"] if run["difficulty"] == "green")
     line = centre_line_mm(run) / 1000.0
     tangent = np.gradient(line, axis=0)
     tangent = tangent / np.sqrt((tangent ** 2).sum(axis=1))[:, np.newaxis]
     reach = run["width"] * 0.45
     s = mountain.along_m(line)
-    keep = (s >= 30.0) & (s <= s[-1] - 30.0)
+    others = [(centre_line_mm(other, 2.0), other["width"] / 2.0) for other in layout["runs"] if other is not run]
+    on_another = np.array([any(distance_to_line_mm(other_line, x * 1000.0, z * 1000.0) < half + 30_000 for other_line, half in others)
+                           for x, z in line])
+    keep = (s >= 30.0) & (s <= s[-1] - 30.0) & ~on_another
+    assert keep.sum() > 0.7 * len(line), "the cat track is mostly on its own"
     left = height_at(heights_mm, layout, line[:, 0] * 1000.0 - tangent[:, 1] * reach, line[:, 1] * 1000.0 + tangent[:, 0] * reach)
     right = height_at(heights_mm, layout, line[:, 0] * 1000.0 + tangent[:, 1] * reach, line[:, 1] * 1000.0 - tangent[:, 0] * reach)
 

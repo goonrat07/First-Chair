@@ -91,7 +91,8 @@ RUN_NOISE_KEPT = 0.25  # the share of the noise a run's surface keeps: gentle ro
 # --- Areas ----------------------------------------------------------------------------------
 SUMMIT_CENTRE_M = (512.0, 62.0)
 SUMMIT_RADIUS_M = 48.0  # the top station's level area
-SUMMIT_FALL = 0.05  # a slight fall toward +Z, so a rider starting there rolls off
+SUMMIT_BLEND_M = 45.0  # the level area rounds over into the face across this much
+SUMMIT_NOISE_FREE_M = (60.0, 170.0)  # no undulation within the first distance of the summit, full beyond the second
 BASE_AREA_M = (250.0, 860.0, 774.0, 1024.0)  # x min, z min, x max, z max: shaped level across X
 BASE_BLEND_M = 30.0
 TREE_LINE_HEIGHT_M = 205.0  # open snow above this, as on GMA2's upper mountains
@@ -105,7 +106,8 @@ START_M = (512.0, 78.0)  # where a run begins: the top station's unload area, fa
 #   cat   - a cat track: level across its width, following the mountain along its centre line
 #   gully - an open run carved into a channel GULLY_DEPTH_M deep
 #   smooth - an open run with none of the noise: the park, whose features want an even surface
-# Runs are shaped in this order: a later run's surface wins where two meet, so each branch comes after its trunk.
+# Runs are shaped in this order, and an earlier run keeps its surface where a later one meets it (the later run blends
+# in only over the earlier one's shoulders), so each branch comes after its trunk and leaves no step or pit on it.
 # Each centre line is a centripetal Catmull-Rom spline through its points.
 RUNS = (
     ("kettle-run", "blue", 50.0, "open", "groomed", (
@@ -120,7 +122,7 @@ RUNS = (
         (640.0, 300.0), (685.0, 335.0), (728.0, 372.0), (760.0, 410.0), (772.0, 455.0), (772.0, 700.0),
         (744.0, 780.0), (680.0, 850.0), (610.0, 905.0))),
     ("meadow-way", "green", 11.0, "cat", "groomed", (
-        (480.0, 76.0), (430.0, 82.0), (330.0, 96.0), (230.0, 118.0), (140.0, 150.0), (118.0, 172.0),
+        (486.0, 90.0), (440.0, 100.0), (330.0, 112.0), (230.0, 130.0), (140.0, 155.0), (118.0, 174.0),
         (145.0, 192.0), (240.0, 216.0), (330.0, 248.0), (352.0, 268.0), (330.0, 290.0), (230.0, 318.0),
         (140.0, 352.0), (118.0, 374.0), (145.0, 396.0), (240.0, 428.0), (318.0, 466.0), (336.0, 490.0),
         (312.0, 512.0), (222.0, 548.0), (150.0, 590.0), (138.0, 620.0), (170.0, 650.0), (260.0, 700.0),
@@ -128,9 +130,6 @@ RUNS = (
 )
 GULLY_DEPTH_M = 7.0
 GULLY_FADE_M = (40.0, 70.0)  # the channel deepens over its first metres and fills in over its last
-# A branch blends in over its first metres, where it leaves its trunk, and a run that ends on another fades out over
-# its last ones, so neither leaves a step or a pit on the run it joins (metres; 0 for none).
-RUN_FADES = {"kettle-park": (50.0, 0.0), "the-chute": (0.0, 70.0)}
 SHOULDER_M = {"open": 22.0, "smooth": 22.0, "cat": 14.0, "gully": 26.0}  # the surface blends back into the mountain over this
 DENSIFY_STEP_M = 2.0  # centre lines are sampled this finely along their splines
 CENTRE_SMOOTH_M = 18.0  # a run's height and cross slope along its centre line are averaged over this, each way
@@ -392,8 +391,10 @@ def run_field(line: np.ndarray, reach_m: float):
     return distance, offset, segment, position
 
 
-def shape_run(heights: np.ndarray, noise: np.ndarray, run) -> dict:
-    """Shapes one run into the heights in place. Returns its sampled centre line and fields for the snow and trees."""
+def shape_run(heights: np.ndarray, noise: np.ndarray, run, claimed: np.ndarray) -> dict:
+    """Shapes one run into the heights in place, except where earlier runs have claimed the surface (1 on their cores,
+    easing to 0 across their shoulders), and adds its own claim. Returns its sampled centre line and fields for the snow
+    and trees."""
     name, _difficulty, width, shape, _snow, points = run
     line = catmull_rom(points, DENSIFY_STEP_M)
     s = along_m(line)
@@ -426,25 +427,22 @@ def shape_run(heights: np.ndarray, noise: np.ndarray, run) -> dict:
         envelope = smoothstep(s_at / GULLY_FADE_M[0]) * smoothstep((total - s_at) / GULLY_FADE_M[1])
         target = target - GULLY_DEPTH_M * envelope * (1.0 - u * u)
     weight = np.where(near, 1.0 - smoothstep((distance - half) / shoulder), 0.0)
-    fade_start, fade_end = RUN_FADES.get(name, (0.0, 0.0))
-    if fade_start > 0.0:
-        weight = weight * smoothstep(s_at / fade_start)
-    if fade_end > 0.0:
-        weight = weight * smoothstep((total - s_at) / fade_end)
-    heights[:] = heights + (np.where(near, target, heights) - heights) * weight
+    heights[:] = heights + (np.where(near, target, heights) - heights) * weight * (1.0 - claimed)
+    claimed[:] = np.maximum(claimed, weight)
     return {"name": name, "line": line, "s": s, "distance": distance, "s_at": s_at, "half": half}
 
 
 def shape_summit(heights: np.ndarray) -> None:
-    """The top station's area: level across, falling gently toward +Z."""
+    """The top station's area: the fall line's own gentle top without the noise or the peak, so it is level across X
+    and rounds over into the face as the mountain does."""
     coords = sample_coords_m()
     x = coords[np.newaxis, :]
     z = coords[:, np.newaxis]
     cx, cz = SUMMIT_CENTRE_M
-    level = float(bilinear(heights, cx, cz))
-    target = level - SUMMIT_FALL * (z - cz) + np.zeros_like(x)
+    drop = drop_profile_m()
+    target = (BASE_HEIGHT_M + drop[-1] - drop)[:, np.newaxis] + np.zeros_like(x)
     distance = np.sqrt((x - cx) ** 2 + (z - cz) ** 2)
-    weight = 1.0 - smoothstep((distance - SUMMIT_RADIUS_M) / 20.0)
+    weight = 1.0 - smoothstep((distance - SUMMIT_RADIUS_M) / SUMMIT_BLEND_M)
     heights[:] = heights + (target - heights) * weight
 
 
@@ -477,16 +475,20 @@ def kicker_height_m(x, z, kicker) -> np.ndarray:
 
 def build():
     """The heights (metres), the snow map, the runs' fields and the run order, all at once."""
-    noise = noise_m()
-    heights = base_heights_m() + noise
-    runs = []
-    for run in RUNS:
-        runs.append(shape_run(heights, noise, run))
-    shape_summit(heights)
-    shape_base(heights)
     coords = sample_coords_m()
     x = coords[np.newaxis, :]
     z = coords[:, np.newaxis]
+    # No undulation on the summit, so the runs leave the top station downhill every way.
+    cx, cz = SUMMIT_CENTRE_M
+    noise = noise_m() * smoothstep((np.sqrt((x - cx) ** 2 + (z - cz) ** 2) - SUMMIT_NOISE_FREE_M[0]) / (SUMMIT_NOISE_FREE_M[1] - SUMMIT_NOISE_FREE_M[0]))
+    heights = base_heights_m() + noise
+    # The summit first, so the runs leaving it take their heights from it; the base last, so every run ends on it.
+    shape_summit(heights)
+    claimed = np.zeros((RESOLUTION, RESOLUTION))
+    runs = []
+    for run in RUNS:
+        runs.append(shape_run(heights, noise, run, claimed))
+    shape_base(heights)
     for kicker in KICKERS:
         heights = heights + kicker_height_m(x, z, kicker)
     snow = paint_snow(heights, runs)
