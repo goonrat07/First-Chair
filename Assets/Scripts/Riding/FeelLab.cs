@@ -32,6 +32,9 @@ namespace FirstChair.Riding
 
         private static readonly string[] Tabs = { "Riding", "Camera", "Effects", "Controls" };
 
+        // How far above the lift's boarding point "Go to the lift" starts the rider, metres.
+        private const float LiftApproachMetres = 25f;
+
         // The scenes in the build to ride (Story 010), by scene name.
         private static readonly string[] Places = { "TestSlope", "TestMountain" };
 
@@ -229,6 +232,15 @@ namespace FirstChair.Riding
                     }
 
                     GUILayout.EndHorizontal();
+                    ChairLift lift = FindAnyObjectByType<ChairLift>();
+                    if (lift != null && _driver != null && GUILayout.Button("Go to the lift (start just above its bottom station)"))
+                    {
+                        // Uphill of the boarding point (the fall line runs toward +Z), so the rider rolls into it.
+                        Vector3 start = lift.BoardingPoint - Vector3.forward * LiftApproachMetres;
+                        _status = _driver.RestartRunAt(_driver.RunTuning, SimCoordinates.FromMetres(start.x), SimCoordinates.FromMetres(start.z))
+                            ?? "Started above the lift: roll into the station to ride up.";
+                    }
+
                     break;
             }
 

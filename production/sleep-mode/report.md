@@ -27,3 +27,14 @@ Started 2026-10-26T01:32:33Z · Ended (running) · Reason (running) · Commits 0
   feel sign-off is yours.
 - Not verified: the feel (your playtest), the gamepad, anything in the Unity Editor.
 
+## story-007-first-art-pass, tracks that build up and stay: done (step one)
+- Changed: `TrackRibbon.cs` (new, Core), `SkiTrack.cs` (now a ribbon laid on the snow, kept in stretches),
+  `SkierView.cs`, `RiderView.cs`, `RiderViewSettings.cs` (`trackKeptMetres` 12 000 replaces the 120 s lifetime),
+  `TestSlopeLook.cs` (translucent live and old track materials); commit 716391a.
+- Tests: 9 new TrackRibbonTests, 8 seen failing against a stub, four mutations caught; Core 116/116 at the time; CI
+  run 40258047589 compiled and built it.
+- Seen in build 40278892710: tracks stay after a restart at the top, and the next run rides over them.
+- Decisions made for you: ribbons now, not the render-texture snow shader (that needs the editor to write and check;
+  the ribbons can make way for it later).
+- Not verified: the editor; how the darker crossings read at full speed on your PC.
+

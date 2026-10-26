@@ -112,6 +112,13 @@
     Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-build-40120266835-west-tree-line-and-forest.png`.
   - [ ] Tracks should build up where skiers pass, as in GMA2, not sit as streaks on a static texture. This belongs
     to the custom snow shader.
+    Step one, sleep mode 2026-10-26 (commit 716391a): each ski lays a ribbon on the snow that stays (`TrackRibbon`,
+    `SkiTrack`), kept up to 12 km of track a ski, across runs and resets, and the live and old track materials are
+    translucent so crossings show darker. Seen in build 40278892710: after a restart at the top, the first run's
+    track is still on the snow and the second run rides over it. Evidence:
+    `production/qa/evidence/story-007-first-art-pass/2026-10-26-build-40278892710-tracks-stay-across-runs.png`.
+    Still open: grooves in the snow itself (a render texture stamped where the skis touch, read by a snow shader as
+    relief), which need the editor to write and check.
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).

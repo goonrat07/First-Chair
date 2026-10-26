@@ -151,6 +151,37 @@ namespace FirstChair.Riding
             return null;
         }
 
+        /// <summary>
+        /// Starts a new run with <paramref name="tuning"/> at rest at (<paramref name="x"/>, <paramref name="z"/>): the Feel
+        /// Lab's "Go to the lift" on the test mountain (Story 010). The new run records its own start, so its replay still
+        /// checks out.
+        /// </summary>
+        /// <param name="tuning">The riding numbers for the new run.</param>
+        /// <param name="x">Where to start, X, metres.</param>
+        /// <param name="z">Where to start, Z, metres.</param>
+        /// <returns>Null, or why the run could not start.</returns>
+        public string RestartRunAt(Tuning tuning, Fix64 x, Fix64 z)
+        {
+            TestSlopeData slope = Session?.Slope;
+            if (slope == null)
+            {
+                return "the slope could not be loaded";
+            }
+
+            RunSetup setup = slope.CreateSetup(unchecked((ulong)seed), (byte)Mathf.Clamp(assistLevel, 0, 255));
+            try
+            {
+                Begin(slope, tuning, new RunSetup(Sport.Skis, setup.AssistLevel, setup.Seed, x, z));
+            }
+            catch (ArgumentException e)
+            {
+                return e.Message;
+            }
+
+            RunTuning = tuning;
+            return null;
+        }
+
         private void Begin(TestSlopeData slope, Tuning tuning, RunSetup setup)
         {
             // Built before the old session is let go, so a tuning the sim refuses leaves the old run riding.
