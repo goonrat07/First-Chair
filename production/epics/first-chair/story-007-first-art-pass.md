@@ -95,7 +95,7 @@
     (`08_poses.py`): the knee now bends about 127 degrees, the shin points down, and the trunk leans 40 degrees forward
     with the legs, as in Mute and Tip. The hand still reaches the ski with zero error, and the round trip passes.
     Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-grab-tail-japan-refolded.png`.
-  - [ ] The slope doesn't read as a slope: give it contours and better lighting. Contours done in the terrain
+  - [x] The slope doesn't read as a slope: give it contours and better lighting. Contours done in the terrain
     (`tools/terrain/make_test_slope.py`, `ROLLERS`). Four rollers cross the whole slope, a bench then a rollover or a
     steep step then a bench, about 2 m deep over 40 to 50 m. Each swaps gradient between its halves (8 to 24 degrees),
     so the slope never rises and drops no further overall. They keep off the start, the pitch, the kickers' ramps and
@@ -105,6 +105,16 @@
     Making the slope's shape read needs the lighting pass. Options: a sun nearer the fall line or lower, less
     ambient, the snow out of the tonemapper's shoulder, or relief in the snow itself as GMA2 has. Cross-slope bumps
     off the groomer would also catch the side light.
+    Lighting pass done (2026-10-26, sleep mode): the light is data now (`LightingSettings`, applied by `LightingRig`,
+    live in the Feel Lab's Light tab), and the defaults moved the sun behind and to the right of the camera, 35 degrees
+    up (heading -30), so steeper snow faces further from it and reads darker; sun 2.2, sky light 0.8, exposure +0.3,
+    contrast 10. Variants were compared in build 40281825872 from one held view over the first rollers (the run
+    restarted in place with gravity near zero, so every shot matched): the brightness range down the screen rose from
+    12 to 26 levels of 255, the snow as bright (mean 203 against 207). The sun ahead lit steep and flat snow nearly
+    alike, and exposure alone barely helped (12 to 13). Lower ambient (0.6 to 0.7) reads more (26 to 33) but greys the
+    snow. Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-26-build-40281825872-lighting-before-after.png`.
+    Not verified in the editor. On a PC that built the scene since the Light tab landed (86bc33a), reset or delete
+    `Assets/Data/Riding/LightingSettings.asset` to pick up the new defaults: the scene builder keeps an existing asset.
   - [x] Trees maybe a little sparse. Dense forest beyond the runs: `forestWest` (between the map's west edge and the
     western tree line) and `forestEast` (east of the bowl and glade), 459 more trees (938 in all). No line through the
     tree lines or the glade is closed. Seen in build 40120266835: a left traverse from the start runs into the western

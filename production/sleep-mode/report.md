@@ -38,3 +38,16 @@ Started 2026-10-26T01:32:33Z · Ended (running) · Reason (running) · Commits 0
   the ribbons can make way for it later).
 - Not verified: the editor; how the darker crossings read at full speed on your PC.
 
+## story-007-first-art-pass, the lighting pass: done (the look is yours to judge)
+- Changed: `LightingSettings.cs` and `LightingRig.cs` (86bc33a: the scene's light as data, live in the Feel Lab's new
+  Light tab, carried by Copy values and Load saved); new defaults (this commit): the sun behind and to the right of the
+  camera (heading -30) at 35 degrees, intensity 2.2; sky light 0.8; exposure +0.3; contrast 10.
+- Tests: none automated (a look). Compared in build 40281825872 from one held view over the test slope's first
+  rollers (each variant loaded through Load saved with gravity near zero, so the rider stayed put and every shot
+  matched): the brightness range down the screen rose from 12 to 26 levels of 255, the snow as bright (mean 203
+  against 207). Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-26-build-40281825872-lighting-before-after.png`.
+- Decisions made for you: the sun moved from ahead of the camera to behind it, so steeper snow reads darker and the
+  shadows fall ahead and to the left of the rider. Exposure alone barely helped (12 to 13 levels); a lower sky light
+  (0.6 to 0.7) read more (up to 33) but greyed the snow, so 0.8.
+- Not verified: the editor; your eye. On a PC that built the scene since 86bc33a, reset or delete
+  `Assets/Data/Riding/LightingSettings.asset` to pick up the new defaults (the scene builder keeps an existing asset).
