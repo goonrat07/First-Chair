@@ -52,8 +52,8 @@ namespace FirstChair.Riding
         [Header("Ski tracks")]
         [Tooltip("Width of each ski's track, metres.")]
         [SerializeField, Min(0.01f)] private float trackWidth = 0.09f;
-        [Tooltip("How long a track stays on the snow, seconds.")]
-        [SerializeField, Min(0f)] private float trackLifetime = 120f;
+        [Tooltip("How much track each ski keeps on the snow, metres; past it the oldest goes. Tracks stay across runs, as in GMA2.")]
+        [SerializeField, Min(10f)] private float trackKeptMetres = 12000f;
         [Tooltip("Shortest step between track points, metres.")]
         [SerializeField, Min(0.01f)] private float trackMinVertexDistance = 0.3f;
         [Tooltip("Lift above the ski base, metres, so the track doesn't flicker into the snow.")]
@@ -150,8 +150,8 @@ namespace FirstChair.Riding
         public float SkierRootLift => skierRootLift;
         /// <summary>Track width, metres.</summary>
         public float TrackWidth => trackWidth;
-        /// <summary>Track lifetime, seconds.</summary>
-        public float TrackLifetime => trackLifetime;
+        /// <summary>How much track each ski keeps, metres.</summary>
+        public float TrackKeptMetres => trackKeptMetres;
         /// <summary>Shortest step between track points, metres.</summary>
         public float TrackMinVertexDistance => trackMinVertexDistance;
         /// <summary>Track lift above the ski base, metres.</summary>

@@ -127,9 +127,35 @@ namespace FirstChair.Riding.Editor
         public static Material TerrainMaterial() =>
             LitMaterial("TerrainSnow", "Universal Render Pipeline/Terrain/Lit", Color.white, 0.1f, false);
 
-        /// <summary>The ski track material: a groove in shade, a little bluer and darker than the snow, double-sided.</summary>
+        /// <summary>The ski track material: a groove in shade, a little bluer and darker than the snow, translucent and double-sided.</summary>
         public static Material TrackMaterial() =>
-            LitMaterial("SkiTrack", "Universal Render Pipeline/Lit", new Color(0.70f, 0.77f, 0.89f), 0f, true);
+            Translucent(LitMaterial("SkiTrack", "Universal Render Pipeline/Lit", TrackColour, 0f, true));
+
+        // Tracks are translucent (story 007, the user's "tracks should build up as in GMA2"): where tracks cross or ride over
+        // each other they darken, so a well-ridden line reads as worn in. One layer over white snow comes out about as the
+        // old opaque colours did, (0.70, 0.77, 0.89) live and (0.74, 0.80, 0.91) old; the old ones stay a little fainter.
+        private static readonly Color TrackColour = new Color(0.55f, 0.65f, 0.86f, 0.55f);
+        private static readonly Color OldTrackColour = new Color(0.58f, 0.66f, 0.87f, 0.50f);
+
+        // URP Lit as an alpha-blended transparent surface, set the way URP's own material editor sets it.
+        private static Material Translucent(Material material)
+        {
+            material.SetFloat("_Surface", 1f);
+            material.SetFloat("_Blend", 0f);
+            material.SetFloat("_AlphaClip", 0f);
+            material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_SrcBlendAlpha", (float)BlendMode.One);
+            material.SetFloat("_DstBlendAlpha", (float)BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_ZWrite", 0f);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.DisableKeyword("_ALPHATEST_ON");
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.renderQueue = (int)RenderQueue.Transparent;
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
 
         /// <summary>
         /// The snow spray's flake (Story 008): URP's unlit particle shader, white, a round flake cut out by alpha clipping,
@@ -433,8 +459,8 @@ namespace FirstChair.Riding.Editor
         /// <param name="slope">The slope.</param>
         public static void OldTracks(Transform parent, TestSlopeData slope)
         {
-            // A little lighter than the live track (TrackMaterial), so old tracks read as older.
-            Material material = LitMaterial("OldTrack", "Universal Render Pipeline/Lit", new Color(0.74f, 0.80f, 0.91f), 0f, false);
+            // Fainter than the live track (TrackMaterial), so old tracks read as older; translucent, so crossings build up.
+            Material material = Translucent(LitMaterial("OldTrack", "Universal Render Pipeline/Lit", OldTrackColour, 0f, false));
             for (int z = 0; z < OldTrackZones.Length; z++)
             {
                 if (!slope.Layout.TryGetZone(OldTrackZones[z], out SlopeZone zone))

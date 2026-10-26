@@ -35,7 +35,7 @@ namespace FirstChair.Riding
         [Tooltip("The pose clips in SkierPose order: Stance, CarveLeft, CarveRight, Tuck, Crouch, Air, Brake, Pole, Crash, the five grabs, RaceCarveLeft, RaceCarveRight.")]
         [SerializeField] private AnimationClip[] poseClips = new AnimationClip[SkierPoseWeights.Count];
 
-        [Tooltip("Double-sided material for the ski tracks.")]
+        [Tooltip("Translucent, double-sided material for the ski tracks.")]
         [SerializeField] private Material trackMaterial;
 
         private readonly float[] _target = new float[SkierPoseWeights.Count];
@@ -44,8 +44,11 @@ namespace FirstChair.Riding
         private readonly float[] _clipLength = new float[SkierPoseWeights.Count];
         private PlayableGraph _graph;
         private AnimationMixerPlayable _mixer;
-        private TrailRenderer _trackLeft;
-        private TrailRenderer _trackRight;
+        private Transform _skiLeft;
+        private Transform _skiRight;
+        private SkiTrack _trackLeft;
+        private SkiTrack _trackRight;
+        private RideSession _paintedSession;
         private float _clock;
 
         private void Awake()
@@ -80,8 +83,10 @@ namespace FirstChair.Riding
 
             // The props are attached in the Stance pose, where both feet are flat and point forward (see AttachSki).
             Quaternion skierRotation = skier.transform.rotation;
-            _trackLeft = AttachSki(skier.transform, settings.SkierSkiSocketLeft, skierRotation, out Quaternion leftFrame);
-            _trackRight = AttachSki(skier.transform, settings.SkierSkiSocketRight, skierRotation, out Quaternion rightFrame);
+            _skiLeft = AttachSki(skier.transform, settings.SkierSkiSocketLeft, skierRotation, out Quaternion leftFrame);
+            _skiRight = AttachSki(skier.transform, settings.SkierSkiSocketRight, skierRotation, out Quaternion rightFrame);
+            _trackLeft = _skiLeft != null ? new SkiTrack("Ski track L", trackMaterial, settings) : null;
+            _trackRight = _skiRight != null ? new SkiTrack("Ski track R", trackMaterial, settings) : null;
             AttachPole(skier.transform, settings.SkierHandSocketLeft, leftFrame);
             AttachPole(skier.transform, settings.SkierHandSocketRight, rightFrame);
         }
@@ -92,6 +97,9 @@ namespace FirstChair.Riding
             {
                 _graph.Destroy();
             }
+
+            _trackLeft?.Dispose();
+            _trackRight?.Dispose();
         }
 
         private void LateUpdate()
@@ -127,15 +135,12 @@ namespace FirstChair.Riding
                 _graph.Evaluate(0f);
             }
 
+            // The tracks break across a reset or a new run, so no ribbon is drawn between the two spots.
             bool onSnow = !current.Airborne && !current.Crashed;
-            if (session.SnappedThisFrame)
-            {
-                Clear(_trackLeft);
-                Clear(_trackRight);
-            }
-
-            SetEmitting(_trackLeft, onSnow);
-            SetEmitting(_trackRight, onSnow);
+            bool jumped = session.SnappedThisFrame || session != _paintedSession;
+            _paintedSession = session;
+            Paint(_trackLeft, _skiLeft, position, normal, onSnow, jumped);
+            Paint(_trackRight, _skiRight, position, normal, onSnow, jumped);
         }
 
         private void BuildGraph(Animator animator)
@@ -180,7 +185,7 @@ namespace FirstChair.Riding
         // attached with an identity rotation stood the skis on end and laid the poles along the fingers (playtest,
         // 2026-10-23). Instead the ski is lined up with the skier itself in the Stance pose, where the feet are flat and
         // point forward, and the resulting frame (skier socket to prop socket) is handed to the pole on the same side.
-        private TrailRenderer AttachSki(Transform skier, string socketName, Quaternion skierRotation, out Quaternion socketFrame)
+        private Transform AttachSki(Transform skier, string socketName, Quaternion skierRotation, out Quaternion socketFrame)
         {
             socketFrame = Quaternion.identity;
             Transform socket = ViewHelpers.FindSocket(skier, socketName);
@@ -200,7 +205,7 @@ namespace FirstChair.Riding
             Quaternion local = Quaternion.Inverse(socket.rotation) * skierRotation;
             Place(ski, local, bootPosition);
             socketFrame = local * bootRotation;
-            return SkiTrack.Create(ski, trackMaterial, settings);
+            return ski;
         }
 
         private void AttachPole(Transform skier, string socketName, Quaternion socketFrame)
@@ -245,19 +250,11 @@ namespace FirstChair.Riding
             prop.localPosition = -(localRotation * Vector3.Scale(prop.localScale, socketInModel));
         }
 
-        private static void SetEmitting(TrailRenderer track, bool emitting)
+        private static void Paint(SkiTrack track, Transform ski, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
         {
-            if (track != null && track.emitting != emitting)
+            if (track != null && ski != null)
             {
-                track.emitting = emitting;
-            }
-        }
-
-        private static void Clear(TrailRenderer track)
-        {
-            if (track != null)
-            {
-                track.Clear();
+                track.Paint(ski.position, snowPoint, snowNormal, onSnow, jumped);
             }
         }
     }

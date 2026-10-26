@@ -24,12 +24,15 @@ namespace FirstChair.Riding
             + "default material, which URP draws magenta in a player.")]
         [SerializeField] private Material bodyMaterial;
 
-        [Tooltip("Double-sided material for the ski tracks.")]
+        [Tooltip("Translucent, double-sided material for the ski tracks.")]
         [SerializeField] private Material trackMaterial;
 
         private Transform _lean;
-        private TrailRenderer _trackLeft;
-        private TrailRenderer _trackRight;
+        private Transform _skiLeft;
+        private Transform _skiRight;
+        private SkiTrack _trackLeft;
+        private SkiTrack _trackRight;
+        private RideSession _paintedSession;
 
         private void Awake()
         {
@@ -54,24 +57,26 @@ namespace FirstChair.Riding
             transform.SetPositionAndRotation(position, rotation);
             _lean.localRotation = Quaternion.Euler(0f, 0f, pose.RollDegrees * settings.LeanScale);
 
+            // The tracks break across a reset or a new run, so no ribbon is drawn between the two spots.
             bool onSnow = !pose.Airborne && !pose.Crashed;
-            UpdateTrack(_trackLeft, onSnow, driver.Session.SnappedThisFrame);
-            UpdateTrack(_trackRight, onSnow, driver.Session.SnappedThisFrame);
+            bool jumped = driver.Session.SnappedThisFrame || driver.Session != _paintedSession;
+            _paintedSession = driver.Session;
+            Paint(_trackLeft, _skiLeft, position, normal, onSnow, jumped);
+            Paint(_trackRight, _skiRight, position, normal, onSnow, jumped);
         }
 
-        private static void UpdateTrack(TrailRenderer track, bool onSnow, bool snapped)
+        private void OnDestroy()
         {
-            if (track == null)
-            {
-                return;
-            }
+            _trackLeft?.Dispose();
+            _trackRight?.Dispose();
+        }
 
-            if (snapped)
+        private static void Paint(SkiTrack track, Transform ski, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
+        {
+            if (track != null && ski != null)
             {
-                track.Clear();
+                track.Paint(ski.position, snowPoint, snowNormal, onSnow, jumped);
             }
-
-            track.emitting = onSnow;
         }
 
         private void BuildPlaceholder()
@@ -91,13 +96,15 @@ namespace FirstChair.Riding
                     ski.name = side < 0 ? "Ski_L" : "Ski_R";
                     ski.localPosition = skiOrigin;
                     ski.localRotation = Quaternion.identity;
-                    TrailRenderer track = SkiTrack.Create(ski, trackMaterial, settings);
+                    var track = new SkiTrack(side < 0 ? "Ski track L" : "Ski track R", trackMaterial, settings);
                     if (side < 0)
                     {
+                        _skiLeft = ski;
                         _trackLeft = track;
                     }
                     else
                     {
+                        _skiRight = ski;
                         _trackRight = track;
                     }
 
