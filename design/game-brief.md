@@ -22,7 +22,7 @@ after this MVP. What the user says in session overrides both. -->
 - Air: hold-to-load jumps, spins, flips and grabs, landings graded clean, solid or sketchy, crashes, and tap-to-reset.
 - Trees: near misses fill Flow, branch clips cost speed, trunk hits crash.
 - Rails and boxes with grinds, and single-trick scoring and naming.
-- One test slope (groomer, powder bowl, kicker line, short glade) on a heightmap shared by the sim and Unity Terrain, with a high, pulled-back follow camera like GMA2's (a Steep-style chase cam can come later) and keyboard plus gamepad input.
+- One test slope (groomer, powder bowl, kicker line, short glade) on a heightmap shared by the sim and Unity Terrain, with a Steep-style chase camera (behind the rider along the travel, tilting with the snow ahead, closing in with speed; it replaced the earlier GMA2-style far camera on 2026-10-26) and keyboard plus gamepad input.
 - First real art toward the target look: skier, skis, poles, trees, snow trails and lighting.
 
 ## Out of scope — not building this
@@ -35,7 +35,7 @@ after this MVP. What the user says in session overrides both. -->
 ## Build order
 1. Sim skeleton and the replay determinism test, running under `dotnet test` and CI.
 2. Glide and carve on the test slope. This is the core fun, so prove turning feels good first.
-3. Unity view: terrain from the same heightmap, placeholder skier, GMA2-style follow camera and input, playable on the PC.
+3. Unity view: terrain from the same heightmap, placeholder skier, follow camera (GMA2-style at first, a Steep-style chase camera since 2026-10-26) and input, playable on the PC.
 4. Snow types, jumps, air tricks, landings, crashes and reset.
 5. Trees and Flow, then rails and trick scoring.
 6. Art pass toward the target look.

@@ -3,75 +3,99 @@ using UnityEngine;
 namespace FirstChair.Riding
 {
     /// <summary>
-    /// The follow camera's tuning, as data, after Grand Mountain Adventure 2's gameplay view as measured from the user's
-    /// screenshots (<c>art/reference/style-notes-gma2.md</c>, "Gameplay camera") and the user's first playtest
-    /// (2026-10-23): straight behind the rider, uphill, looking down the line of travel about 30° steeper than the snow,
-    /// through a fairly narrow 50 mm lens from 45 m (the rider about 8 percent of the screen height), near the bottom of
-    /// the screen, so more of the mountain ahead is in view, and roughly centred left to right: the rider may drift a
-    /// little each way before the camera follows. However fast the rider goes, the feet stay above
-    /// <see cref="LowestRiderOnScreen"/>.
+    /// The follow camera's tuning, as data: a Steep-style chase camera (Story 011, from the user's Steep screenshots,
+    /// 2026-10-26). It sits behind the rider along the travel, at a height above the snow under it, and looks at a point
+    /// just ahead of the rider, so the rider sits in the lower middle of the screen and the view follows the slope by
+    /// itself; it tilts further down over a rollover, closes in and drops lower with speed and in a fast tuck, widens and
+    /// blurs at the edges with speed, and never goes under the snow. Every number is live in the Feel Lab's Camera tab.
     /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Follow Camera Settings", fileName = "FollowCameraSettings")]
     public sealed class FollowCameraSettings : ScriptableObject
     {
-        [Header("Placement")]
-        [Tooltip("How far the camera looks down past the slope's own angle along the view, degrees. About 30 above the "
-            + "snow, so on a 17 degree groomer the camera looks down 47 degrees and sees well ahead.")]
-        [SerializeField, Range(5f, 85f)] private float pitchAboveSlopeDegrees = 30f;
-        [Tooltip("Least and most the camera looks down below the horizon, degrees.")]
-        [SerializeField, Range(5f, 89f)] private float minPitchDegrees = 30f;
-        [SerializeField, Range(5f, 89f)] private float maxPitchDegrees = 72f;
-        [Tooltip("How slowly the pitch follows the slope, seconds.")]
-        [SerializeField, Min(0f)] private float pitchSmoothTime = 1f;
-        [Tooltip("Distance from the aim point, metres. 45 m with the 50 mm lens makes the rider about 8% of the screen height.")]
-        [SerializeField, Min(1f)] private float distance = 45f;
+        [Header("Placement (behind the rider along the travel)")]
+        [Tooltip("How far behind the rider, metres along the ground, standing still.")]
+        [SerializeField, Min(0.5f)] private float backDistance = 5.5f;
+        [Tooltip("How far behind at full speed (Close-in speed), not tucked, metres.")]
+        [SerializeField, Min(0.5f)] private float fastBackDistance = 4.5f;
+        [Tooltip("How far behind at full speed in a tuck, metres: a fast tuck pulls the camera in, so it reads faster.")]
+        [SerializeField, Min(0.5f)] private float tuckBackDistance = 3.5f;
+        [Tooltip("The camera's height above the snow under it, standing still, metres.")]
+        [SerializeField, Min(0.1f)] private float height = 1.7f;
+        [Tooltip("Its height at full speed, not tucked, metres.")]
+        [SerializeField, Min(0.1f)] private float fastHeight = 1.4f;
+        [Tooltip("Its height at full speed in a tuck, metres.")]
+        [SerializeField, Min(0.1f)] private float tuckHeight = 1.0f;
+        [Tooltip("The speed where the full-speed and tuck numbers apply in full, m/s (25 is 90 km/h); between, they ease in.")]
+        [SerializeField, Min(0.1f)] private float closeInSpeed = 25f;
         [Tooltip("Aim point height above the rider's feet, metres.")]
-        [SerializeField] private float aimHeight = 1f;
+        [SerializeField] private float aimHeight = 1.2f;
+        [Tooltip("Aim point height above the feet in a fast tuck, metres (the tucked rider is lower).")]
+        [SerializeField] private float tuckAimHeight = 0.8f;
+        [Tooltip("How quickly the camera moves in and out as the rider tucks and stands, seconds.")]
+        [SerializeField, Min(0f)] private float tuckSmoothTime = 0.4f;
 
         [Header("Direction")]
-        [Tooltip("0 looks straight down the fall line; 1 looks along the rider's travel. GMA2 sits behind the rider, so "
-            + "mostly travel, with some fall line so S-turns don't swing the view.")]
-        [SerializeField, Range(0f, 1f)] private float travelWeight = 0.6f;
-        [Tooltip("Below this speed, metres per second, the camera looks down the fall line only.")]
-        [SerializeField, Min(0f)] private float minTravelSpeed = 2f;
-        [Tooltip("How slowly the view direction follows, seconds.")]
-        [SerializeField, Min(0f)] private float yawSmoothTime = 1.2f;
+        [Tooltip("0 looks straight down the fall line; 1 looks along the rider's travel, as a chase camera does.")]
+        [SerializeField, Range(0f, 1f)] private float travelWeight = 1f;
+        [Tooltip("Below this speed, metres per second, the camera keeps its last direction (or looks down the fall line).")]
+        [SerializeField, Min(0f)] private float minTravelSpeed = 1.5f;
+        [Tooltip("How slowly the view direction follows the travel, seconds.")]
+        [SerializeField, Min(0f)] private float yawSmoothTime = 0.3f;
 
-        [Header("Look-ahead (puts the rider near the bottom of the screen)")]
-        [Tooltip("Aim this far ahead of the rider along the view direction when stopped, metres.")]
-        [SerializeField, Min(0f)] private float lookAheadBase = 7f;
+        [Header("Looking ahead")]
+        [Tooltip("Aim this far ahead of the rider along the travel when stopped, metres.")]
+        [SerializeField, Min(0f)] private float lookAheadBase = 1.5f;
         [Tooltip("Extra look-ahead per metre per second of speed, seconds.")]
-        [SerializeField, Min(0f)] private float lookAheadPerSpeed = 0.25f;
+        [SerializeField, Min(0f)] private float lookAheadPerSpeed = 0.1f;
         [Tooltip("Most look-ahead, metres.")]
-        [SerializeField, Min(0f)] private float lookAheadMax = 13f;
-        [Tooltip("The lowest the rider's feet may sit on screen, as a share of the screen height from the top (0.5 is the "
-            + "middle). The look-ahead never carries the rider lower, whatever the speed and frame rate; stopped, the "
-            + "rider sits about 0.8 of the way down.")]
-        [SerializeField, Range(0.55f, 0.98f)] private float lowestRiderOnScreen = 0.85f;
+        [SerializeField, Min(0f)] private float lookAheadMax = 4f;
+        [Tooltip("The near and far points ahead along the travel where the camera reads the snow, metres: where it drops away "
+            + "more steeply than under the rider (a rollover, a steep face), the camera tilts down to show it.")]
+        [SerializeField, Min(0.5f)] private float aheadNearMetres = 6f;
+        [SerializeField, Min(0.5f)] private float aheadFarMetres = 16f;
+        [Tooltip("The share of the extra drop ahead the camera tilts down by, 0 to 1.")]
+        [SerializeField, Range(0f, 1f)] private float rolloverTiltFactor = 0.6f;
+        [Tooltip("The most it tilts down for the drop ahead, degrees.")]
+        [SerializeField, Min(0f)] private float rolloverTiltMax = 15f;
+        [Tooltip("Least and most the camera looks down below the horizon, degrees (negative looks up).")]
+        [SerializeField, Range(-45f, 89f)] private float minPitchDegrees = -10f;
+        [SerializeField, Range(-45f, 89f)] private float maxPitchDegrees = 60f;
+        [Tooltip("How slowly the pitch follows, seconds.")]
+        [SerializeField, Min(0f)] private float pitchSmoothTime = 0.25f;
+
+        [Header("Clearance (never under the snow)")]
+        [Tooltip("The least height above the snow under the camera, metres.")]
+        [SerializeField, Min(0f)] private float cameraClearance = 0.8f;
+        [Tooltip("The least height of the camera's line to the rider above the snow in between, metres.")]
+        [SerializeField, Min(0f)] private float sightlineClearance = 0.4f;
+        [Tooltip("How quickly the camera rises to clear the snow, seconds (short, so it never dips into it).")]
+        [SerializeField, Min(0f)] private float riseSmoothTime = 0.05f;
+        [Tooltip("How slowly it settles back down once clear, seconds.")]
+        [SerializeField, Min(0f)] private float settleSmoothTime = 0.5f;
 
         [Header("Lens")]
-        [SerializeField, Min(1f)] private float focalLengthMm = 50f;
+        [Tooltip("Focal length, millimetres: 20 on the 24 mm sensor is a wide 62 degree vertical view, as in Steep.")]
+        [SerializeField, Min(1f)] private float focalLengthMm = 20f;
         [Tooltip("24 mm is full-frame height.")]
         [SerializeField, Min(1f)] private float sensorHeightMm = 24f;
-        [SerializeField, Min(0.01f)] private float nearClip = 1f;
+        [SerializeField, Min(0.01f)] private float nearClip = 0.15f;
         [SerializeField, Min(10f)] private float farClip = 2000f;
 
-        [Header("Drift (the rider has a little room sideways, as in GMA2)")]
-        [Tooltip("How far the rider may drift left or right of the aim before the camera follows, metres. About 2.5 m "
-            + "is 6% of the screen width each way at 45 m; 0 pins the rider to the middle.")]
-        [SerializeField, Min(0f)] private float driftMetres = 2.5f;
-        [Tooltip("How slowly the camera eases back to centre the rider inside the drift zone, seconds.")]
-        [SerializeField, Min(0f)] private float driftReturnTime = 1.5f;
-
-        [Header("Speed effects (Story 009: speed should look fast)")]
+        [Header("Speed effects")]
         [Tooltip("Degrees the view widens per m/s of speed: a wider view makes speed read faster.")]
-        [SerializeField, Min(0f)] private float fovPerSpeed = 0.12f;
+        [SerializeField, Min(0f)] private float fovPerSpeed = 0.45f;
         [Tooltip("The most degrees the view widens.")]
-        [SerializeField, Min(0f)] private float fovSpeedMax = 5f;
+        [SerializeField, Min(0f)] private float fovSpeedMax = 12f;
         [Tooltip("How slowly the view's width follows the speed, seconds.")]
-        [SerializeField, Min(0f)] private float fovSmoothTime = 0.6f;
+        [SerializeField, Min(0f)] private float fovSmoothTime = 0.5f;
+        [Tooltip("Speed where the screen's edges start to blur with the camera's motion, m/s (15 is 54 km/h).")]
+        [SerializeField, Min(0f)] private float blurFromSpeed = 15f;
+        [Tooltip("Speed of the full blur, m/s.")]
+        [SerializeField, Min(0f)] private float blurFullSpeed = 30f;
+        [Tooltip("The full blur's strength, 0 to 1 (URP motion blur intensity); 0 turns it off.")]
+        [SerializeField, Range(0f, 1f)] private float blurMost = 0.5f;
         [Tooltip("Degrees the camera banks into a turn per g of sideways acceleration.")]
-        [SerializeField, Min(0f)] private float rollPerG = 2.5f;
+        [SerializeField, Min(0f)] private float rollPerG = 1.5f;
         [Tooltip("The most the camera banks, degrees; 0 turns it off.")]
         [SerializeField, Min(0f)] private float rollMax = 3f;
         [Tooltip("How slowly the bank follows the turn, seconds.")]
@@ -81,30 +105,39 @@ namespace FirstChair.Riding
         [Tooltip("Speed of the full shake, m/s.")]
         [SerializeField, Min(0f)] private float shakeFullSpeed = 35f;
         [Tooltip("The full shake's size, degrees; 0 turns it off.")]
-        [SerializeField, Min(0f)] private float shakeDegrees = 0.12f;
+        [SerializeField, Min(0f)] private float shakeDegrees = 0.15f;
         [Tooltip("The shake's rate, cycles per second.")]
         [SerializeField, Min(0f)] private float shakeFrequency = 7f;
 
         [Header("Smoothing (seconds; 0 snaps)")]
-        [SerializeField, Min(0f)] private float positionSmoothTime = 0.15f;
-        [Tooltip("A jump of the aim point larger than this, metres (a reset), snaps instead of smoothing.")]
+        [Tooltip("How closely the camera's place follows the rider, seconds.")]
+        [SerializeField, Min(0f)] private float positionSmoothTime = 0.08f;
+        [Tooltip("A jump of the rider larger than this, metres (a reset), snaps instead of smoothing.")]
         [SerializeField, Min(0f)] private float snapDistance = 30f;
 
-        /// <summary>Pitch past the slope's angle along the view, degrees.</summary>
-        public float PitchAboveSlopeDegrees => pitchAboveSlopeDegrees;
-        /// <summary>Least pitch below the horizon, degrees.</summary>
-        public float MinPitchDegrees => minPitchDegrees;
-        /// <summary>Most pitch below the horizon, degrees.</summary>
-        public float MaxPitchDegrees => maxPitchDegrees;
-        /// <summary>Pitch smoothing time, seconds.</summary>
-        public float PitchSmoothTime => pitchSmoothTime;
-        /// <summary>Distance, metres.</summary>
-        public float Distance => distance;
-        /// <summary>Aim height, metres.</summary>
+        /// <summary>Distance behind the rider standing still, metres.</summary>
+        public float BackDistance => backDistance;
+        /// <summary>Distance behind at full speed, not tucked, metres.</summary>
+        public float FastBackDistance => fastBackDistance;
+        /// <summary>Distance behind at full speed in a tuck, metres.</summary>
+        public float TuckBackDistance => tuckBackDistance;
+        /// <summary>Height above the snow standing still, metres.</summary>
+        public float Height => height;
+        /// <summary>Height above the snow at full speed, not tucked, metres.</summary>
+        public float FastHeight => fastHeight;
+        /// <summary>Height above the snow at full speed in a tuck, metres.</summary>
+        public float TuckHeight => tuckHeight;
+        /// <summary>The speed where the full-speed and tuck numbers apply in full, m/s.</summary>
+        public float CloseInSpeed => closeInSpeed;
+        /// <summary>Aim height above the feet, metres.</summary>
         public float AimHeight => aimHeight;
+        /// <summary>Aim height above the feet in a fast tuck, metres.</summary>
+        public float TuckAimHeight => tuckAimHeight;
+        /// <summary>Tuck smoothing time, seconds.</summary>
+        public float TuckSmoothTime => tuckSmoothTime;
         /// <summary>Weight of the travel direction against the fall line, 0 to 1.</summary>
         public float TravelWeight => travelWeight;
-        /// <summary>Speed below which only the fall line counts, metres per second.</summary>
+        /// <summary>Speed below which travel doesn't count, metres per second.</summary>
         public float MinTravelSpeed => minTravelSpeed;
         /// <summary>View direction smoothing time, seconds.</summary>
         public float YawSmoothTime => yawSmoothTime;
@@ -114,8 +147,28 @@ namespace FirstChair.Riding
         public float LookAheadPerSpeed => lookAheadPerSpeed;
         /// <summary>Most look-ahead, metres.</summary>
         public float LookAheadMax => lookAheadMax;
-        /// <summary>The lowest the rider's feet may sit on screen, as a share of the screen height from the top.</summary>
-        public float LowestRiderOnScreen => lowestRiderOnScreen;
+        /// <summary>The near point ahead where the snow is read, metres.</summary>
+        public float AheadNearMetres => aheadNearMetres;
+        /// <summary>The far point ahead where the snow is read, metres.</summary>
+        public float AheadFarMetres => aheadFarMetres;
+        /// <summary>The share of the extra drop ahead the camera tilts by.</summary>
+        public float RolloverTiltFactor => rolloverTiltFactor;
+        /// <summary>The most tilt for the drop ahead, degrees.</summary>
+        public float RolloverTiltMax => rolloverTiltMax;
+        /// <summary>Least pitch below the horizon, degrees.</summary>
+        public float MinPitchDegrees => minPitchDegrees;
+        /// <summary>Most pitch below the horizon, degrees.</summary>
+        public float MaxPitchDegrees => maxPitchDegrees;
+        /// <summary>Pitch smoothing time, seconds.</summary>
+        public float PitchSmoothTime => pitchSmoothTime;
+        /// <summary>Least height above the snow under the camera, metres.</summary>
+        public float CameraClearance => cameraClearance;
+        /// <summary>Least height of the line to the rider above the snow, metres.</summary>
+        public float SightlineClearance => sightlineClearance;
+        /// <summary>Rise smoothing time, seconds.</summary>
+        public float RiseSmoothTime => riseSmoothTime;
+        /// <summary>Settle smoothing time, seconds.</summary>
+        public float SettleSmoothTime => settleSmoothTime;
         /// <summary>Focal length, millimetres.</summary>
         public float FocalLengthMm => focalLengthMm;
         /// <summary>Sensor height, millimetres.</summary>
@@ -124,16 +177,18 @@ namespace FirstChair.Riding
         public float NearClip => nearClip;
         /// <summary>Far clip plane, metres.</summary>
         public float FarClip => farClip;
-        /// <summary>Sideways room before the camera follows, metres.</summary>
-        public float DriftMetres => driftMetres;
-        /// <summary>Time to ease back to centre inside the drift zone, seconds.</summary>
-        public float DriftReturnTime => driftReturnTime;
         /// <summary>Degrees the view widens per m/s of speed.</summary>
         public float FovPerSpeed => fovPerSpeed;
         /// <summary>The most degrees the view widens.</summary>
         public float FovSpeedMax => fovSpeedMax;
         /// <summary>View-width smoothing time, seconds.</summary>
         public float FovSmoothTime => fovSmoothTime;
+        /// <summary>Speed where the edge blur starts, m/s.</summary>
+        public float BlurFromSpeed => blurFromSpeed;
+        /// <summary>Speed of the full edge blur, m/s.</summary>
+        public float BlurFullSpeed => blurFullSpeed;
+        /// <summary>The full blur's strength, 0 to 1.</summary>
+        public float BlurMost => blurMost;
         /// <summary>Degrees of bank per g of sideways acceleration.</summary>
         public float RollPerG => rollPerG;
         /// <summary>The most bank, degrees.</summary>
@@ -148,7 +203,7 @@ namespace FirstChair.Riding
         public float ShakeDegrees => shakeDegrees;
         /// <summary>The shake's rate, cycles per second.</summary>
         public float ShakeFrequency => shakeFrequency;
-        /// <summary>Aim smoothing time, seconds.</summary>
+        /// <summary>Position smoothing time, seconds.</summary>
         public float PositionSmoothTime => positionSmoothTime;
         /// <summary>Snap distance, metres.</summary>
         public float SnapDistance => snapDistance;

@@ -2,30 +2,20 @@ using System;
 
 namespace FirstChair.Riding
 {
-    /// <summary>The follow camera's math, kept out of the MonoBehaviour so it can be tested.</summary>
+    /// <summary>
+    /// The follow camera's math, kept out of the MonoBehaviour so it can be tested: the Steep-style chase camera of Story 011
+    /// (behind the rider along the travel, at a height above the snow, tilting toward the snow ahead, closing in with speed
+    /// and tuck), with the speed effects of Story 009.
+    /// </summary>
     public static class FollowCameraMath
     {
         private const double DegreesPerRadian = 180.0 / Math.PI;
 
         /// <summary>The vertical field of view, degrees, of a lens on a sensor of the given height.</summary>
-        /// <param name="focalLengthMm">Focal length, millimetres (35 for the GMA2-like view).</param>
+        /// <param name="focalLengthMm">Focal length, millimetres (20 for the chase camera's wide view).</param>
         /// <param name="sensorHeightMm">Sensor height, millimetres (24 for full frame).</param>
         public static double VerticalFovDegrees(double focalLengthMm, double sensorHeightMm) =>
             2.0 * Math.Atan(sensorHeightMm / (2.0 * focalLengthMm)) * DegreesPerRadian;
-
-        /// <summary>
-        /// The camera's offset from its aim point: Unity's <c>Quaternion.Euler(elevation, azimuth, 0) * (0, 0, -distance)</c>,
-        /// that is (-d cos(el) sin(az), d sin(el), -d cos(el) cos(az)). Pass the view's yaw as the azimuth to put the
-        /// camera behind and above the aim point; azimuth 0 sits up-slope (-Z) looking down the fall line (+Z).
-        /// </summary>
-        public static void Offset(double azimuthDegrees, double elevationDegrees, double distance, out float x, out float y, out float z)
-        {
-            double az = azimuthDegrees / DegreesPerRadian;
-            double el = elevationDegrees / DegreesPerRadian;
-            x = (float)(-distance * Math.Cos(el) * Math.Sin(az));
-            y = (float)(distance * Math.Sin(el));
-            z = (float)(-distance * Math.Cos(el) * Math.Cos(az));
-        }
 
         /// <summary>The yaw, degrees, of a direction on the ground: 0 = +Z, 90 = +X (Unity's yaw).</summary>
         /// <param name="x">Direction X.</param>
@@ -33,8 +23,8 @@ namespace FirstChair.Riding
         public static double YawDegrees(double x, double z) => Math.Atan2(x, z) * DegreesPerRadian;
 
         /// <summary>
-        /// The ground direction the camera looks along, as GMA2's does: the fall line blended with the rider's travel
-        /// direction. Travel counts only at or above <paramref name="minTravelSpeed"/>; with no usable fall line (flat
+        /// The ground direction the camera looks along: the fall line blended with the rider's travel direction (the chase
+        /// camera takes travel only). Travel counts only at or above <paramref name="minTravelSpeed"/>; with no usable fall line (flat
         /// snow) travel counts fully. Returns false, with (0, 0), when neither is usable, so the caller keeps its last
         /// direction.
         /// </summary>
@@ -100,13 +90,92 @@ namespace FirstChair.Riding
             return Math.Atan((normalX * directionX + normalZ * directionZ) / normalY) * DegreesPerRadian;
         }
 
-        /// <summary>The camera's pitch below the horizon: the slope's fall along the view plus a margin, clamped.</summary>
-        /// <param name="slopeDownDegrees">From <see cref="SlopeDownAlongDegrees"/>.</param>
-        /// <param name="aboveSlopeDegrees">Margin above the snow, degrees.</param>
-        /// <param name="minDegrees">Least pitch.</param>
-        /// <param name="maxDegrees">Most pitch.</param>
-        public static double Pitch(double slopeDownDegrees, double aboveSlopeDegrees, double minDegrees, double maxDegrees) =>
-            Math.Max(minDegrees, Math.Min(maxDegrees, slopeDownDegrees + aboveSlopeDegrees));
+        /// <summary>
+        /// How steeply the snow drops away ahead of the rider, degrees (Story 011): the steeper of the drops from the snow
+        /// at the rider to the snow at two points ahead along the travel, so over a rollover the chase camera tilts down to
+        /// show what is coming before the rider gets there. Negative when both points are higher (uphill, the gentler
+        /// rise); a point at no distance counts as flat.
+        /// </summary>
+        /// <param name="heightHere">The snow's height under the rider, metres.</param>
+        /// <param name="nearDistance">How far ahead the near point is, metres.</param>
+        /// <param name="heightNear">The snow's height at the near point, metres.</param>
+        /// <param name="farDistance">How far ahead the far point is, metres.</param>
+        /// <param name="heightFar">The snow's height at the far point, metres.</param>
+        /// <returns>Degrees below the horizon; compare it with the slope here in <see cref="RolloverTiltDegrees"/>.</returns>
+        public static double DropAheadDegrees(double heightHere, double nearDistance, double heightNear, double farDistance, double heightFar)
+        {
+            double near = nearDistance > 1e-6 ? Math.Atan((heightHere - heightNear) / nearDistance) * DegreesPerRadian : double.NegativeInfinity;
+            double far = farDistance > 1e-6 ? Math.Atan((heightHere - heightFar) / farDistance) * DegreesPerRadian : double.NegativeInfinity;
+            double steepest = Math.Max(near, far);
+            return double.IsNegativeInfinity(steepest) ? 0.0 : steepest;
+        }
+
+        /// <summary>
+        /// A chase camera number that changes with speed and tuck (Story 011), such as its distance or its pitch over the
+        /// snow: <paramref name="atRest"/> standing still, easing (smoothstep) to <paramref name="atSpeed"/> at
+        /// <paramref name="fullSpeed"/>, and toward <paramref name="tucked"/> as much as the rider is tucked and fast, so a
+        /// fast tuck pulls the camera in and down and a tuck at rest changes nothing.
+        /// </summary>
+        /// <param name="atRest">The value standing still.</param>
+        /// <param name="atSpeed">The value at full speed, not tucked.</param>
+        /// <param name="tucked">The value at full speed, fully tucked.</param>
+        /// <param name="speed">Rider speed, metres per second.</param>
+        /// <param name="fullSpeed">The speed where the speed and tuck values apply in full, metres per second; at or below
+        /// 0 they always do.</param>
+        /// <param name="tuck">How tucked the rider is, 0 to 1 (smoothed by the caller).</param>
+        public static double ChaseValue(double atRest, double atSpeed, double tucked, double speed, double fullSpeed, double tuck)
+        {
+            double share = fullSpeed > 0.0 ? Math.Max(0.0, Math.Min(1.0, speed / fullSpeed)) : 1.0;
+            share = share * share * (3.0 - 2.0 * share);
+            double open = atRest + (atSpeed - atRest) * share;
+            return open + (tucked - open) * Math.Max(0.0, Math.Min(1.0, tuck)) * share;
+        }
+
+        /// <summary>
+        /// How far to raise the chase camera so its line to the aim clears the snow at one point (Story 011). The point sits
+        /// <paramref name="fraction"/> of the way from the aim (0) to the camera (1) along the ground, and the line must
+        /// pass at least <paramref name="margin"/> above the snow there; raising the camera lifts the line in proportion to
+        /// the fraction. Take the largest over the points sampled, with the camera's own point at fraction 1.
+        /// </summary>
+        /// <param name="aimHeight">The aim point's height, metres.</param>
+        /// <param name="cameraHeight">The camera's height before any rise, metres.</param>
+        /// <param name="fraction">Where the point is, from the aim (0) to the camera (1); at the aim nothing can clear it.</param>
+        /// <param name="snowHeight">The snow's height at the point, metres.</param>
+        /// <param name="margin">The clearance wanted there, metres.</param>
+        /// <returns>The rise, metres; 0 when the line already clears.</returns>
+        public static double RiseToClear(double aimHeight, double cameraHeight, double fraction, double snowHeight, double margin)
+        {
+            if (!(fraction > 1e-6))
+            {
+                return 0.0;
+            }
+
+            double shortfall = snowHeight + margin - (aimHeight + fraction * (cameraHeight - aimHeight));
+            return shortfall > 0.0 ? shortfall / fraction : 0.0;
+        }
+
+        /// <summary>
+        /// The extra downward tilt over a rollover, degrees (Story 011): a share of how much steeper the snow ahead drops
+        /// than the slope under the rider, at most <paramref name="most"/>. On a steady slope the chase camera's place above
+        /// the snow already frames the slope, so only a steeper drop ahead (a rollover, the lip of a steep face) tilts it.
+        /// </summary>
+        /// <param name="dropAheadDegrees">From <see cref="DropAheadDegrees"/>.</param>
+        /// <param name="slopeHereDegrees">The slope's fall under the rider along the travel (<see cref="SlopeDownAlongDegrees"/>).</param>
+        /// <param name="factor">The share of the difference, 0 to 1.</param>
+        /// <param name="most">The most tilt, degrees.</param>
+        public static double RolloverTiltDegrees(double dropAheadDegrees, double slopeHereDegrees, double factor, double most) =>
+            Math.Max(0.0, Math.Min(Math.Max(0.0, most), Math.Max(0.0, factor) * (dropAheadDegrees - slopeHereDegrees)));
+
+        /// <summary>
+        /// How strongly the screen's edges blur at a speed, 0 to <paramref name="most"/> (Story 011): nothing below
+        /// <paramref name="fromSpeed"/>, rising on the shake's squared ramp to the most at <paramref name="fullSpeed"/>.
+        /// </summary>
+        /// <param name="speed">Rider speed, m/s.</param>
+        /// <param name="fromSpeed">Speed where the blur starts, m/s.</param>
+        /// <param name="fullSpeed">Speed of the full blur, m/s.</param>
+        /// <param name="most">The strongest blur (URP motion blur intensity, 0 to 1); 0 or less turns it off.</param>
+        public static double MotionBlurIntensity(double speed, double fromSpeed, double fullSpeed, double most) =>
+            Math.Max(0.0, most) * ShakeAmount(speed, fromSpeed, fullSpeed);
 
         /// <summary>How far ahead of the rider to aim, metres: grows with speed up to a cap.</summary>
         /// <param name="baseMetres">Look-ahead when stopped.</param>
@@ -115,35 +184,6 @@ namespace FirstChair.Riding
         /// <param name="speed">Rider speed, metres per second.</param>
         public static double LookAhead(double baseMetres, double perSpeedSeconds, double maxMetres, double speed) =>
             Math.Min(maxMetres, baseMetres + perSpeedSeconds * Math.Max(0.0, speed));
-
-        /// <summary>
-        /// The farthest the aim may lead the rider along the view, metres, for the rider's feet to sit no lower on screen
-        /// than <paramref name="lowestOnScreen"/>. The look-ahead grows with speed and only the smoothing's lag pulls the
-        /// rider back up the screen, so without this cap a fast rider at a low frame rate, where the smoothing barely lags,
-        /// fell off the bottom of the screen (cloud build check, 2026-10-24).
-        /// </summary>
-        /// <remarks>
-        /// The camera sits <paramref name="distance"/> behind the aim, looking down the view at the pitch p. A point
-        /// <c>lead</c> metres behind the aim along the view and <c>a</c> metres above it sits <c>lead sin p - a cos p</c>
-        /// below the screen's centre at depth <c>distance - lead cos p + a sin p</c>; it is on the line when that ratio is
-        /// <c>t = (2 lowestOnScreen - 1) tan(fov / 2)</c>, which is linear in the lead.
-        /// </remarks>
-        /// <param name="pitchDegrees">The camera's pitch below the horizon, degrees (above 0).</param>
-        /// <param name="distance">The camera's distance from the aim, metres.</param>
-        /// <param name="verticalFovDegrees">The vertical field of view, degrees.</param>
-        /// <param name="riderAboveAim">How far the rider's feet are above the aim, metres: negative, as the aim is above
-        /// them, unless the rider is in the air.</param>
-        /// <param name="lowestOnScreen">The lowest the feet may sit, as a share of the screen height from the top: 0.5 is
-        /// the middle and 1 the bottom edge.</param>
-        public static double MaxLead(
-            double pitchDegrees, double distance, double verticalFovDegrees, double riderAboveAim, double lowestOnScreen)
-        {
-            double pitch = pitchDegrees / DegreesPerRadian;
-            double sin = Math.Sin(pitch);
-            double cos = Math.Cos(pitch);
-            double t = (2.0 * lowestOnScreen - 1.0) * Math.Tan(verticalFovDegrees / (2.0 * DegreesPerRadian));
-            return (t * distance + riderAboveAim * (cos - t * sin)) / (sin + t * cos);
-        }
 
         /// <summary>
         /// The vertical field of view at a speed, degrees (Story 009): the lens's own plus <paramref name="perSpeed"/> per m/s,
@@ -188,23 +228,6 @@ namespace FirstChair.Riding
 
             double share = fullSpeed > fromSpeed ? Math.Min(1.0, (speed - fromSpeed) / (fullSpeed - fromSpeed)) : 1.0;
             return share * share;
-        }
-
-        /// <summary>
-        /// Camera drift (the user's playtest, 2026-10-23: GMA2 doesn't pin the rider to the middle of the screen): how
-        /// far the camera's aim moves sideways this frame, given the rider's sideways offset from it. Inside the drift
-        /// zone the aim only eases back toward the rider by <paramref name="recentreFactor"/> of the offset; past it, the
-        /// aim first catches up to the zone's edge, so the rider never leaves the zone.
-        /// </summary>
-        /// <param name="offset">The rider's sideways offset from the aim, metres (positive to the right).</param>
-        /// <param name="halfWidth">How far the rider may drift each way before the camera follows, metres; 0 pins.</param>
-        /// <param name="recentreFactor">The share of the remaining offset the aim closes this frame, 0 to 1
-        /// (<see cref="SmoothingFactor"/> of the recentre time).</param>
-        public static double LateralFollow(double offset, double halfWidth, double recentreFactor)
-        {
-            double width = Math.Max(0.0, halfWidth);
-            double excess = offset > width ? offset - width : (offset < -width ? offset + width : 0.0);
-            return excess + (offset - excess) * recentreFactor;
         }
 
         /// <summary>

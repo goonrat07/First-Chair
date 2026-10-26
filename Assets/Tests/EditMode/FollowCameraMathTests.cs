@@ -3,7 +3,10 @@ using NUnit.Framework;
 
 namespace FirstChair.Riding.Tests
 {
-    /// <summary>The GMA2-style follow camera's math: view direction, look-ahead, yaw and how low the rider may sit (Stories 003, 008).</summary>
+    /// <summary>
+    /// The follow camera's math: view direction, look-ahead, yaw, slope and speed effects (Stories 003, 008, 009), and the
+    /// Steep-style chase camera's tilt toward the snow ahead, pull-in with speed and tuck, clearance and blur (Story 011).
+    /// </summary>
     public sealed class FollowCameraMathTests
     {
         [Test]
@@ -103,91 +106,6 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
-        public void Pitch_AddsTheMarginToTheSlope_WithinTheLimits()
-        {
-            // Assert
-            Assert.That(FollowCameraMath.Pitch(17.0, 35.0, 30.0, 72.0), Is.EqualTo(52.0).Within(1e-9));
-            Assert.That(FollowCameraMath.Pitch(-20.0, 35.0, 30.0, 72.0), Is.EqualTo(30.0).Within(1e-9));
-            Assert.That(FollowCameraMath.Pitch(50.0, 35.0, 30.0, 72.0), Is.EqualTo(72.0).Within(1e-9));
-        }
-
-        [Test]
-        public void LateralFollow_RiderInsideTheDriftZone_CameraOnlyEasesBack()
-        {
-            // Assert: 1.5 m off centre inside a 2.5 m zone: no catch-up, only the recentring share.
-            Assert.That(FollowCameraMath.LateralFollow(1.5, 2.5, 0.0), Is.EqualTo(0.0));
-            Assert.That(FollowCameraMath.LateralFollow(1.5, 2.5, 0.1), Is.EqualTo(0.15).Within(1e-12));
-            Assert.That(FollowCameraMath.LateralFollow(-1.5, 2.5, 0.1), Is.EqualTo(-0.15).Within(1e-12));
-        }
-
-        [Test]
-        public void LateralFollow_RiderPastTheDriftZone_CameraCatchesUpToItsEdge()
-        {
-            // Assert: 4 m off centre with a 2.5 m zone: the camera moves the 1.5 m overshoot at once, then eases back.
-            Assert.That(FollowCameraMath.LateralFollow(4.0, 2.5, 0.0), Is.EqualTo(1.5).Within(1e-12));
-            Assert.That(FollowCameraMath.LateralFollow(-4.0, 2.5, 0.0), Is.EqualTo(-1.5).Within(1e-12));
-            Assert.That(FollowCameraMath.LateralFollow(4.0, 2.5, 0.1), Is.EqualTo(1.75).Within(1e-12));
-        }
-
-        [Test]
-        public void LateralFollow_NoDriftZone_FollowsFully()
-        {
-            // Assert: a zero zone pins the rider to the centre, as before camera drift.
-            Assert.That(FollowCameraMath.LateralFollow(0.7, 0.0, 0.0), Is.EqualTo(0.7).Within(1e-12));
-        }
-
-        [Test]
-        public void MaxLead_RiderThatFarBehindTheAim_SitsOnTheLowestLine()
-        {
-            // Arrange: the default view (47 degrees down on a 17 degree groomer, 45 m, 50 mm lens), aim 1 m above the feet.
-            double fov = FollowCameraMath.VerticalFovDegrees(50.0, 24.0);
-
-            // Act
-            double lead = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.85);
-
-            // Assert (to 1e-6: Offset places the camera in single precision)
-            Assert.That(ScreenHeight(47.0, 45.0, fov, -lead, -1.0), Is.EqualTo(0.85).Within(1e-6));
-            Assert.That(ScreenHeight(30.0, 45.0, fov, -FollowCameraMath.MaxLead(30.0, 45.0, fov, -1.0, 0.7), -1.0),
-                Is.EqualTo(0.7).Within(1e-6));
-        }
-
-        [Test]
-        public void MaxLead_FullLookAheadAtSpeedWithNoSmoothingLag_IsPastIt()
-        {
-            // Arrange: at 25 m/s the look-ahead is its 13 m cap (7 m + 0.25 s * v). A camera whose smoothing barely lags (a
-            // low frame rate) aims the full 13 m ahead, which put the rider's feet below the bottom of the screen (cloud
-            // build check, 2026-10-24); stopped, the 7 m look-ahead put them 80 percent of the way down.
-            double fov = FollowCameraMath.VerticalFovDegrees(50.0, 24.0);
-            double atSpeed = FollowCameraMath.LookAhead(7.0, 0.25, 13.0, 25.0);
-            double stopped = FollowCameraMath.LookAhead(7.0, 0.25, 13.0, 0.0);
-
-            // Act
-            double lead = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.85);
-
-            // Assert: the cap binds at speed and leaves the stopped view alone.
-            Assert.That(ScreenHeight(47.0, 45.0, fov, -atSpeed, -1.0), Is.GreaterThan(1.0));
-            Assert.That(lead, Is.LessThan(atSpeed));
-            Assert.That(ScreenHeight(47.0, 45.0, fov, -stopped, -1.0), Is.EqualTo(0.8).Within(0.01));
-            Assert.That(lead, Is.GreaterThan(stopped));
-        }
-
-        [Test]
-        public void MaxLead_LowerLineOrRiderHigherThanUsual_AllowsALongerLead()
-        {
-            // Arrange
-            double fov = FollowCameraMath.VerticalFovDegrees(50.0, 24.0);
-            double usual = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.85);
-
-            // Act
-            double lowerLine = FollowCameraMath.MaxLead(47.0, 45.0, fov, -1.0, 0.95);
-            double inTheAir = FollowCameraMath.MaxLead(47.0, 45.0, fov, 2.0, 0.85);
-
-            // Assert
-            Assert.That(lowerLine, Is.GreaterThan(usual));
-            Assert.That(inTheAir, Is.GreaterThan(usual));
-        }
-
-        [Test]
         public void FovAtSpeed_WidensWithSpeed_UpToTheCap()
         {
             // Assert: 27 degrees, 0.12 more per m/s, at most 5 more (Story 009: speed reads faster through a wider view).
@@ -217,19 +135,128 @@ namespace FirstChair.Riding.Tests
             Assert.That(FollowCameraMath.ShakeAmount(50.0, 18.0, 18.0), Is.EqualTo(1.0), "a zero-width band switches on at its speed");
         }
 
-        // How far down the screen (0 top, 1 bottom) a point sits, for a camera FollowCameraMath.Offset places behind an aim
-        // at the origin, looking down +Z: alongView metres along +Z from the aim and aboveAim metres above it.
-        private static double ScreenHeight(double pitchDegrees, double distance, double fovDegrees, double alongView, double aboveAim)
+        [Test]
+        public void DropAheadDegrees_BenchThenRollover_TakesTheSteeperFarDrop()
         {
-            FollowCameraMath.Offset(0.0, pitchDegrees, distance, out float cx, out float cy, out float cz);
-            double length = System.Math.Sqrt(cx * cx + cy * cy + cz * cz);
-            double fx = -cx / length, fy = -cy / length, fz = -cz / length;
-            double ux = -fy * fx, uy = 1.0 - fy * fy, uz = -fy * fz;
-            double ul = System.Math.Sqrt(ux * ux + uy * uy + uz * uz);
-            double rx = -cx, ry = aboveAim - cy, rz = alongView - cz;
-            double up = (rx * ux + ry * uy + rz * uz) / ul;
-            double depth = rx * fx + ry * fy + rz * fz;
-            return 0.5 - 0.5 * (up / depth) / System.Math.Tan(fovDegrees * System.Math.PI / 360.0);
+            // Arrange: the snow at the rider at 100 m; 5 m ahead it has dropped 0.5 m (5.7 degrees), 15 m ahead 6 m.
+            // Act
+            double drop = FollowCameraMath.DropAheadDegrees(100.0, 5.0, 99.5, 15.0, 94.0);
+
+            // Assert: the rollover the rider is about to go over, atan(6 / 15).
+            Assert.That(drop, Is.EqualTo(System.Math.Atan(6.0 / 15.0) * 180.0 / System.Math.PI).Within(1e-9));
+        }
+
+        [Test]
+        public void DropAheadDegrees_UphillAhead_IsNegative_TheGentlerRise()
+        {
+            // Act: 1 m higher 5 m ahead (11.3 degrees up), 1.5 m higher 15 m ahead (5.7 degrees up).
+            double drop = FollowCameraMath.DropAheadDegrees(100.0, 5.0, 101.0, 15.0, 101.5);
+
+            // Assert
+            Assert.That(drop, Is.EqualTo(-System.Math.Atan(1.5 / 15.0) * 180.0 / System.Math.PI).Within(1e-9));
+        }
+
+        [Test]
+        public void DropAheadDegrees_SamplesAtNoDistance_CountAsFlat()
+        {
+            // Assert
+            Assert.That(FollowCameraMath.DropAheadDegrees(100.0, 0.0, 50.0, 0.0, 50.0), Is.EqualTo(0.0));
+        }
+
+        [TestCase(0.0, 0.0, 5.5, TestName = "ChaseValue_AtRest_TheRestValue")]
+        [TestCase(0.0, 1.0, 5.5, TestName = "ChaseValue_TuckedAtRest_StillTheRestValue")]
+        [TestCase(25.0, 0.0, 4.5, TestName = "ChaseValue_AtFullSpeed_TheSpeedValue")]
+        [TestCase(40.0, 0.0, 4.5, TestName = "ChaseValue_PastFullSpeed_StaysAtTheSpeedValue")]
+        [TestCase(25.0, 1.0, 3.5, TestName = "ChaseValue_TuckedAtFullSpeed_TheTuckValue")]
+        public void ChaseValue_RestSpeedAndTuck(double speed, double tuck, double expected)
+        {
+            // Act: 5.5 m at rest, 4.5 m at speed, 3.5 m tucked at speed; full speed 25 m/s.
+            double distance = FollowCameraMath.ChaseValue(5.5, 4.5, 3.5, speed, 25.0, tuck);
+
+            // Assert
+            Assert.That(distance, Is.EqualTo(expected).Within(1e-9));
+        }
+
+        [Test]
+        public void ChaseValue_GainingSpeed_ClosesInSteadily_AndATuckClosesInFurther()
+        {
+            // Arrange
+            double previous = double.MaxValue;
+
+            // Act and Assert
+            for (double speed = 0.0; speed <= 25.0; speed += 2.5)
+            {
+                double open = FollowCameraMath.ChaseValue(5.5, 4.5, 3.5, speed, 25.0, 0.0);
+                double tucked = FollowCameraMath.ChaseValue(5.5, 4.5, 3.5, speed, 25.0, 1.0);
+                Assert.That(open, Is.LessThanOrEqualTo(previous), "speed " + speed);
+                Assert.That(tucked, Is.LessThanOrEqualTo(open), "speed " + speed);
+                previous = open;
+            }
+
+            Assert.That(FollowCameraMath.ChaseValue(5.5, 4.5, 3.5, 12.5, 25.0, 0.0), Is.InRange(4.6, 5.4));
+        }
+
+        [Test]
+        public void RiseToClear_LineWellAboveTheSnow_NoRise()
+        {
+            // Arrange: aim at 101.2 m, camera at 103 m; the snow halfway at 100 m, 0.5 m margin.
+            // Act and Assert
+            Assert.That(FollowCameraMath.RiseToClear(101.2, 103.0, 0.5, 100.0, 0.5), Is.EqualTo(0.0));
+        }
+
+        [Test]
+        public void RiseToClear_SnowRightUnderTheCamera_RaisesItToTheClearance()
+        {
+            // Arrange: the camera at 103 m over snow at 102.5 m; it must clear the snow by 1 m.
+            // Act and Assert: up 0.5 m.
+            Assert.That(FollowCameraMath.RiseToClear(101.2, 103.0, 1.0, 102.5, 1.0), Is.EqualTo(0.5).Within(1e-9));
+        }
+
+        [Test]
+        public void RiseToClear_SnowBetween_RaisesTheCameraSoTheLineClearsIt()
+        {
+            // Arrange: aim at 100 m, camera at 102 m; halfway along the line the snow stands at 101.2 m, 0.5 m margin.
+            // The line there is at 101 m and must be at 101.7 m: the camera end goes up twice that, 1.4 m.
+            // Act
+            double rise = FollowCameraMath.RiseToClear(100.0, 102.0, 0.5, 101.2, 0.5);
+
+            // Assert
+            Assert.That(rise, Is.EqualTo(1.4).Within(1e-9));
+            Assert.That(100.0 + 0.5 * (102.0 + rise - 100.0), Is.EqualTo(101.7).Within(1e-9));
+        }
+
+        [Test]
+        public void RiseToClear_AtTheAim_NeverRises()
+        {
+            // Assert: a sample at the aim itself can't be cleared by moving the camera.
+            Assert.That(FollowCameraMath.RiseToClear(100.0, 102.0, 0.0, 120.0, 0.5), Is.EqualTo(0.0));
+        }
+
+        [Test]
+        public void RolloverTiltDegrees_SteeperAhead_TiltsDownByAShareOfTheDifference_UpToItsMost()
+        {
+            // Assert: 0.6 of the difference between the drop ahead and the slope here, at most 15 degrees.
+            Assert.That(FollowCameraMath.RolloverTiltDegrees(30.0, 15.0, 0.6, 15.0), Is.EqualTo(9.0).Within(1e-12));
+            Assert.That(FollowCameraMath.RolloverTiltDegrees(60.0, 10.0, 0.6, 15.0), Is.EqualTo(15.0).Within(1e-12));
+        }
+
+        [Test]
+        public void RolloverTiltDegrees_SameOrGentlerAhead_NoTilt()
+        {
+            // Assert: the chase camera's placement already follows a steady slope; only a steeper drop ahead adds tilt.
+            Assert.That(FollowCameraMath.RolloverTiltDegrees(15.0, 15.0, 0.6, 15.0), Is.EqualTo(0.0));
+            Assert.That(FollowCameraMath.RolloverTiltDegrees(5.0, 20.0, 0.6, 15.0), Is.EqualTo(0.0));
+        }
+
+        [Test]
+        public void MotionBlurIntensity_NoneBelowItsSpeed_ThenRisingToItsMost()
+        {
+            // Assert: from 15 m/s, full at 30 m/s, at most 0.6, on the shake's squared ramp.
+            Assert.That(FollowCameraMath.MotionBlurIntensity(10.0, 15.0, 30.0, 0.6), Is.EqualTo(0.0));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(22.5, 15.0, 30.0, 0.6), Is.EqualTo(0.15).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(30.0, 15.0, 30.0, 0.6), Is.EqualTo(0.6).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(45.0, 15.0, 30.0, 0.6), Is.EqualTo(0.6).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(45.0, 15.0, 30.0, -1.0), Is.EqualTo(0.0), "a negative most is off");
         }
     }
 }

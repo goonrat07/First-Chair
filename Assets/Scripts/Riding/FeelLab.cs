@@ -42,18 +42,6 @@ namespace FirstChair.Riding
         // The scenes in the build to ride (Story 010), by scene name.
         private static readonly string[] Places = { "TestSlope", "TestMountain" };
 
-        // The old game's chase camera (Bluebird src/render/scene.ts): close behind and low, a 62 degree view widening with
-        // speed, quick to follow the travel, banking and shaking more.
-        private static readonly Dictionary<string, float> ChasePreset = new Dictionary<string, float>
-        {
-            { "pitchAboveSlopeDegrees", 12f }, { "minPitchDegrees", 8f }, { "maxPitchDegrees", 60f }, { "pitchSmoothTime", 0.5f },
-            { "distance", 12f }, { "aimHeight", 0.6f }, { "travelWeight", 1f }, { "minTravelSpeed", 1.5f },
-            { "yawSmoothTime", 0.25f }, { "lookAheadBase", 2f }, { "lookAheadPerSpeed", 0.27f }, { "lookAheadMax", 9f },
-            { "lowestRiderOnScreen", 0.9f }, { "focalLengthMm", 20f }, { "driftMetres", 0f }, { "positionSmoothTime", 0.14f },
-            { "fovPerSpeed", 0.35f }, { "fovSpeedMax", 16f }, { "rollPerG", 2f }, { "rollMax", 4f },
-            { "shakeFromSpeed", 18f }, { "shakeFullSpeed", 40f }, { "shakeDegrees", 0.3f },
-        };
-
         private static readonly string[] ControlsText =
         {
             "A / D or arrows: turn (carve, keeps speed)",
@@ -316,8 +304,8 @@ namespace FirstChair.Riding
 
             if (fields == _cameraFields)
             {
-                GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Preset: GMA far (default)"))
+                // Story 011: the Steep-style chase camera is the only camera; this puts its numbers back.
+                if (GUILayout.Button("Steep chase (default)"))
                 {
                     foreach (SettingField field in _cameraFields)
                     {
@@ -327,21 +315,7 @@ namespace FirstChair.Riding
                     _texts.Clear();
                 }
 
-                if (GUILayout.Button("Preset: chase (old game)"))
-                {
-                    foreach (SettingField field in _cameraFields)
-                    {
-                        if (ChasePreset.TryGetValue(field.Field.Name, out float preset))
-                        {
-                            field.Set(preset);
-                        }
-                    }
-
-                    _texts.Clear();
-                }
-
-                GUILayout.EndHorizontal();
-                GUILayout.Label("Live. Speed effects: field of view, bank and shake.");
+                GUILayout.Label("Live. Speed effects: field of view, edge blur, bank and shake.");
             }
             else if (fields == _lightFields)
             {

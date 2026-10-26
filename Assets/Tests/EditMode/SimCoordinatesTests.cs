@@ -68,18 +68,6 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
-        public void FollowCameraOffset_SitsUpSlopeAndAbove()
-        {
-            // Act
-            FollowCameraMath.Offset(0, 45, 18, out float x, out float y, out float z);
-
-            // Assert
-            Assert.That(x, Is.EqualTo(0f).Within(1e-4f));
-            Assert.That(y, Is.EqualTo(12.728f).Within(1e-3f));
-            Assert.That(z, Is.EqualTo(-12.728f).Within(1e-3f));
-        }
-
-        [Test]
         public void ThirtyFiveMillimetreLens_IsAbout37Point8DegreesVertical()
         {
             Assert.That(FollowCameraMath.VerticalFovDegrees(35, 24), Is.EqualTo(37.85).Within(0.01));

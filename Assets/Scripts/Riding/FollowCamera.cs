@@ -1,28 +1,43 @@
 using FirstChair.Sim;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace FirstChair.Riding
 {
     /// <summary>
-    /// A high, pulled-back follow camera like Grand Mountain Adventure 2's: behind the rider, uphill, looking down the
-    /// line of travel a fixed angle steeper than the snow (so steep and gentle slopes frame the same), with the aim point
-    /// a little ahead so the rider sits below the middle of the screen, never lower than a set line. The view direction blends the slope's fall line with the rider's travel direction and turns slowly.
-    /// Presentation only; it reads the rider view's transform and the sim's state, and writes nothing back.
+    /// A Steep-style chase camera (Story 011): behind the rider along the travel, at a height above the snow under it,
+    /// looking at a point just ahead of the rider, so the rider sits in the lower middle of the screen and the view
+    /// follows the slope by itself. It tilts further down where the snow ahead drops away more steeply than under the
+    /// rider, closes in and drops lower with speed and further in a fast tuck, widens, banks, shakes gently and blurs at
+    /// the screen's edges with speed, and rises to keep itself and its line to the rider above the snow. Nearly stopped,
+    /// it sits behind the skis; on the chairlift it follows the chair. Presentation only: it reads the rider view's
+    /// transform and the sim's state, and writes nothing back.
     /// </summary>
     [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Camera))]
     public sealed class FollowCamera : MonoBehaviour
     {
+        // Where along the camera's line to the aim (0 the aim, 1 the camera) it checks the snow between.
+        private static readonly float[] SightlineSamples = { 0.35f, 0.65f };
+
+        // The camera is never closer than this to the snow under it, metres, whatever the smoothing.
+        private const float HardClearance = 0.3f;
+
         [SerializeField] private Transform target;
-        [Tooltip("Gives the rider's velocity and the snow's fall line. Without it the camera looks down +Z.")]
+        [Tooltip("Gives the rider's velocity, stance and heading, and the snow. Without it the camera follows the target down +Z.")]
         [SerializeField] private SimDriver driver;
         [SerializeField] private FollowCameraSettings settings;
 
         private Camera _camera;
-        private Vector3 _aim;
-        private Vector3 _viewDirection = Vector3.forward;
-        private float _pitch = -1f;
-        private bool _hasAim;
+        private MotionBlur _blur;
+        private Vector3 _offset;
+        private Vector3 _lastRider;
+        private bool _hasPosition;
+        private float _yaw;
+        private float _tuck;
+        private float _rise;
+        private float _tilt;
         private float _fov = -1f;
         private float _roll;
         private float _travelYaw;
@@ -30,8 +45,8 @@ namespace FirstChair.Riding
         private float _shakeTime;
 
         /// <summary>
-        /// While set, the camera follows this instead of the sim's rider: the chair the rider sits on (Story 010). It is
-        /// treated as standing still on level snow.
+        /// While set, the camera follows this instead of the sim's rider: the chair the rider sits on (Story 010), looking
+        /// down the fall line at it.
         /// </summary>
         public Transform RideTarget { get; set; }
 
@@ -42,6 +57,22 @@ namespace FirstChair.Riding
             {
                 Debug.LogWarning("FollowCamera: no settings asset; using the defaults.", this);
                 settings = ScriptableObject.CreateInstance<FollowCameraSettings>();
+            }
+
+            // The edge blur at speed: URP's motion blur on the global volume, from the camera's motion and the objects', so
+            // the rider, moving with the camera, stays sharp while the snow streaks past.
+            Volume volume = FindAnyObjectByType<Volume>();
+            if (volume != null)
+            {
+                VolumeProfile profile = volume.profile;
+                if (!profile.TryGet(out _blur))
+                {
+                    _blur = profile.Add<MotionBlur>(true);
+                }
+
+                _blur.mode.Override(MotionBlurMode.CameraAndObjects);
+                _blur.quality.Override(MotionBlurQuality.Medium);
+                _blur.intensity.Override(0f);
             }
         }
 
@@ -56,30 +87,42 @@ namespace FirstChair.Riding
             _camera.farClipPlane = settings.FarClip;
 
             float dt = Time.deltaTime;
-            bool snap = !_hasAim || (driver != null && driver.Session != null && driver.Session.SnappedThisFrame);
-
-            Vector3 normal = Vector3.up;
-            Vector3 velocity = Vector3.zero;
-            // The rider's feet from the sim, not the view's root, which a flip swings about the middle of the body.
+            RideSession session = driver != null ? driver.Session : null;
+            bool onLift = RideTarget != null;
             Vector3 rider = target.position;
-            if (RideTarget != null)
+            Vector3 velocity = Vector3.zero;
+            bool tucked = false;
+            if (onLift)
             {
                 rider = RideTarget.position;
             }
-            else if (driver != null && driver.Session != null)
+            else if (session != null)
             {
+                // The rider's feet from the sim, not the view's root, which a flip swings about the middle of the body.
                 RiderPose pose = driver.Pose;
-                velocity = new Vector3(pose.VelocityX, 0f, pose.VelocityZ);
                 rider = SimCoordinatesUnity.Position(pose);
-                normal = SnowNormal(driver.Session, rider);
+                velocity = new Vector3(pose.VelocityX, 0f, pose.VelocityZ);
+                tucked = session.Current.Stance == Stance.Tuck;
             }
 
-            // Speed effects (Story 009): the view widens with speed and banks into turns, and a fast rider shakes it gently.
+            Vector3 normal = SnowAt(session, rider, out float snowUnderRider);
+            bool snap = !_hasPosition || (session != null && session.SnappedThisFrame)
+                || (rider - _lastRider).sqrMagnitude > settings.SnapDistance * settings.SnapDistance;
+            _lastRider = rider;
             float speed = velocity.magnitude;
+
+            // Speed effects (Stories 009, 011): the view widens and the screen's edges blur with speed, the camera banks into
+            // turns, and a fast rider shakes it gently.
             float lens = (float)FollowCameraMath.VerticalFovDegrees(settings.FocalLengthMm, settings.SensorHeightMm);
             float fov = (float)FollowCameraMath.FovAtSpeed(lens, settings.FovPerSpeed, settings.FovSpeedMax, speed);
             _fov = snap || _fov < 0f ? fov : Mathf.Lerp(_fov, fov, FollowCameraMath.SmoothingFactor(settings.FovSmoothTime, dt));
             _camera.fieldOfView = _fov;
+            if (_blur != null)
+            {
+                _blur.intensity.Override((float)FollowCameraMath.MotionBlurIntensity(
+                    speed, settings.BlurFromSpeed, settings.BlurFullSpeed, settings.BlurMost));
+            }
+
             float turnAcceleration = 0f;
             if (speed >= settings.MinTravelSpeed && dt > 0f)
             {
@@ -93,7 +136,7 @@ namespace FirstChair.Riding
                 _hasTravelYaw = true;
             }
 
-            double gravity = driver != null && driver.Session != null ? SimCoordinates.ToDouble(driver.Session.Tuning.Gravity) : 9.81;
+            double gravity = session != null ? SimCoordinates.ToDouble(session.Tuning.Gravity) : 9.81;
             float roll = (float)FollowCameraMath.RollDegrees(turnAcceleration, gravity, settings.RollPerG, settings.RollMax);
             _roll = snap ? 0f : Mathf.Lerp(_roll, roll, FollowCameraMath.SmoothingFactor(settings.RollSmoothTime, dt));
             _shakeTime += dt;
@@ -102,63 +145,101 @@ namespace FirstChair.Riding
             float shakePitch = shake * (Mathf.Sin(phase) + 0.5f * Mathf.Sin(2.3f * phase + 1f));
             float shakeYaw = shake * 0.7f * (Mathf.Sin(1.7f * phase + 2f) + 0.5f * Mathf.Sin(3.1f * phase));
 
-            // Downhill on the ground: the snow normal's horizontal part (the normal leans toward the fall line).
-            var fall = new Vector3(normal.x, 0f, normal.z);
-
-            if (FollowCameraMath.ViewDirection(
-                fall.x, fall.z, velocity.x, velocity.z, settings.TravelWeight, settings.MinTravelSpeed, out double dx, out double dz))
+            // Direction: along the travel; nearly stopped, behind the skis; on the lift, down the fall line at the chair.
+            float desiredYaw = _yaw;
+            if (!onLift && session != null && speed < settings.MinTravelSpeed)
             {
-                var desired = new Vector3((float)dx, 0f, (float)dz);
-                _viewDirection = snap
-                    ? desired
-                    : Vector3.Slerp(_viewDirection, desired, FollowCameraMath.SmoothingFactor(settings.YawSmoothTime, dt)).normalized;
+                desiredYaw = SimCoordinates.ToFloat(session.Current.Heading) * Mathf.Rad2Deg;
+            }
+            else if (FollowCameraMath.ViewDirection(
+                normal.x, normal.z, velocity.x, velocity.z, settings.TravelWeight, settings.MinTravelSpeed, out double dx, out double dz))
+            {
+                desiredYaw = (float)FollowCameraMath.YawDegrees(dx, dz);
             }
 
-            float lookAhead = (float)FollowCameraMath.LookAhead(
-                settings.LookAheadBase, settings.LookAheadPerSpeed, settings.LookAheadMax, velocity.magnitude);
-            Vector3 desiredAim = rider + Vector3.up * settings.AimHeight + _viewDirection * lookAhead;
-            if (snap || (desiredAim - _aim).sqrMagnitude > settings.SnapDistance * settings.SnapDistance)
+            _yaw = snap ? desiredYaw : Mathf.LerpAngle(_yaw, desiredYaw, FollowCameraMath.SmoothingFactor(settings.YawSmoothTime, dt));
+            var direction = new Vector3(Mathf.Sin(_yaw * Mathf.Deg2Rad), 0f, Mathf.Cos(_yaw * Mathf.Deg2Rad));
+
+            // Closer and lower the faster, more so in a fast tuck.
+            _tuck = snap ? (tucked ? 1f : 0f) : Mathf.Lerp(_tuck, tucked ? 1f : 0f, FollowCameraMath.SmoothingFactor(settings.TuckSmoothTime, dt));
+            float back = (float)FollowCameraMath.ChaseValue(
+                settings.BackDistance, settings.FastBackDistance, settings.TuckBackDistance, speed, settings.CloseInSpeed, _tuck);
+            float height = (float)FollowCameraMath.ChaseValue(
+                settings.Height, settings.FastHeight, settings.TuckHeight, speed, settings.CloseInSpeed, _tuck);
+            float aimHeight = (float)FollowCameraMath.ChaseValue(
+                settings.AimHeight, settings.AimHeight, settings.TuckAimHeight, speed, settings.CloseInSpeed, _tuck);
+            float lookAhead = (float)FollowCameraMath.LookAhead(settings.LookAheadBase, settings.LookAheadPerSpeed, settings.LookAheadMax, speed);
+
+            // Behind the rider along the travel, at its height above the snow there; in the air it rises with the rider.
+            // The offset from the rider is what smooths, so the camera keeps up however fast the rider goes.
+            Vector3 behind = rider - direction * back;
+            SnowAt(session, behind, out float snowBehind, snowUnderRider);
+            var offset = new Vector3(behind.x - rider.x, snowBehind - snowUnderRider + height, behind.z - rider.z);
+            _offset = snap ? offset : Vector3.Lerp(_offset, offset, FollowCameraMath.SmoothingFactor(settings.PositionSmoothTime, dt));
+            Vector3 position = rider + _offset;
+            Vector3 aim = rider + Vector3.up * aimHeight + direction * lookAhead;
+
+            // Never under the snow: rise until the camera clears the snow under it and its line to the aim the snow between.
+            float rise = 0f;
+            float floor = 0f;
+            if (session != null)
             {
-                _aim = desiredAim;
-                _hasAim = true;
-            }
-            else
-            {
-                // Along the view and up, the aim follows smoothly; sideways, the rider has the drift zone's room.
-                var right = new Vector3(_viewDirection.z, 0f, -_viewDirection.x);
-                Vector3 delta = desiredAim - _aim;
-                float sideways = Vector3.Dot(delta, right);
-                _aim += (delta - right * sideways) * FollowCameraMath.SmoothingFactor(settings.PositionSmoothTime, dt);
-                _aim += right * (float)FollowCameraMath.LateralFollow(
-                    sideways, settings.DriftMetres, FollowCameraMath.SmoothingFactor(settings.DriftReturnTime, dt));
+                rise = RiseToClear(session, aim, position, 1f, settings.CameraClearance);
+                floor = RiseToClear(session, aim, position, 1f, HardClearance);
+                foreach (float fraction in SightlineSamples)
+                {
+                    rise = Mathf.Max(rise, RiseToClear(session, aim, position, fraction, settings.SightlineClearance));
+                }
             }
 
-            double slopeDown = FollowCameraMath.SlopeDownAlongDegrees(normal.x, normal.y, normal.z, _viewDirection.x, _viewDirection.z);
-            float pitch = (float)FollowCameraMath.Pitch(
-                slopeDown, settings.PitchAboveSlopeDegrees, settings.MinPitchDegrees, settings.MaxPitchDegrees);
-            _pitch = snap || _pitch < 0f ? pitch : Mathf.Lerp(_pitch, pitch, FollowCameraMath.SmoothingFactor(settings.PitchSmoothTime, dt));
+            float riseTime = rise > _rise ? settings.RiseSmoothTime : settings.SettleSmoothTime;
+            _rise = snap ? rise : Mathf.Lerp(_rise, rise, FollowCameraMath.SmoothingFactor(riseTime, dt));
+            position.y += Mathf.Max(_rise, floor);
 
-            // The look-ahead grows with speed and only the smoothing's lag pulls the rider back up the screen, so at a low
-            // frame rate a fast rider fell off its bottom: the aim never leads the rider past the lowest line.
-            Vector3 toRider = rider - _aim;
-            float lead = -Vector3.Dot(toRider, _viewDirection);
-            float maxLead = (float)FollowCameraMath.MaxLead(
-                _pitch, settings.Distance, _camera.fieldOfView, toRider.y, settings.LowestRiderOnScreen);
-            if (lead > maxLead)
+            // Look at the aim, tilted further down where the snow ahead drops away more steeply than here.
+            Vector3 toAim = aim - position;
+            float yaw = Mathf.Atan2(toAim.x, toAim.z) * Mathf.Rad2Deg;
+            float lookPitch = Mathf.Atan2(-toAim.y, new Vector2(toAim.x, toAim.z).magnitude) * Mathf.Rad2Deg;
+            float tilt = 0f;
+            if (session != null && !onLift)
             {
-                _aim += _viewDirection * (maxLead - lead);
+                SnowAt(session, rider + direction * settings.AheadNearMetres, out float snowNear, snowUnderRider);
+                SnowAt(session, rider + direction * settings.AheadFarMetres, out float snowFar, snowUnderRider);
+                double dropAhead = FollowCameraMath.DropAheadDegrees(
+                    snowUnderRider, settings.AheadNearMetres, snowNear, settings.AheadFarMetres, snowFar);
+                double slopeHere = FollowCameraMath.SlopeDownAlongDegrees(normal.x, normal.y, normal.z, direction.x, direction.z);
+                tilt = (float)FollowCameraMath.RolloverTiltDegrees(dropAhead, slopeHere, settings.RolloverTiltFactor, settings.RolloverTiltMax);
             }
 
-            float yaw = (float)FollowCameraMath.YawDegrees(_viewDirection.x, _viewDirection.z);
-            FollowCameraMath.Offset(yaw, _pitch, settings.Distance, out float x, out float y, out float z);
-            transform.SetPositionAndRotation(_aim + new Vector3(x, y, z), Quaternion.Euler(_pitch + shakePitch, yaw + shakeYaw, _roll));
+            _tilt = snap ? tilt : Mathf.Lerp(_tilt, tilt, FollowCameraMath.SmoothingFactor(settings.PitchSmoothTime, dt));
+            float pitch = Mathf.Clamp(lookPitch + _tilt, settings.MinPitchDegrees, settings.MaxPitchDegrees);
+            transform.SetPositionAndRotation(position, Quaternion.Euler(pitch + shakePitch, yaw + shakeYaw, _roll));
+            _hasPosition = true;
         }
 
-        private static Vector3 SnowNormal(RideSession session, Vector3 position)
+        // How far to raise the camera for its line to the aim to clear the snow at one point along it.
+        private static float RiseToClear(RideSession session, Vector3 aim, Vector3 camera, float fraction, float margin)
         {
+            Vector3 point = Vector3.Lerp(aim, camera, fraction);
+            SnowAt(session, point, out float snow, point.y);
+            return (float)FollowCameraMath.RiseToClear(aim.y, camera.y, fraction, snow, margin);
+        }
+
+        // The snow's height and normal at a point; without a ride, the fallback height and straight up.
+        private static Vector3 SnowAt(RideSession session, Vector3 position, out float height, float fallback)
+        {
+            if (session == null)
+            {
+                height = fallback;
+                return Vector3.up;
+            }
+
             session.Slope.Heightmap.Sample(
-                SimCoordinates.FromMetres(position.x), SimCoordinates.FromMetres(position.z), out _, out Vec3 normal);
+                SimCoordinates.FromMetres(position.x), SimCoordinates.FromMetres(position.z), out Fix64 snow, out Vec3 normal);
+            height = SimCoordinates.ToFloat(snow);
             return new Vector3(SimCoordinates.ToFloat(normal.X), SimCoordinates.ToFloat(normal.Y), SimCoordinates.ToFloat(normal.Z));
         }
+
+        private static Vector3 SnowAt(RideSession session, Vector3 position, out float height) => SnowAt(session, position, out height, position.y);
     }
 }
