@@ -35,8 +35,11 @@ namespace FirstChair.Sim.Tests
         /// <summary>The pace is averaged over this stretch of the groomer, metres down it: up to speed, above the ice patch.</summary>
         private const int PaceStartZ = 60, PaceEndZ = 170;
 
-        /// <summary>GMA2's slowest pace on a groomer, km/h: quick turns, the speed control, must still hold it.</summary>
-        private const double QuickPaceMinKmh = 40;
+        /// <summary>Story 009: key S-turns with plain steering, the main turn, hold at least this pace, km/h.</summary>
+        private const double CarvePaceMinKmh = 60;
+
+        /// <summary>Story 009: quick turns, the speed check, slow the rider below the carve's pace but never to a crawl, km/h.</summary>
+        private const double QuickPaceMinKmh = 25;
 
         /// <summary>Story 008: from rest with no input, the slope alone passes this speed, km/h, within this time, s.</summary>
         private const double BriskKmh = 50;
@@ -335,18 +338,19 @@ namespace FirstChair.Sim.Tests
         /// quick-turning, and quick turns still hold GMA2's slowest groomer pace.
         /// </summary>
         [Test]
-        public void KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_CarvingHoldsAHigherPaceThanQuickTurns()
+        public void KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_PlainCarvesHoldSixtyKmh_QuickTurnsLess()
         {
             // Arrange
             (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadSlope();
             Assert.That(layout.TryGetZone("groomer", out SlopeZone groomer), Is.True);
 
-            // Act
-            double carvePace = KeyTurnPace(layout, heightmap, snowMap, groomer, SimButtons.Forward);
-            double quickPace = KeyTurnPace(layout, heightmap, snowMap, groomer, SimButtons.None);
+            // Act: plain steering is the main turn since sim version 8 (Story 009); quick turns are the speed check.
+            double carvePace = KeyTurnPace(layout, heightmap, snowMap, groomer, SimButtons.None);
+            double quickPace = KeyTurnPace(layout, heightmap, snowMap, groomer, SimButtons.Quick);
 
             // Assert
-            Assert.That(carvePace, Is.GreaterThan(quickPace));
+            Assert.That(carvePace, Is.GreaterThanOrEqualTo(CarvePaceMinKmh));
+            Assert.That(quickPace, Is.LessThan(carvePace));
             Assert.That(quickPace, Is.GreaterThanOrEqualTo(QuickPaceMinKmh));
         }
 

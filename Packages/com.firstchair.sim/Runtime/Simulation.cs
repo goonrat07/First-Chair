@@ -9,11 +9,13 @@ namespace FirstChair.Sim
     /// <see cref="Tuning"/>. It reads no clock.
     /// </summary>
     /// <remarks>
-    /// <para><b>Input on snow.</b> Steering is <see cref="SimInput.CombinedSteering"/>: the analog value plus full lock
-    /// for the left and right buttons. Back brakes. Forward tucks on slopes; on flats (gradient below
-    /// <see cref="Tuning.FlatGradientMax"/>) it poles while the rider is slower than
-    /// <see cref="Tuning.PoleSpeedMax"/> and tucks at or above it. Back wins over forward. Holding jump loads a pop;
-    /// releasing it pops. Grab does nothing on snow.</para>
+    /// <para><b>Input on snow</b> (sim version 8, Story 009, after GMA). Steering is <see cref="SimInput.CombinedSteering"/>:
+    /// the analog value plus full lock for the left and right buttons. Steering alone carves, the main turn. Grab held
+    /// while steering is a drift turn, and <see cref="SimButtons.Quick"/> held while steering a quick turn. Back brakes,
+    /// and with steering throws the skis across in a hockey stop. Forward tucks on slopes (still carving, less sharply);
+    /// on flats (gradient below <see cref="Tuning.FlatGradientMax"/>) it poles while the rider is slower than
+    /// <see cref="Tuning.PoleSpeedMax"/> and tucks at or above it. Back wins over forward, forward over grab, grab over
+    /// quick. Holding jump loads a pop; releasing it pops.</para>
     /// <para><b>Input in the air.</b> Steering spins: <see cref="Tuning.SpinRate"/> * steering / 127, turning
     /// <see cref="RiderState.Heading"/> the way the same steering turns it on snow. Forward flips forward and back flips
     /// backward at <see cref="Tuning.FlipRate"/>; both together cancel. Rotation lasts only while held. Holding grab turns
@@ -28,35 +30,39 @@ namespace FirstChair.Sim
     /// <para><b>One step on snow, in order:</b></para>
     /// <list type="number">
     /// <item><description>Sample the surface normal and the snow type under the rider, and choose the
-    /// <see cref="Stance"/>. Forward held with steering is a carve if the snow can be carved
-    /// (<see cref="Tuning.CarveGrip"/> above 0) and the rider is at or above <see cref="Tuning.CarveMinSpeed"/>; a tuck
-    /// on such snow also carves, with whatever edge is left. Everything else that turns is a quick turn (a pivot). The
-    /// carve takes over from the pivot gradually, over <see cref="Tuning.CarveBlendSpeed"/> above CarveMinSpeed, so
-    /// speeding up or slowing down mid-turn never jumps.</description></item>
-    /// <item><description>Move the edge angle toward steering / 127 * <see cref="Tuning.MaxEdgeAngle"/> at
-    /// <see cref="Tuning.EdgeRate"/>, and turn the heading by the edge fraction e = edge / MaxEdgeAngle (Story 008). A
-    /// carve turns at e * speed * min(1 / <see cref="Tuning.CarveRadiusMin"/>, grip left / speed^2), where the grip left
-    /// is <see cref="Tuning.CarveTurnShare"/> of the carve grip after gravity's pull across the slope: slow carves turn
-    /// slowly, fast ones wide. A quick turn pivots the skis at e * <see cref="Tuning.PivotRate"/> *
-    /// <see cref="Tuning.PivotFactor"/> / (1 + speed / <see cref="Tuning.PivotFadeSpeed"/>), but from
-    /// CarveMinSpeed up never leads the path by more than <see cref="Tuning.PivotSlipMax"/>.</description></item>
+    /// <see cref="Stance"/> from the input (above).</description></item>
+    /// <item><description>Move the edge fraction e (<see cref="RiderState.EdgeAngle"/> / <see cref="Tuning.MaxEdgeAngle"/>)
+    /// toward steering / 127: pressing the other way flips it straight across in <see cref="Tuning.EdgeFlipTime"/>
+    /// (<see cref="RiderState.EdgeFlip"/>), a held key ramps it in <see cref="Tuning.EdgeRampTime"/>, a released one
+    /// flattens it in <see cref="Tuning.EdgeReleaseTime"/>.</description></item>
+    /// <item><description>Turn the skis. A carve turns at |e| * min(<see cref="Tuning.TurnRateLow"/>,
+    /// <see cref="Tuning.TurnAcceleration"/> * the snow's <see cref="Tuning.TurnFactor"/> / speed), times
+    /// <see cref="Tuning.TuckTurnFactor"/> tucked. A quick turn pivots at |e| * <see cref="Tuning.QuickTurnRate"/> * the
+    /// turn factor, but from <see cref="Tuning.QuickMinSpeed"/> up never leads the path by more than
+    /// <see cref="Tuning.QuickSlipMax"/>. A drift swings the skis at <see cref="Tuning.DriftSwingRate"/> to |e| *
+    /// <see cref="Tuning.DriftAngle"/> ahead of the path; a hockey stop at <see cref="Tuning.HockeySwingRate"/> to
+    /// <see cref="Tuning.HockeyAngle"/> across it (above <see cref="Tuning.HockeyMinSpeed"/>).</description></item>
     /// <item><description>Add gravity projected onto the surface.</description></item>
-    /// <item><description>Split the velocity along and across the skis (the heading projected onto the surface).
-    /// A carve's edges hold the line: the snow cancels the sideways velocity, up to the carve grip * step, and the
-    /// velocity follows the skis, losing only the second-order sliver of each step's turn. Pivoted skis are held like a
-    /// tyre: the snow cancels <see cref="Tuning.SkidStiffness"/> * slip angle * step, up to the skid grip
-    /// (<see cref="Tuning.SkidGrip"/>) * step. So a quick turn always slips a little, more the harder it turns, and
-    /// cancelling sideways velocity across skis turned to the travel is itself braking: quick turns cost speed, and at
-    /// speed they check it. Past the grip the skis skid. The slip angle is the angle left between the velocity and the
-    /// skis.</description></item>
+    /// <item><description>Split the velocity along and across the skis (the heading projected onto the surface). The
+    /// edges cancel sideways velocity up to <see cref="Tuning.CarveGrip"/> * cos slope * (<see cref="Tuning.GripBase"/> +
+    /// (1 - GripBase) * |e|) * step, times <see cref="Tuning.DriftGripFactor"/> drifting or
+    /// <see cref="Tuning.BrakeGripFactor"/> braking. A quick turn's pivoted skis are held like a tyre instead:
+    /// <see cref="Tuning.SkidStiffness"/> * slip angle * step, up to <see cref="Tuning.SkidGrip"/> * step. The cancelled
+    /// sideways speed turns into forward speed keeping <see cref="Tuning.CarveEfficiency"/>,
+    /// <see cref="Tuning.QuickKeep"/>, <see cref="Tuning.DriftKeep"/> or <see cref="Tuning.BrakeKeep"/> of its energy.
+    /// Sideways speed left above <see cref="Tuning.SkidSlipSpeed"/> is a skid; the slip angle is the angle left between
+    /// the velocity and the skis.</description></item>
+    /// <item><description>Skate: an edge flip started from at least <see cref="Tuning.SkateMinEdge"/> of edge in a carve,
+    /// below <see cref="Tuning.SkateMaxSpeed"/> and <see cref="Tuning.SkateInterval"/> after the last push, adds
+    /// <see cref="Tuning.SkatePush"/> along the skis, never past the cap. Letting go of a drift held
+    /// <see cref="Tuning.DriftBoostTime"/> adds <see cref="Tuning.DriftBoost"/> along the skis.</description></item>
     /// <item><description>Pole: add <see cref="Tuning.PoleAcceleration"/> along the skis, up to
     /// <see cref="Tuning.PoleSpeedMax"/>.</description></item>
-    /// <item><description>Slow the rider by snow drag (the snow's drag times the load: gravity * cos slope, combined
-    /// with a carve's sideways acceleration as sqrt(gn^2 + (speed * turn rate)^2)), air drag (<see cref="Tuning.AirDrag"/>
-    /// * speed^2, times <see cref="Tuning.TuckAirDragFactor"/> in a tuck or <see cref="Tuning.CarveAirDragFactor"/> in a
-    /// carve), skid drag (the snow's <see cref="Tuning.SkidDrag"/> * slip angle * speed) and the brake
-    /// (<see cref="Tuning.BrakeDeceleration"/>), together and never past a stop. Flow cuts the snow and air drag (see
-    /// Trees and Flow).</description></item>
+    /// <item><description>Slow the rider by snow drag (the snow's drag times gravity * cos slope), air drag
+    /// (<see cref="Tuning.AirDrag"/> * speed^2, times <see cref="Tuning.TuckAirDragFactor"/> in a tuck), scrub
+    /// (<see cref="Tuning.ScrubDrag"/> * sideways speed left), a quick turn's plow (the snow's <see cref="Tuning.SkidDrag"/>
+    /// * slip angle * speed) and the brake (<see cref="Tuning.BrakeDeceleration"/>), together and never past a stop. Flow
+    /// cuts the snow and air drag (see Trees and Flow).</description></item>
     /// <item><description>Pop: while jump is held, count the load up to <see cref="Tuning.PopLoadTime"/>. On the first
     /// step without it, add PopSpeedMin + (PopSpeedMax - PopSpeedMin) * load / PopLoadTime along the surface normal
     /// (<see cref="Tuning.PopSpeedMin"/>, <see cref="Tuning.PopSpeedMax"/>) and leave the snow.</description></item>
@@ -153,9 +159,11 @@ namespace FirstChair.Sim
         /// crashes and reset (Story 004). Version 4: trees (trunk crashes, branch clips, near misses) and Flow
         /// (Story 005). Version 5: rails, boxes and grinds, and the switch flag and touchdown Flow in the flight summary
         /// (Story 006). Version 6: more grip and a slower turn, so key turns carve to 48 km/h (playtest retune, 2026-10-24).
-        /// Version 7: carves and quick turns, turning by speed and snow, and faster slopes (Story 008).
+        /// Version 7: carves and quick turns, turning by speed and snow, and faster slopes (Story 008). Version 8: GMA-style
+        /// riding (Story 009): plain steering carves, grab plus steering drifts, quick plus steering quick-turns, back plus
+        /// steering hockey-stops, and edge flips skate.
         /// </summary>
-        public const ushort Version = 7;
+        public const ushort Version = 8;
 
         /// <summary>Fixed steps per simulated second.</summary>
         public const int StepsPerSecond = 120;
@@ -209,6 +217,8 @@ namespace FirstChair.Sim
         private readonly Fix64 _crashResetSteps;
         private readonly Fix64 _flowDrainSteps;
         private readonly Fix64 _flowDrainPerStep;
+        private readonly Fix64 _driftBoostSteps;
+        private readonly Fix64 _skateIntervalSteps;
         private readonly List<SimEvent> _events;
 
         // One entry per tree, by index: centre, trunk reach (trunk + rider radius), branch reach (branch + rider radius),
@@ -303,6 +313,8 @@ namespace FirstChair.Sim
             _crashResetSteps = tuning.CrashResetDelay * Fix64.FromInt(StepsPerSecond);
             _flowDrainSteps = tuning.FlowDrainDelay * Fix64.FromInt(StepsPerSecond);
             _flowDrainPerStep = tuning.FlowDrainRate * StepSeconds;
+            _driftBoostSteps = tuning.DriftBoostTime * Fix64.FromInt(StepsPerSecond);
+            _skateIntervalSteps = tuning.SkateInterval * Fix64.FromInt(StepsPerSecond);
             _events = new List<SimEvent>(BaseEventCapacity + 2 * forest.Count);
 
             int treeCount = forest.Count;
@@ -464,7 +476,10 @@ namespace FirstChair.Sim
             }
         }
 
-        /// <summary>One step on the snow: steer, slide, pop, and take off where the ground falls away.</summary>
+        /// <summary>
+        /// One step on the snow (sim version 8, Story 009): edge, turn, grip, skate, slow, pop, and take off where the ground
+        /// falls away.
+        /// </summary>
         private void StepSnow(SimInput input, int tick)
         {
             Fix64 dt = StepSeconds;
@@ -478,63 +493,86 @@ namespace FirstChair.Sim
             Fix64 flatLimit = _tuning.FlatGradientMax * normal.Y;
             bool onFlat = normal.X * normal.X + normal.Z * normal.Z < flatLimit * flatLimit;
             SimButtons buttons = input.Buttons;
+            int steering = input.CombinedSteering;
             bool forwardHeld = (buttons & SimButtons.Forward) != 0;
-            Fix64 carveGrip = _tuning.CarveGrip(snow);
-            bool canCarve = carveGrip > Fix64.Zero && speed >= _tuning.CarveMinSpeed;
             Stance stance = (buttons & SimButtons.Back) != 0 ? Stance.Brake
-                : !forwardHeld ? Stance.Stand
-                : onFlat && speed < _tuning.PoleSpeedMax ? Stance.Pole
-                : input.CombinedSteering == 0 ? Stance.Tuck
-                : canCarve ? Stance.Carve
-                : Stance.Stand;
-            bool carving = canCarve && (stance == Stance.Carve || stance == Stance.Tuck);
-            // A carve takes over from the pivot gradually, from CarveMinSpeed to CarveMinSpeed + CarveBlendSpeed, so a rider
-            // speeding up or slowing down in a turn sees no jump in how hard it turns.
-            Fix64 carveBlend = carving
-                ? Fix64.Min((speed - _tuning.CarveMinSpeed) / _tuning.CarveBlendSpeed, Fix64.One)
-                : Fix64.Zero;
+                : forwardHeld && onFlat && speed < _tuning.PoleSpeedMax ? Stance.Pole
+                : forwardHeld ? Stance.Tuck
+                : steering == 0 ? Stance.Stand
+                : (buttons & SimButtons.Grab) != 0 ? Stance.Drift
+                : (buttons & SimButtons.Quick) != 0 ? Stance.Quick
+                : Stance.Carve;
 
-            // Edge toward the steering target, then turn the heading by the edge (Story 008).
-            Fix64 edgeTarget = _tuning.MaxEdgeAngle * Fix64.FromRatio(input.CombinedSteering, SimInput.SteeringMax);
-            Fix64 edgeStep = _tuning.EdgeRate * dt;
-            Fix64 edge = _state.EdgeAngle < edgeTarget
-                ? Fix64.Min(_state.EdgeAngle + edgeStep, edgeTarget)
-                : Fix64.Max(_state.EdgeAngle - edgeStep, edgeTarget);
-            Fix64 edgeFraction = edge / _tuning.MaxEdgeAngle;
-            Fix64 normalGravity = _tuning.Gravity * normal.Y;
-            // A quick turn: the skis pivot, readily when slow and less the faster the rider goes.
-            Fix64 turnRate = edgeFraction * _tuning.PivotRate * _tuning.PivotFactor(snow)
-                / (Fix64.One + speed / _tuning.PivotFadeSpeed);
-            Fix64 carveTurnRate = Fix64.Zero;
-            if (carving)
+            // The edge, as a fraction of MaxEdgeAngle, moves toward the steering, as in the Bluebird prototype: the other
+            // way pressed flips it straight across at the flip rate until the new edge is set, a held key ramps it up, a
+            // released one lets it flatten.
+            Fix64 target = Fix64.FromRatio(steering, SimInput.SteeringMax);
+            Fix64 edge = _state.EdgeAngle / _tuning.MaxEdgeAngle;
+            int targetSide = steering > 0 ? 1 : steering < 0 ? -1 : 0;
+            int edgeSide = edge > Fix64.Zero ? 1 : edge < Fix64.Zero ? -1 : 0;
+            int flip = _state.EdgeFlip;
+            bool flipStarted = false;
+            if (targetSide != 0 && edgeSide != 0 && targetSide != edgeSide)
             {
-                // A carve: the skis follow their own arc. Its curvature is the edge fraction of the tightest the carve
-                // holds at this speed: the sidecut's when slow, the grip's when fast. The edges also hold gravity's pull
-                // across the slope, so only the grip left after it can turn the rider (radius speed^2 / that grip).
-                Fix64 gravityAcross = Fix64.Abs(Fix64.Cos(_state.Heading) * normal.X - Fix64.Sin(_state.Heading) * normal.Z)
-                    * normalGravity;
-                Fix64 turningGrip = Fix64.Max(carveGrip - gravityAcross, Fix64.Zero) * _tuning.CarveTurnShare;
-                Fix64 curvature = Fix64.Min(Fix64.One / _tuning.CarveRadiusMin, turningGrip / (speed * speed));
-                carveTurnRate = edgeFraction * speed * curvature;
-                turnRate = turnRate + (carveTurnRate - turnRate) * carveBlend;
+                flipStarted = flip != targetSide && Fix64.Abs(edge) >= _tuning.SkateMinEdge;
+                flip = targetSide;
+            }
+            else if (flip != targetSide || (edge - target) * Fix64.FromInt(targetSide) >= Fix64.Zero)
+            {
+                flip = 0;
             }
 
-            // A quick turn leads the path by at most PivotSlipMax; past it the skis stop pivoting further across. Below
-            // CarveMinSpeed the snow drags the path round after any pivot.
-            if (carveBlend < Fix64.One && speed >= _tuning.CarveMinSpeed)
+            Fix64 edgeRate = flip != 0 ? Fix64.FromInt(2) / _tuning.EdgeFlipTime
+                : targetSide != 0 ? Fix64.One / _tuning.EdgeRampTime
+                : Fix64.One / _tuning.EdgeReleaseTime;
+            Fix64 edgeStep = edgeRate * dt;
+            edge = edge < target ? Fix64.Min(edge + edgeStep, target) : Fix64.Max(edge - edgeStep, target);
+            Fix64 edgeAmount = Fix64.Abs(edge);
+            Fix64 turnSide = edge > Fix64.Zero ? Fix64.One : edge < Fix64.Zero ? -Fix64.One : Fix64.Zero;
+
+            // The path seen from above, turned to the way the skis point (riding switch, they lead the reversed path).
+            Fix64 heading = _state.Heading;
+            Fix64 lead = speed > Fix64.Zero ? Fix64.WrapAngle(heading - Fix64.Atan2(velocity.X, velocity.Z)) : Fix64.Zero;
+            lead = lead > Fix64.HalfPi ? lead - Fix64.Pi : lead < -Fix64.HalfPi ? lead + Fix64.Pi : lead;
+            Fix64 path = heading - lead;
+            Fix64 turnFactor = _tuning.TurnFactor(snow);
+            if (stance == Stance.Quick)
             {
-                Fix64 lead = Fix64.WrapAngle(_state.Heading - Fix64.Atan2(velocity.X, velocity.Z));
-                // Riding switch, the skis lead the reversed path.
-                lead = lead > Fix64.HalfPi ? lead - Fix64.Pi : lead < -Fix64.HalfPi ? lead + Fix64.Pi : lead;
-                if ((lead >= _tuning.PivotSlipMax && turnRate > Fix64.Zero) || (lead <= -_tuning.PivotSlipMax && turnRate < Fix64.Zero))
+                // A quick turn: the skis pivot fast; from QuickMinSpeed up they lead the path by at most QuickSlipMax.
+                Fix64 pivot = edgeAmount * _tuning.QuickTurnRate * turnFactor;
+                if (speed >= _tuning.QuickMinSpeed && lead * turnSide >= _tuning.QuickSlipMax)
                 {
-                    turnRate = Fix64.Zero;
+                    pivot = Fix64.Zero;
                 }
-            }
 
-            Fix64 heading = Fix64.WrapAngle(_state.Heading + turnRate * dt);
+                heading = Fix64.WrapAngle(heading + turnSide * pivot * dt);
+            }
+            else if (stance == Stance.Drift)
+            {
+                // A drift: the skis swing out DriftAngle (times the edge) ahead of the path and ride there.
+                heading = SwingToward(heading, path + turnSide * _tuning.DriftAngle * edgeAmount, _tuning.DriftSwingRate * dt);
+            }
+            else if (stance == Stance.Brake && turnSide != Fix64.Zero && speed > _tuning.HockeyMinSpeed)
+            {
+                // Back plus steering throws the skis across the path and holds them there: a hockey stop.
+                heading = SwingToward(heading, path + turnSide * _tuning.HockeyAngle, _tuning.HockeySwingRate * dt);
+            }
+            else
+            {
+                // A carve, the main turn: at full edge min(TurnRateLow, TurnAcceleration * turn factor / speed), so it always
+                // turns, swinging round when slow and held to TurnAcceleration sideways when fast; a tuck turns less.
+                Fix64 sideways = _tuning.TurnAcceleration * turnFactor;
+                Fix64 carveRate = sideways < _tuning.TurnRateLow * speed ? sideways / speed : _tuning.TurnRateLow;
+                if (stance == Stance.Tuck)
+                {
+                    carveRate = carveRate * _tuning.TuckTurnFactor;
+                }
+
+                heading = Fix64.WrapAngle(heading + turnSide * carveRate * edgeAmount * dt);
+            }
 
             // Gravity projected onto the surface: g * (n.y * n.x, n.y * n.y - 1, n.y * n.z).
+            Fix64 normalGravity = _tuning.Gravity * normal.Y;
             velocity = velocity + new Vec3(
                 normalGravity * normal.X,
                 normalGravity * normal.Y - _tuning.Gravity,
@@ -548,19 +586,57 @@ namespace FirstChair.Sim
             Fix64 along = Vec3.Dot(velocity, forward);
             Fix64 across = Vec3.Dot(velocity, side);
 
-            // Lateral grip. A carve's edges hold the line: the snow cancels the sideways velocity, up to the carve grip.
-            // Pivoted skis are held like a tyre: in proportion to the slip angle (SkidStiffness per radian), up to the skid
-            // grip. So a quick turn always slips a little, and the harder it turns the more it slips and the more speed it
-            // costs. Past the grip the skis slide: a skid.
-            Fix64 sideways = Fix64.Abs(across);
-            Fix64 pivotHold = Fix64.Min(sideways, _tuning.SkidStiffness * Fix64.Atan2(sideways, Fix64.Abs(along)) * dt);
-            Fix64 hold = pivotHold + (sideways - pivotHold) * carveBlend;
-            Fix64 skidGrip = _tuning.SkidGrip(snow);
-            Fix64 grip = (skidGrip + (carveGrip - skidGrip) * carveBlend) * dt;
-            bool skidding = hold > grip;
-            hold = Fix64.Min(hold, grip);
-            across = across > Fix64.Zero ? across - hold : across + hold;
-            Fix64 slip = Fix64.Atan2(Fix64.Abs(across), Fix64.Abs(along));
+            // Grip. The edges cancel sideways velocity up to their grip, which grows with the edge; drifting skis bite
+            // harder and braking ones less. Pivoted skis in a quick turn are held like a tyre instead: SkidStiffness per
+            // radian of slip, up to the skid grip. The cancelled sideways speed turns into forward speed, keeping its share
+            // of the energy: nearly all in a carve, less in a quick turn or a drift, little when braking.
+            Fix64 slide = Fix64.Abs(across);
+            Fix64 removed;
+            Fix64 keep;
+            if (stance == Stance.Quick)
+            {
+                Fix64 tyre = _tuning.SkidStiffness * Fix64.Atan2(slide, Fix64.Abs(along)) * dt;
+                removed = Fix64.Min(slide, Fix64.Min(tyre, _tuning.SkidGrip(snow) * dt));
+                keep = _tuning.QuickKeep;
+            }
+            else
+            {
+                Fix64 grip = _tuning.CarveGrip(snow) * normal.Y * (_tuning.GripBase + (Fix64.One - _tuning.GripBase) * edgeAmount);
+                grip = stance == Stance.Drift ? grip * _tuning.DriftGripFactor
+                    : stance == Stance.Brake ? grip * _tuning.BrakeGripFactor
+                    : grip;
+                removed = Fix64.Min(slide, grip * dt);
+                keep = stance == Stance.Drift ? _tuning.DriftKeep
+                    : stance == Stance.Brake ? _tuning.BrakeKeep
+                    : _tuning.CarveEfficiency;
+            }
+
+            Fix64 left = slide - removed;
+            Fix64 forwardSpeed = Fix64.Sqrt(along * along + (slide * slide - left * left) * keep);
+            along = along < Fix64.Zero ? -forwardSpeed : forwardSpeed;
+            across = across > Fix64.Zero ? left : -left;
+            bool skidding = left > _tuning.SkidSlipSpeed;
+            Fix64 slip = Fix64.Atan2(left, Fix64.Abs(along));
+
+            // Skate: an edge flip from a real edge pushes along the skis, below SkateMaxSpeed and at most every SkateInterval.
+            int skateTicks = Fix64.FromInt(_state.SkateTicks) < _skateIntervalSteps ? _state.SkateTicks + 1 : _state.SkateTicks;
+            if (flipStarted && stance == Stance.Carve && Fix64.FromInt(skateTicks) >= _skateIntervalSteps
+                && speed < _tuning.SkateMaxSpeed && along >= Fix64.Zero)
+            {
+                along = Fix64.Min(along + _tuning.SkatePush, Fix64.Max(along, _tuning.SkateMaxSpeed));
+                skateTicks = 0;
+            }
+
+            // Drift boost: letting go of a drift held for DriftBoostTime adds DriftBoost along the skis.
+            int driftTicks = 0;
+            if (stance == Stance.Drift)
+            {
+                driftTicks = Fix64.FromInt(_state.DriftTicks) < _driftBoostSteps ? _state.DriftTicks + 1 : _state.DriftTicks;
+            }
+            else if (_state.DriftTicks > 0 && Fix64.FromInt(_state.DriftTicks) >= _driftBoostSteps)
+            {
+                along = along < Fix64.Zero ? along - _tuning.DriftBoost : along + _tuning.DriftBoost;
+            }
 
             if (stance == Stance.Pole && along < _tuning.PoleSpeedMax)
             {
@@ -569,19 +645,18 @@ namespace FirstChair.Sim
 
             velocity = forward * along + side * across;
 
-            // Everything that slows the rider, together; it can stop the rider but never push them backward.
+            // Everything that slows the rider, together; it can stop the rider but never push them backward. Flow cuts the
+            // snow and air drag in proportion: the whole FlowDragCut at full Flow.
             speed = Fix64.Sqrt(Vec3.Dot(velocity, velocity));
-            Fix64 airDrag = stance == Stance.Tuck ? _tuning.AirDrag * _tuning.TuckAirDragFactor
-                : stance == Stance.Carve ? _tuning.AirDrag * _tuning.CarveAirDragFactor
-                : _tuning.AirDrag;
-            // The snow's friction acts on the load: gravity's normal part, and in a carve the turn's sideways acceleration
-            // too, so tight carves cost a little speed.
-            Fix64 turnLoad = speed * carveTurnRate * carveBlend;
-            Fix64 snowLoad = carving ? Fix64.Sqrt(normalGravity * normalGravity + turnLoad * turnLoad) : normalGravity;
-            // Flow cuts snow and air drag in proportion: the whole FlowDragCut at full Flow.
+            Fix64 airDrag = stance == Stance.Tuck ? _tuning.AirDrag * _tuning.TuckAirDragFactor : _tuning.AirDrag;
             Fix64 flowDragFactor = Fix64.One - _tuning.FlowDragCut * _state.Flow;
-            Fix64 deceleration = (_tuning.Drag(snow) * snowLoad + airDrag * speed * speed) * flowDragFactor
-                + _tuning.SkidDrag(snow) * slip * speed;
+            Fix64 deceleration = (_tuning.Drag(snow) * normalGravity + airDrag * speed * speed) * flowDragFactor
+                + _tuning.ScrubDrag * left;
+            if (stance == Stance.Quick)
+            {
+                deceleration = deceleration + _tuning.SkidDrag(snow) * slip * speed;
+            }
+
             if (stance == Stance.Brake)
             {
                 deceleration = deceleration + _tuning.BrakeDeceleration;
@@ -622,7 +697,10 @@ namespace FirstChair.Sim
             _state.Position = new Vec3(x, takeoff ? Fix64.Max(flightY, height) : height, z);
             _state.Velocity = velocity;
             _state.Heading = heading;
-            _state.EdgeAngle = edge;
+            _state.EdgeAngle = edge * _tuning.MaxEdgeAngle;
+            _state.EdgeFlip = flip;
+            _state.DriftTicks = driftTicks;
+            _state.SkateTicks = skateTicks;
             _state.Skidding = skidding;
             _state.SlipAngle = slip;
             _state.Snow = snow;
@@ -633,6 +711,8 @@ namespace FirstChair.Sim
                 ClearAir();
                 _state.Airborne = true;
                 _state.PopLoadTicks = 0;
+                _state.EdgeFlip = 0;
+                _state.DriftTicks = 0;
                 _state.SwitchTakeoff = Vec3.Dot(velocity, forward) < Fix64.Zero;
                 _events.Add(SimEvent.Takeoff(tick, Fix64.Sqrt(Vec3.Dot(velocity, velocity))));
             }
@@ -644,6 +724,13 @@ namespace FirstChair.Sim
                     StartGrind(rail, tick);
                 }
             }
+        }
+
+        /// <summary>Turns <paramref name="heading"/> toward <paramref name="target"/> by at most <paramref name="maxStep"/>, the short way round.</summary>
+        private static Fix64 SwingToward(Fix64 heading, Fix64 target, Fix64 maxStep)
+        {
+            Fix64 delta = Fix64.WrapAngle(target - heading);
+            return Fix64.WrapAngle(heading + Fix64.Clamp(delta, -maxStep, maxStep));
         }
 
         /// <summary>One step in the air: rotate or grab, fall, and touch down when the terrain is reached.</summary>
@@ -999,6 +1086,8 @@ namespace FirstChair.Sim
             _state.Velocity = Vec3.Zero;
             _state.Heading = _state.SafeHeading;
             _state.EdgeAngle = Fix64.Zero;
+            _state.EdgeFlip = 0;
+            _state.DriftTicks = 0;
             _state.Skidding = false;
             _state.SlipAngle = Fix64.Zero;
             _state.Stance = Stance.Stand;
@@ -1281,17 +1370,41 @@ namespace FirstChair.Sim
         {
             Require(tuning.Gravity > Fix64.Zero, "Gravity must be positive");
             Require(tuning.MaxEdgeAngle > Fix64.Zero, "MaxEdgeAngle must be positive");
-            Require(tuning.CarveRadiusMin > Fix64.Zero, "CarveRadiusMin must be positive");
-            Require(tuning.CarveMinSpeed > Fix64.Zero, "CarveMinSpeed must be positive");
-            Require(IsFraction(tuning.CarveTurnShare), "CarveTurnShare must be in [0, 1]");
-            Require(tuning.CarveBlendSpeed > Fix64.Zero, "CarveBlendSpeed must be positive");
-            Require(tuning.PivotFadeSpeed > Fix64.Zero, "PivotFadeSpeed must be positive");
+            Require(tuning.EdgeRampTime > Fix64.Zero, "EdgeRampTime must be positive");
+            Require(tuning.EdgeReleaseTime > Fix64.Zero, "EdgeReleaseTime must be positive");
+            Require(tuning.EdgeFlipTime > Fix64.Zero, "EdgeFlipTime must be positive");
+            Require(tuning.TurnRateLow >= Fix64.Zero, "TurnRateLow must be zero or more");
+            Require(tuning.TurnAcceleration >= Fix64.Zero, "TurnAcceleration must be zero or more");
+            Require(IsFraction(tuning.GripBase), "GripBase must be in [0, 1]");
+            Require(IsFraction(tuning.CarveEfficiency), "CarveEfficiency must be in [0, 1]");
+            Require(tuning.ScrubDrag >= Fix64.Zero, "ScrubDrag must be zero or more");
+            Require(tuning.SkidSlipSpeed >= Fix64.Zero, "SkidSlipSpeed must be zero or more");
+            Require(IsFraction(tuning.TuckTurnFactor), "TuckTurnFactor must be in [0, 1]");
+            Require(tuning.QuickTurnRate >= Fix64.Zero, "QuickTurnRate must be zero or more");
+            Require(tuning.QuickSlipMax > Fix64.Zero && tuning.QuickSlipMax < Fix64.HalfPi, "QuickSlipMax must be in (0, pi/2)");
+            Require(tuning.QuickMinSpeed >= Fix64.Zero, "QuickMinSpeed must be zero or more");
+            Require(IsFraction(tuning.QuickKeep), "QuickKeep must be in [0, 1]");
             Require(tuning.SkidStiffness > Fix64.Zero, "SkidStiffness must be positive");
-            Require(tuning.PivotSlipMax > Fix64.Zero && tuning.PivotSlipMax < Fix64.HalfPi, "PivotSlipMax must be in (0, pi/2)");
+            Require(tuning.DriftAngle > Fix64.Zero && tuning.DriftAngle < Fix64.HalfPi, "DriftAngle must be in (0, pi/2)");
+            Require(tuning.DriftSwingRate > Fix64.Zero, "DriftSwingRate must be positive");
+            Require(tuning.DriftGripFactor >= Fix64.Zero, "DriftGripFactor must be zero or more");
+            Require(IsFraction(tuning.DriftKeep), "DriftKeep must be in [0, 1]");
+            Require(tuning.DriftBoostTime >= Fix64.Zero && tuning.DriftBoostTime < MaxTuningSeconds, "DriftBoostTime must be zero or more and fit an int of steps");
+            Require(tuning.DriftBoost >= Fix64.Zero, "DriftBoost must be zero or more");
+            Require(tuning.HockeyAngle > Fix64.Zero && tuning.HockeyAngle < Fix64.Pi, "HockeyAngle must be in (0, pi)");
+            Require(tuning.HockeySwingRate > Fix64.Zero, "HockeySwingRate must be positive");
+            Require(tuning.HockeyMinSpeed >= Fix64.Zero, "HockeyMinSpeed must be zero or more");
+            Require(tuning.BrakeGripFactor >= Fix64.Zero, "BrakeGripFactor must be zero or more");
+            Require(IsFraction(tuning.BrakeKeep), "BrakeKeep must be in [0, 1]");
+            Require(tuning.SkatePush >= Fix64.Zero, "SkatePush must be zero or more");
+            Require(tuning.SkateMaxSpeed >= Fix64.Zero, "SkateMaxSpeed must be zero or more");
+            Require(tuning.SkateInterval >= Fix64.Zero && tuning.SkateInterval < MaxTuningSeconds, "SkateInterval must be zero or more and fit an int of steps");
+            Require(IsFraction(tuning.SkateMinEdge), "SkateMinEdge must be in [0, 1]");
             foreach (SnowType snow in AllSnowTypes)
             {
                 Require(tuning.CarveGrip(snow) >= Fix64.Zero, snow + "CarveGrip must be zero or more");
                 Require(tuning.SkidGrip(snow) >= Fix64.Zero, snow + "SkidGrip must be zero or more");
+                Require(tuning.TurnFactor(snow) >= Fix64.Zero, snow + "TurnFactor must be zero or more");
             }
             Require(tuning.PopLoadTime > Fix64.Zero && tuning.PopLoadTime < MaxTuningSeconds, "PopLoadTime must be positive and fit an int of steps");
             Require(tuning.CrashResetDelay >= Fix64.Zero && tuning.CrashResetDelay < MaxTuningSeconds, "CrashResetDelay must be zero or more and fit an int of steps");

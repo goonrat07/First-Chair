@@ -13,7 +13,7 @@ namespace FirstChair.Sim.Tests
             var failures = new List<string>();
 
             // Act
-            for (uint combo = 0; combo < 64; combo++)
+            for (uint combo = 0; combo < 256; combo++)
             {
                 for (int steering = -SimInput.SteeringMax; steering <= SimInput.SteeringMax; steering++)
                 {
@@ -56,10 +56,21 @@ namespace FirstChair.Sim.Tests
         }
 
         [Test]
+        public void Pack_Quick_UsesBitSeven()
+        {
+            // Arrange and Act: Quick took the last reserved button bit in sim version 8.
+            SimInput input = SimInput.Pack(SimButtons.Quick, 0);
+
+            // Assert
+            Assert.That(input.Packed, Is.EqualTo(0x00000080u));
+            Assert.That(input.Buttons, Is.EqualTo(SimButtons.Quick));
+        }
+
+        [Test]
         public void FromPacked_ReservedBitsSet_IgnoresThem()
         {
-            // Arrange: bit 7 and bits 16-31 are reserved (bit 6 is Reset since sim version 3).
-            const uint reservedOnly = 0xFFFF0080u;
+            // Arrange: bits 16-31 are reserved (bit 6 is Reset since sim version 3, bit 7 Quick since version 8).
+            const uint reservedOnly = 0xFFFF0000u;
 
             // Act
             SimInput input = SimInput.FromPacked(reservedOnly);

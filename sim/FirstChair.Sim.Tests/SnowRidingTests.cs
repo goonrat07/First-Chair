@@ -6,8 +6,8 @@ using NUnit.Framework;
 namespace FirstChair.Sim.Tests
 {
     /// <summary>
-    /// Story 002 and Story 008 scripted-input tests: steering and edging, carves and quick turns, tuck, brake, poling on
-    /// flats only, and the five snow types. They pin behaviour, not final numbers: expectations come from
+    /// Story 002, 008 and 009 scripted-input tests: steering and edging, carves, quick turns, drifts, hockey stops and
+    /// skating (sim version 8, after GMA), tuck, brake, poling on flats only, and the five snow types. They pin behaviour, not final numbers: expectations come from
     /// <see cref="Tuning"/>, and several tests also run tuning variants, so a riding number written into the
     /// logic instead of read from Tuning fails them.
     /// </summary>
@@ -22,8 +22,6 @@ namespace FirstChair.Sim.Tests
         private static readonly SimInput NoInput = SimInput.Pack(SimButtons.None, 0);
         private static readonly SimInput Forward = SimInput.Pack(SimButtons.Forward, 0);
         private static readonly SimInput Back = SimInput.Pack(SimButtons.Back, 0);
-        private static readonly SimInput QuickRight = SimInput.Pack(SimButtons.Right, 0);
-        private static readonly SimInput CarveRight = SimInput.Pack(SimButtons.Forward | SimButtons.Right, 0);
 
         [TestCase(SimButtons.Left, 0, -127)]
         [TestCase(SimButtons.Right, 0, 127)]
@@ -46,7 +44,7 @@ namespace FirstChair.Sim.Tests
         }
 
         [Test]
-        public void FullRightSteering_FromRest_EdgesAtEdgeRateUpToMaxEdgeAngle()
+        public void FullRightSteering_FromRest_RampsTheEdgeOverEdgeRampTime_AndPivotsTowardThatSide()
         {
             // Arrange
             Tuning tuning = Tuning.Default;
@@ -60,7 +58,7 @@ namespace FirstChair.Sim.Tests
             Ride(simulation, right, Simulation.StepsPerSecond - 1);
 
             // Assert
-            Assert.That(afterOneStep, Is.EqualTo(tuning.EdgeRate * Simulation.StepSeconds));
+            Assert.That(D(afterOneStep), Is.EqualTo(D(tuning.MaxEdgeAngle) * D(Simulation.StepSeconds) / D(tuning.EdgeRampTime)).Within(1e-6));
             Assert.That(simulation.State.EdgeAngle, Is.EqualTo(tuning.MaxEdgeAngle));
             Assert.That(headingAfterOneStep.Raw, Is.GreaterThan(0L), "a resting rider pivots toward the steering");
         }
@@ -100,150 +98,11 @@ namespace FirstChair.Sim.Tests
             Assert.That(level, Is.EqualTo(Fix64.Zero));
         }
 
-        [Test]
-        public void Carve_ForwardAndSteeringOnGroomedFlat_FollowsTheSkisWithoutSkiddingAndKeepsSpeed()
-        {
-            // Arrange: onto the level run-out, fast enough for a full carve.
-            Tuning tuning = Tuning.Default;
-            Simulation simulation = StartOnRunOut(SnowType.Groomed, tuning);
-            RideOntoFlat(simulation);
-            double entrySpeed = Speed(simulation.State);
-            Fix64 startHeading = simulation.State.Heading;
-            int carvingSteps = 0, skiddingSteps = 0;
-            double worstMisalignment = 0;
 
-            // Act
-            for (int step = 0; step < Simulation.StepsPerSecond; step++)
-            {
-                simulation.Step(CarveRight);
-                RiderState state = simulation.State;
-                carvingSteps += state.Stance == Stance.Carve ? 1 : 0;
-                skiddingSteps += state.Skidding ? 1 : 0;
 
-                // On level ground the skis point along (sin heading, cos heading).
-                worstMisalignment = Math.Max(worstMisalignment, Math.Abs(PathAngle(state) - D(state.Heading)));
-            }
 
-            // Assert: the speed falls by no more than the snow's friction on the carve's heaviest load, plus air drag.
-            double g = D(tuning.Gravity);
-            double turnGrip = D(tuning.CarveTurnShare) * D(tuning.GroomedCarveGrip);
-            double mostLoss = (D(tuning.GroomedDrag) * Math.Sqrt(g * g + turnGrip * turnGrip)
-                + D(tuning.AirDrag) * D(tuning.CarveAirDragFactor) * entrySpeed * entrySpeed) * D(Simulation.StepSeconds) * Simulation.StepsPerSecond;
-            Assert.That(entrySpeed, Is.GreaterThan(D(tuning.CarveMinSpeed + tuning.CarveBlendSpeed)), "the entry speed must allow a full carve");
-            Assert.That(carvingSteps, Is.EqualTo(Simulation.StepsPerSecond));
-            Assert.That(skiddingSteps, Is.EqualTo(0));
-            Assert.That(worstMisalignment, Is.LessThan(1e-6), "velocity must follow the ski heading");
-            Assert.That(D(simulation.State.Heading - startHeading), Is.GreaterThan(0.5), "the carve must turn the rider");
-            Assert.That(entrySpeed - Speed(simulation.State), Is.InRange(0.0, mostLoss));
-        }
 
-        [Test]
-        public void Carve_SnowFrictionActsOnTheTurnsLoad_SoATightCarveCostsALittleSpeed()
-        {
-            // Arrange: on the run-out's slush, which carves and has the most friction, a carve against a straight run with
-            // W, with the tuck's air drag set to the carve's so only the snow tells them apart; and both again without
-            // slush friction. The run-in is groomed, so every ride reaches the slush at the same speed.
-            Tuning tuning = Tuning.Default;
-            tuning.TuckAirDragFactor = tuning.CarveAirDragFactor;
-            Tuning frictionless = tuning;
-            frictionless.SlushDrag = Fix64.Zero;
-            double g = D(tuning.Gravity), mu = D(tuning.SlushDrag), dt = D(Simulation.StepSeconds);
 
-            // Act
-            (double extraLoss, double loadIntegral) = CarveExtraLoss(tuning, g, mu, dt);
-            (double extraLossFrictionless, _) = CarveExtraLoss(frictionless, g, mu, dt);
-
-            // Assert: friction on the turn's load sqrt(g^2 + (v w)^2) instead of g alone costs mu times the difference.
-            Assert.That(loadIntegral, Is.GreaterThan(0.1), "the carve must load the skis");
-            Assert.That(extraLoss - extraLossFrictionless, Is.EqualTo(loadIntegral).Within(10).Percent);
-        }
-
-        [Test]
-        public void CarveAtFullEdge_IsCarveRadiusMinWhenSlow_AndSpeedSquaredOverItsGripWhenFast()
-        {
-            // Arrange: a speed where the sidecut limits the carve (speed^2 / grip below CarveRadiusMin), and the run-out's
-            // full entry speed, where the grip does.
-            Tuning tuning = Tuning.Default;
-            double turnGrip = D(tuning.CarveTurnShare) * D(tuning.GroomedCarveGrip);
-            double slowTarget = D(tuning.CarveMinSpeed + tuning.CarveBlendSpeed) + 1;
-
-            // Act
-            (double slowSpeed, double slowRadius) = FullEdgeRadius(tuning, slowTarget, CarveRight);
-            (double fastSpeed, double fastRadius) = FullEdgeRadius(tuning, double.MaxValue, CarveRight);
-
-            // Assert
-            Assert.That(slowSpeed * slowSpeed / turnGrip, Is.LessThan(D(tuning.CarveRadiusMin)), "the slow carve must be sidecut-limited");
-            Assert.That(fastSpeed * fastSpeed / turnGrip, Is.GreaterThan(D(tuning.CarveRadiusMin)), "the fast carve must be grip-limited");
-            Assert.That(slowRadius, Is.EqualTo(D(tuning.CarveRadiusMin)).Within(0.1).Percent);
-            Assert.That(fastRadius, Is.EqualTo(fastSpeed * fastSpeed / turnGrip).Within(0.1).Percent);
-            Assert.That(fastRadius, Is.GreaterThan(slowRadius));
-        }
-
-        [Test]
-        public void ForwardSteering_BelowCarveMinSpeed_PivotsExactlyLikeAQuickTurn()
-        {
-            // Arrange: from rest on the incline, so the rider stays below CarveMinSpeed; and a pair at full carving speed.
-            Tuning tuning = Tuning.Default;
-            Simulation slowForward = StartOn(TestTerrain.InclineDownhillPlusZ(), SnowType.Groomed, tuning, 64, 4);
-            Simulation slowQuick = StartOn(TestTerrain.InclineDownhillPlusZ(), SnowType.Groomed, tuning, 64, 4);
-            Simulation fastForward = StartOnRunOut(SnowType.Groomed, tuning);
-            Simulation fastQuick = StartOnRunOut(SnowType.Groomed, tuning);
-            RideOntoFlat(fastForward);
-            RideOntoFlat(fastQuick);
-
-            // Act
-            for (int step = 0; step < Simulation.StepsPerSecond; step++)
-            {
-                slowForward.Step(CarveRight);
-                slowQuick.Step(QuickRight);
-                fastForward.Step(CarveRight);
-                fastQuick.Step(QuickRight);
-                Assert.That(slowForward.State.Stance, Is.EqualTo(Stance.Stand), "below CarveMinSpeed there is no carve");
-            }
-
-            // Assert
-            Assert.That(Speed(slowForward.State), Is.LessThan(D(tuning.CarveMinSpeed)), "the rider must stay below CarveMinSpeed");
-            Assert.That(slowForward.State.Heading, Is.EqualTo(slowQuick.State.Heading));
-            Assert.That(slowForward.State.Velocity, Is.EqualTo(slowQuick.State.Velocity));
-            Assert.That(slowForward.State.Position, Is.EqualTo(slowQuick.State.Position));
-            Assert.That(fastForward.State.Heading, Is.Not.EqualTo(fastQuick.State.Heading), "at speed W must carve instead");
-        }
-
-        [Test]
-        public void QuickTurn_AtModerateSpeed_TurnsThePathSoonerThanACarveButLosesMoreSpeed()
-        {
-            // Arrange: both brake to the same moderate speed on the level run-out.
-            Tuning tuning = Tuning.Default;
-            double moderate = D(tuning.CarveMinSpeed + tuning.CarveBlendSpeed) + 1;
-
-            // Act: turn the path 45 degrees.
-            (int carveSteps, double carveLoss) = TurnPath(tuning, SnowType.Groomed, moderate, CarveRight, Math.PI / 4);
-            (int quickSteps, double quickLoss) = TurnPath(tuning, SnowType.Groomed, moderate, QuickRight, Math.PI / 4);
-
-            // Assert
-            Assert.That(quickSteps, Is.LessThan(carveSteps));
-            Assert.That(quickLoss, Is.GreaterThan(carveLoss), "over the same change of direction a quick turn costs more");
-        }
-
-        [Test]
-        public void QuickTurn_PivotsMoreSlowlyTheFasterTheRiderGoes()
-        {
-            // Arrange: the first step of a quick turn from a straight run, below and at carving speed.
-            Tuning tuning = Tuning.Default;
-            double edgeFraction = D(tuning.EdgeRate * Simulation.StepSeconds / tuning.MaxEdgeAngle);
-            double Expected(double speed) =>
-                edgeFraction * D(tuning.PivotRate) * D(tuning.GroomedPivotFactor) / (1 + speed / D(tuning.PivotFadeSpeed));
-
-            // Act
-            (double slowSpeed, double slowRate) = FirstStepPivotRate(tuning, D(tuning.CarveMinSpeed) - 1);
-            (double fastSpeed, double fastRate) = FirstStepPivotRate(tuning, double.MaxValue);
-
-            // Assert
-            Assert.That(fastSpeed, Is.GreaterThan(2 * slowSpeed));
-            Assert.That(slowRate, Is.EqualTo(Expected(slowSpeed)).Within(0.01).Percent);
-            Assert.That(fastRate, Is.EqualTo(Expected(fastSpeed)).Within(0.01).Percent);
-            Assert.That(fastRate, Is.LessThan(slowRate));
-        }
 
         [Test]
         public void QuickTurn_AlwaysSlipsALittle_AndSlipsAndSlowsMoreTheHarderItTurns()
@@ -255,13 +114,13 @@ namespace FirstChair.Sim.Tests
             noSkidDrag.GroomedSkidDrag = Fix64.Zero;
             Tuning stiffer = tuning;
             stiffer.SkidStiffness = tuning.SkidStiffness * Fix64.FromInt(2);
-            double moderate = D(tuning.CarveMinSpeed + tuning.CarveBlendSpeed) + 1;
+            const double moderate = 10.0;
             Simulation straight = OnRunOutAt(SnowType.Groomed, tuning, moderate);
             Simulation half = OnRunOutAt(SnowType.Groomed, tuning, moderate);
             Simulation full = OnRunOutAt(SnowType.Groomed, tuning, moderate);
             Simulation fullNoSkidDrag = OnRunOutAt(SnowType.Groomed, noSkidDrag, moderate);
             Simulation fullStiffer = OnRunOutAt(SnowType.Groomed, stiffer, moderate);
-            SimInput halfRight = SimInput.Pack(SimButtons.None, SimInput.SteeringMax / 2);
+            SimInput halfRight = SimInput.Pack(SimButtons.Quick, SimInput.SteeringMax / 2);
             double halfSlip = 0, fullSlip = 0, stifferSlip = 0;
 
             // Act
@@ -269,9 +128,9 @@ namespace FirstChair.Sim.Tests
             {
                 straight.Step(NoInput);
                 half.Step(halfRight);
-                full.Step(QuickRight);
-                fullNoSkidDrag.Step(QuickRight);
-                fullStiffer.Step(QuickRight);
+                full.Step(QuickTurnRight);
+                fullNoSkidDrag.Step(QuickTurnRight);
+                fullStiffer.Step(QuickTurnRight);
                 halfSlip += D(half.State.SlipAngle);
                 fullSlip += D(full.State.SlipAngle);
                 stifferSlip += D(fullStiffer.State.SlipAngle);
@@ -286,103 +145,25 @@ namespace FirstChair.Sim.Tests
             Assert.That(Speed(fullNoSkidDrag.State), Is.GreaterThan(Speed(full.State)), "the plowing drag must cost speed");
         }
 
-        [Test]
-        public void QuickTurnHeldAtSpeed_LeadsThePathByAtMostPivotSlipMax_AndChecksSpeed()
-        {
-            // Arrange: at the run-out's full entry speed, straight and a held quick turn; and the held turn again with
-            // half the cap.
-            Tuning tuning = Tuning.Default;
-            Tuning halfCap = tuning;
-            halfCap.PivotSlipMax = tuning.PivotSlipMax / Fix64.FromInt(2);
-            Simulation straight = StartOnRunOut(SnowType.Groomed, tuning);
-            Simulation quick = StartOnRunOut(SnowType.Groomed, tuning);
-            Simulation tight = StartOnRunOut(SnowType.Groomed, halfCap);
-            foreach (Simulation simulation in new[] { straight, quick, tight })
-            {
-                RideOntoFlat(simulation);
-            }
 
-            double oneStep = D(tuning.PivotRate * tuning.GroomedPivotFactor * Simulation.StepSeconds);
-            double quickLead = 0, tightLead = 0;
-            int skiddingSteps = 0;
-
-            // Act
-            for (int step = 0; step < Simulation.StepsPerSecond; step++)
-            {
-                straight.Step(NoInput);
-                quick.Step(QuickRight);
-                tight.Step(QuickRight);
-                quickLead = Math.Max(quickLead, Math.Abs(Lead(quick.State)));
-                tightLead = Math.Max(tightLead, Math.Abs(Lead(tight.State)));
-                skiddingSteps += quick.State.Skidding ? 1 : 0;
-            }
-
-            // Assert
-            double tightCap = D(halfCap.PivotSlipMax);
-            Assert.That(quickLead, Is.LessThanOrEqualTo(D(tuning.PivotSlipMax) + oneStep));
-            Assert.That(quickLead, Is.GreaterThan(tightCap + oneStep), "the turn must lead further than the half cap allows");
-            Assert.That(tightLead, Is.InRange(tightCap - oneStep, tightCap + oneStep), "the lead must stop at PivotSlipMax");
-            Assert.That(skiddingSteps, Is.GreaterThan(0), "at speed a held quick turn skids");
-            Assert.That(Speed(quick.State), Is.LessThan(0.9 * Speed(straight.State)), "the skid must check speed");
-        }
-
-        [TestCase(SnowType.Groomed, true)]
-        [TestCase(SnowType.Ice, true)]
-        [TestCase(SnowType.Slush, true)]
-        [TestCase(SnowType.Powder, false)]
-        [TestCase(SnowType.Crud, false)]
-        public void ForwardSteering_CarvesOnlyOnSnowWithACarveGrip(SnowType snow, bool carves)
-        {
-            // Arrange: onto the level run-out's test snow at full carving speed.
-            Simulation forward = StartOnRunOut(snow, Tuning.Default);
-            Simulation quick = StartOnRunOut(snow, Tuning.Default);
-            RideOntoFlat(forward);
-            RideOntoFlat(quick);
-            int carvingSteps = 0;
-
-            // Act
-            for (int step = 0; step < Simulation.StepsPerSecond; step++)
-            {
-                forward.Step(CarveRight);
-                quick.Step(QuickRight);
-                carvingSteps += forward.State.Stance == Stance.Carve ? 1 : 0;
-            }
-
-            // Assert
-            Assert.That(forward.State.Snow, Is.EqualTo(snow));
-            if (carves)
-            {
-                Assert.That(carvingSteps, Is.EqualTo(Simulation.StepsPerSecond));
-                Assert.That(forward.State.Velocity, Is.Not.EqualTo(quick.State.Velocity), "a carve must ride differently");
-            }
-            else
-            {
-                Assert.That(carvingSteps, Is.EqualTo(0));
-                Assert.That(forward.State.Heading, Is.EqualTo(quick.State.Heading), "W plus steering must turn like a quick turn");
-                Assert.That(forward.State.Velocity, Is.EqualTo(quick.State.Velocity));
-                Assert.That(forward.State.Position, Is.EqualTo(quick.State.Position));
-            }
-        }
 
         [Test]
-        public void RampingEdge_OnIceVersusGroomed_IceSkidsAtALowerEdgeAngle()
+        public void RampingEdge_OnIce_SkidsPartWay_WhileAGroomedCarveHoldsToFullEdge()
         {
-            // Arrange: the same groomed run-in, then the edge ramps up on the test snow. Ice's lower drag carries
-            // the rider in a little faster, which alone lowers its skid onset, so a variant with equal drags
-            // leaves grip as the only difference.
+            // Arrange: the same groomed run-in, then the edge ramps up on the test snow, with equal drags so grip is the only
+            // difference.
             Tuning equalDrag = Tuning.Default;
             equalDrag.IceDrag = equalDrag.GroomedDrag;
 
             // Act
-            Fix64 groomedOnset = SkidOnsetEdge(SnowType.Groomed, Tuning.Default);
-            Fix64 iceOnset = SkidOnsetEdge(SnowType.Ice, Tuning.Default);
-            Fix64 groomedOnsetEqualDrag = SkidOnsetEdge(SnowType.Groomed, equalDrag);
-            Fix64 iceOnsetEqualDrag = SkidOnsetEdge(SnowType.Ice, equalDrag);
+            Fix64? groomedOnset = SkidOnsetEdge(SnowType.Groomed, equalDrag);
+            Fix64? iceOnset = SkidOnsetEdge(SnowType.Ice, equalDrag);
 
-            // Assert
-            Assert.That(iceOnset.Raw, Is.GreaterThan(0L));
-            Assert.That(iceOnset.Raw, Is.LessThan(groomedOnset.Raw));
-            Assert.That(iceOnsetEqualDrag.Raw, Is.LessThan(groomedOnsetEqualDrag.Raw), "ice's lower grip must make it skid earlier");
+            // Assert: groomed snow's grip holds a full carve (TurnAcceleration is under it); ice's lets go part way.
+            Assert.That(groomedOnset, Is.Null, "a full groomed carve must hold");
+            Assert.That(iceOnset.HasValue, Is.True, "ice must skid");
+            Assert.That(iceOnset.Value.Raw, Is.GreaterThan(0L));
+            Assert.That(iceOnset.Value.Raw, Is.LessThan(equalDrag.MaxEdgeAngle.Raw));
         }
 
         [Test]
@@ -429,14 +210,13 @@ namespace FirstChair.Sim.Tests
 
         [Test]
         public void ChangingOneTypesTurnTuning_ChangesOnlyRidesOnThatType(
-            [Values("CarveGrip", "SkidGrip", "SkidDrag", "PivotFactor")] string field, [Values] SnowType changed)
+            [Values("CarveGrip", "SkidGrip", "SkidDrag", "TurnFactor")] string field, [Values] SnowType changed)
         {
-            // Arrange: the field halved on one type, or for snow that can't carve, given groomed snow's carve grip. Carve
-            // grip acts in a carve (W and steering), the rest in a quick turn (steering alone).
+            // Arrange: the field halved on one type. Carve grip and the turn factor act in a carve (steering alone), skid grip
+            // and skid drag in a quick turn (quick and steering).
             Tuning baseline = Tuning.Default;
-            Fix64 value = ReadField(baseline, changed + field);
-            Tuning variant = WithField(baseline, changed + field, value == Fix64.Zero ? baseline.GroomedCarveGrip : value / Fix64.FromInt(2));
-            SimInput turn = field == "CarveGrip" ? CarveRight : QuickRight;
+            Tuning variant = WithField(baseline, changed + field, ReadField(baseline, changed + field) / Fix64.FromInt(2));
+            SimInput turn = field == "CarveGrip" || field == "TurnFactor" ? PlainRight : QuickTurnRight;
 
             foreach (SnowType ridden in (SnowType[])Enum.GetValues(typeof(SnowType)))
             {
@@ -641,6 +421,262 @@ namespace FirstChair.Sim.Tests
             Assert.That(simulation.State.Velocity, Is.EqualTo(Vec3.Zero));
         }
 
+        // ---- Story 009: GMA-style riding (sim version 8) ----
+
+        private static readonly SimInput PlainRight = SimInput.Pack(SimButtons.Right, 0);
+        private static readonly SimInput PlainLeft = SimInput.Pack(SimButtons.Left, 0);
+        private static readonly SimInput QuickTurnRight = SimInput.Pack(SimButtons.Quick | SimButtons.Right, 0);
+        private static readonly SimInput DriftRight = SimInput.Pack(SimButtons.Grab | SimButtons.Right, 0);
+        private static readonly SimInput HockeyRight = SimInput.Pack(SimButtons.Back | SimButtons.Right, 0);
+        private static readonly SimInput TuckRight = SimInput.Pack(SimButtons.Forward | SimButtons.Right, 0);
+
+        [Test]
+        public void Edge_HeldKeyRampsInEdgeRampTime_ReleaseFlattensInEdgeReleaseTime_OtherKeyFlipsInEdgeFlipTime()
+        {
+            // Arrange
+            Tuning tuning = Tuning.Default;
+            Simulation simulation = OnRunOutAt(SnowType.Groomed, tuning, 10.0);
+
+            // Act
+            int ramp = StepsUntil(simulation, PlainRight, state => state.EdgeAngle >= tuning.MaxEdgeAngle);
+            int flip = StepsUntil(simulation, PlainLeft, state => state.EdgeAngle <= -tuning.MaxEdgeAngle);
+            int release = StepsUntil(simulation, NoInput, state => state.EdgeAngle == Fix64.Zero);
+
+            // Assert: each within a step of its time.
+            Assert.That(ramp, Is.InRange(StepsOf(tuning.EdgeRampTime), StepsOf(tuning.EdgeRampTime) + 1), "ramp");
+            Assert.That(flip, Is.InRange(StepsOf(tuning.EdgeFlipTime), StepsOf(tuning.EdgeFlipTime) + 1), "flip");
+            Assert.That(release, Is.InRange(StepsOf(tuning.EdgeReleaseTime), StepsOf(tuning.EdgeReleaseTime) + 1), "release");
+        }
+
+        [Test]
+        public void PlainSteering_OnGroomedFlatAtSpeed_CarvesWithoutSkidding_AndKeepsSpeed()
+        {
+            // Arrange: a carve and a straight run from the same 15 m/s.
+            Simulation carve = OnRunOutAt(SnowType.Groomed, Tuning.Default, 15.0);
+            Simulation straight = OnRunOutAt(SnowType.Groomed, Tuning.Default, 15.0);
+            double start = Speed(carve.State);
+            bool skidded = false;
+
+            // Act: one second of plain steering, the main turn since sim version 8.
+            for (int step = 0; step < Simulation.StepsPerSecond; step++)
+            {
+                carve.Step(PlainRight);
+                straight.Step(NoInput);
+                skidded |= carve.State.Skidding;
+            }
+
+            // Assert: no skid, the path follows the skis, and the carve loses at most 2% of the speed more than a straight run.
+            Assert.That(carve.State.Stance, Is.EqualTo(Stance.Carve));
+            Assert.That(skidded, Is.False);
+            Assert.That(Math.Abs(Lead(carve.State)), Is.LessThan(0.02));
+            Assert.That(PathAngle(carve.State), Is.GreaterThan(0.8), "it must really turn");
+            Assert.That(Speed(straight.State) - Speed(carve.State), Is.LessThan(0.02 * start));
+        }
+
+        [TestCase(3.0)]
+        [TestCase(12.0)]
+        [TestCase(20.0)]
+        public void CarveAtFullEdge_TurnsAtTurnRateLowWhenSlow_AndTurnAccelerationOverSpeedWhenFast(double speed)
+        {
+            // Arrange: a variant too, so the rate must come from tuning.
+            Tuning variant = WithField(WithField(Tuning.Default, nameof(Tuning.TurnRateLow), Fix64.FromRatio(18, 10)),
+                nameof(Tuning.TurnAcceleration), Fix64.FromInt(11));
+            foreach (Tuning tuning in new[] { Tuning.Default, variant })
+            {
+                // Act
+                (double before, double rate) = FullEdgeTurnRate(tuning, SnowType.Groomed, speed, PlainRight);
+
+                // Assert
+                double expected = Math.Min(D(tuning.TurnRateLow), D(tuning.TurnAcceleration) * D(tuning.GroomedTurnFactor) / before);
+                Assert.That(rate, Is.EqualTo(expected).Within(1e-6 + 1e-4 * expected), "at " + before + " m/s");
+            }
+        }
+
+        [Test]
+        public void TuckedCarve_TurnsTuckTurnFactorAsSharply()
+        {
+            // Arrange and Act
+            (double plainSpeed, double plain) = FullEdgeTurnRate(Tuning.Default, SnowType.Groomed, 12.0, PlainRight);
+            (double tuckSpeed, double tucked) = FullEdgeTurnRate(Tuning.Default, SnowType.Groomed, 12.0, TuckRight);
+
+            // Assert
+            Assert.That(tuckSpeed, Is.EqualTo(plainSpeed).Within(0.05));
+            Assert.That(tucked / plain, Is.EqualTo(D(Tuning.Default.TuckTurnFactor)).Within(0.01));
+        }
+
+        [Test]
+        public void CarveOnPowder_TurnsByPowdersTurnFactor()
+        {
+            // Arrange and Act: at 10 m/s both turns are held to TurnAcceleration, so the rates differ by the factor alone.
+            (_, double groomed) = FullEdgeTurnRate(Tuning.Default, SnowType.Groomed, 10.0, PlainRight);
+            (_, double powder) = FullEdgeTurnRate(Tuning.Default, SnowType.Powder, 10.0, PlainRight);
+
+            // Assert
+            Assert.That(powder / groomed, Is.EqualTo(D(Tuning.Default.PowderTurnFactor) / D(Tuning.Default.GroomedTurnFactor)).Within(0.02));
+        }
+
+        [Test]
+        public void QuickTurn_TurnsThePathSoonerThanACarve_ButLosesMoreSpeed()
+        {
+            // Arrange and Act: 60 degrees from 15 m/s.
+            (int carveSteps, double carveLoss) = TurnPath(Tuning.Default, SnowType.Groomed, 15.0, PlainRight, Math.PI / 3);
+            (int quickSteps, double quickLoss) = TurnPath(Tuning.Default, SnowType.Groomed, 15.0, QuickTurnRight, Math.PI / 3);
+
+            // Assert
+            Assert.That(quickSteps, Is.LessThan(carveSteps));
+            Assert.That(quickLoss, Is.GreaterThan(carveLoss));
+        }
+
+        [Test]
+        public void QuickTurnHeldAtSpeed_LeadsThePathByAtMostQuickSlipMax()
+        {
+            // Arrange
+            Tuning tuning = Tuning.Default;
+            Simulation simulation = OnRunOutAt(SnowType.Groomed, tuning, 15.0);
+            double most = 0;
+
+            // Act
+            for (int step = 0; step < Simulation.StepsPerSecond; step++)
+            {
+                simulation.Step(QuickTurnRight);
+                most = Math.Max(most, Lead(simulation.State));
+            }
+
+            // Assert: up to the cap (one step's pivot of slack), and well past a carve's lead.
+            Assert.That(simulation.State.Stance, Is.EqualTo(Stance.Quick));
+            Assert.That(most, Is.LessThanOrEqualTo(D(tuning.QuickSlipMax) + D(tuning.QuickTurnRate) * D(Simulation.StepSeconds)));
+            Assert.That(most, Is.GreaterThan(D(tuning.QuickSlipMax) / 2));
+        }
+
+        [Test]
+        public void Drift_HoldsTheSkisDriftAngleAheadOfThePath_TurnsTighterThanACarve_AndCostsSomeSpeed()
+        {
+            // Arrange
+            Tuning tuning = Tuning.Default;
+            Simulation drift = OnRunOutAt(SnowType.Groomed, tuning, 15.0);
+            Simulation carve = OnRunOutAt(SnowType.Groomed, tuning, 15.0);
+            double start = Speed(drift.State);
+
+            // Act: 0.6 s each.
+            Ride(drift, DriftRight, 72);
+            Ride(carve, PlainRight, 72);
+
+            // Assert
+            Assert.That(drift.State.Stance, Is.EqualTo(Stance.Drift));
+            Assert.That(Lead(drift.State), Is.EqualTo(D(tuning.DriftAngle)).Within(0.03));
+            Assert.That(PathAngle(drift.State), Is.GreaterThan(PathAngle(carve.State)));
+            Assert.That(Speed(drift.State), Is.LessThan(Speed(carve.State)));
+            Assert.That(Speed(drift.State), Is.GreaterThan(0.75 * start), "a drift costs some speed, not most of it");
+        }
+
+        [TestCase(96, true)]
+        [TestCase(36, false)]
+        public void DriftReleased_AfterDriftBoostTime_AddsDriftBoost_AndNotBefore(int driftSteps, bool boosted)
+        {
+            // Arrange: the same ride with and without the boost.
+            Tuning tuning = Tuning.Default;
+            Tuning noBoost = WithField(tuning, nameof(Tuning.DriftBoost), Fix64.Zero);
+            Simulation with = OnRunOutAt(SnowType.Groomed, tuning, 15.0);
+            Simulation without = OnRunOutAt(SnowType.Groomed, noBoost, 15.0);
+
+            // Act: drift, then let go of grab (still steering).
+            Ride(with, DriftRight, driftSteps);
+            Ride(without, DriftRight, driftSteps);
+            with.Step(PlainRight);
+            without.Step(PlainRight);
+
+            // Assert: the boost acts along the skis, which a drift holds at an angle to the path; both rides point the same way.
+            Assert.That(with.State.Heading, Is.EqualTo(without.State.Heading));
+            double gain = AlongSkis(with.State) - AlongSkis(without.State);
+            Assert.That(gain, Is.EqualTo(boosted ? D(tuning.DriftBoost) : 0.0).Within(0.01));
+        }
+
+        [Test]
+        public void HockeyStop_BackWithSteering_ThrowsTheSkisHockeyAngleAcross_AndStopsSoonerThanAStraightBrake()
+        {
+            // Arrange
+            Tuning tuning = Tuning.Default;
+            Simulation hockey = OnRunOutAt(SnowType.Groomed, tuning, 15.0);
+            Simulation straight = OnRunOutAt(SnowType.Groomed, tuning, 15.0);
+            Vec3 hockeyStart = hockey.State.Position, straightStart = straight.State.Position;
+
+            // Act
+            Ride(hockey, HockeyRight, 48);
+            double lead = Lead(hockey.State);
+            int hockeySteps = 48 + StepsUntil(hockey, HockeyRight, state => Speed(state) < 0.1);
+            int straightSteps = StepsUntil(straight, Back, state => Speed(state) < 0.1);
+
+            // Assert
+            Assert.That(lead, Is.EqualTo(D(tuning.HockeyAngle)).Within(0.05));
+            Assert.That(hockeySteps, Is.LessThan(straightSteps));
+            Assert.That(Distance(hockey.State.Position, hockeyStart), Is.LessThan(Distance(straight.State.Position, straightStart)));
+        }
+
+        [Test]
+        public void Skate_AlternatingSteeringOnTheFlat_GainsSpeed_UpToSkateMaxSpeed()
+        {
+            // Arrange: from 2 m/s on the level run-out, a push at every edge flip; and the same with no push.
+            Tuning tuning = Tuning.Default;
+            Simulation skate = OnRunOutAt(SnowType.Groomed, tuning, 2.0);
+            Simulation glide = OnRunOutAt(SnowType.Groomed, WithField(tuning, nameof(Tuning.SkatePush), Fix64.Zero), 2.0);
+            double start = Speed(skate.State), most = 0;
+
+            // Act: left and right in turn, 0.35 s each, for 8 s.
+            for (int step = 0; step < 8 * Simulation.StepsPerSecond; step++)
+            {
+                SimInput input = step / 42 % 2 == 0 ? PlainLeft : PlainRight;
+                skate.Step(input);
+                glide.Step(input);
+                most = Math.Max(most, Speed(skate.State));
+            }
+
+            // Assert
+            Assert.That(Speed(skate.State), Is.GreaterThan(start + 2.0));
+            Assert.That(most, Is.LessThanOrEqualTo(D(tuning.SkateMaxSpeed) + 0.01));
+            Assert.That(Speed(glide.State), Is.LessThan(start), "without the push the same steering only slows");
+        }
+
+        /// <summary>Steps <paramref name="input"/> until <paramref name="done"/> holds (at most 20 s); returns how many.</summary>
+        private static int StepsUntil(Simulation simulation, SimInput input, Func<RiderState, bool> done)
+        {
+            for (int step = 1; step <= 20 * Simulation.StepsPerSecond; step++)
+            {
+                simulation.Step(input);
+                if (done(simulation.State))
+                {
+                    return step;
+                }
+            }
+
+            Assert.Fail("never happened");
+            return -1;
+        }
+
+        /// <summary>The velocity's level component along the skis' heading, m/s.</summary>
+        private static double AlongSkis(RiderState state) =>
+            D(state.Velocity.X) * Math.Sin(D(state.Heading)) + D(state.Velocity.Z) * Math.Cos(D(state.Heading));
+
+        /// <summary>A duration in whole steps, rounded up.</summary>
+        private static int StepsOf(Fix64 seconds) => (int)Math.Ceiling(D(seconds) * Simulation.StepsPerSecond - 1e-9);
+
+        /// <summary>
+        /// On the <paramref name="snow"/> run-out at <paramref name="speed"/> or just below: holds <paramref name="turn"/> until
+        /// the edge is full, then returns the speed and the heading's turn rate over one more step, radians per second.
+        /// </summary>
+        private static (double Speed, double Rate) FullEdgeTurnRate(Tuning tuning, SnowType snow, double speed, SimInput turn)
+        {
+            Simulation simulation = OnRunOutAt(snow, tuning, speed);
+            while (simulation.State.EdgeAngle < tuning.MaxEdgeAngle)
+            {
+                simulation.Step(turn);
+            }
+
+            double before = Speed(simulation.State);
+            Fix64 heading = simulation.State.Heading;
+            simulation.Step(turn);
+            return (before, D(Fix64.WrapAngle(simulation.State.Heading - heading)) / D(Simulation.StepSeconds));
+        }
+
         private static Simulation Start(Heightmap heightmap, SnowMap snowMap, Tuning tuning, int x, int z) =>
             new Simulation(new RunSetup(Sport.Skis, 0, 1UL, Fix64.FromInt(x), Fix64.FromInt(z)), heightmap, snowMap, tuning);
 
@@ -681,12 +717,15 @@ namespace FirstChair.Sim.Tests
             Assert.That(D(simulation.State.Position.Z), Is.GreaterThanOrEqualTo(OnFlatZ), "the rider must reach the level run-out");
         }
 
-        /// <summary>Ramps steering by one per step on the run-out's test snow; returns the edge angle at the first skid.</summary>
-        private static Fix64 SkidOnsetEdge(SnowType zone, Tuning tuning)
+        /// <summary>
+        /// Ramps steering by one per step on the run-out's test snow, then holds it full for a second; returns the edge angle
+        /// at the first skid, or null if it never skids.
+        /// </summary>
+        private static Fix64? SkidOnsetEdge(SnowType zone, Tuning tuning)
         {
             Simulation simulation = StartOnRunOut(zone, tuning);
             RideOntoFlat(simulation);
-            for (int step = 1; step <= 2 * SimInput.SteeringMax; step++)
+            for (int step = 1; step <= SimInput.SteeringMax + Simulation.StepsPerSecond; step++)
             {
                 simulation.Step(SimInput.Pack(SimButtons.None, Math.Min(step, SimInput.SteeringMax)));
                 if (simulation.State.Skidding)
@@ -695,8 +734,7 @@ namespace FirstChair.Sim.Tests
                 }
             }
 
-            Assert.Fail(zone + " never skidded");
-            return Fix64.Zero;
+            return null;
         }
 
         /// <summary>On the level run-out's <paramref name="zone"/> snow, braked to <paramref name="speed"/> or just below.</summary>
@@ -712,23 +750,6 @@ namespace FirstChair.Sim.Tests
             return simulation;
         }
 
-        /// <summary>
-        /// On the groomed run-out at <paramref name="speed"/> or just below: holds <paramref name="turn"/> until the edge is
-        /// full, then returns the speed and the radius, speed / turn rate, over one more step.
-        /// </summary>
-        private static (double Speed, double Radius) FullEdgeRadius(Tuning tuning, double speed, SimInput turn)
-        {
-            Simulation simulation = OnRunOutAt(SnowType.Groomed, tuning, speed);
-            while (simulation.State.EdgeAngle < tuning.MaxEdgeAngle)
-            {
-                simulation.Step(turn);
-            }
-
-            double before = Speed(simulation.State);
-            Fix64 heading = simulation.State.Heading;
-            simulation.Step(turn);
-            return (before, before / (D(simulation.State.Heading - heading) / D(Simulation.StepSeconds)));
-        }
 
         /// <summary>
         /// On the <paramref name="zone"/> run-out at <paramref name="speed"/> or just below: holds <paramref name="turn"/>
@@ -749,18 +770,6 @@ namespace FirstChair.Sim.Tests
             return (steps, startSpeed - Speed(simulation.State));
         }
 
-        /// <summary>
-        /// On the groomed run-out at <paramref name="speed"/> or just below: the speed, and the heading's turn rate over the
-        /// first step of a quick turn, radians per second.
-        /// </summary>
-        private static (double Speed, double Rate) FirstStepPivotRate(Tuning tuning, double speed)
-        {
-            Simulation simulation = OnRunOutAt(SnowType.Groomed, tuning, speed);
-            double before = Speed(simulation.State);
-            Fix64 heading = simulation.State.Heading;
-            simulation.Step(QuickRight);
-            return (before, D(simulation.State.Heading - heading) / D(Simulation.StepSeconds));
-        }
 
         /// <summary>From rest at (64, 4) on the 0.4 incline, all one snow type: 3 s straight, then 1 s of <paramref name="turn"/>.</summary>
         private static RiderState RideInclineThenTurn(SnowType type, Tuning tuning, SimInput turn)
@@ -771,30 +780,6 @@ namespace FirstChair.Sim.Tests
             return simulation.State;
         }
 
-        /// <summary>
-        /// One second on the run-out's slush: a W carve and a straight W run. Returns how much more speed the carve lost, and
-        /// mu times the integral of sqrt(g^2 + (v w)^2) - g over the carve's steps, from its speed v and turn rate w.
-        /// </summary>
-        private static (double ExtraLoss, double LoadIntegral) CarveExtraLoss(Tuning tuning, double g, double mu, double dt)
-        {
-            Simulation carve = StartOnRunOut(SnowType.Slush, tuning);
-            Simulation straight = StartOnRunOut(SnowType.Slush, tuning);
-            RideOntoFlat(carve);
-            RideOntoFlat(straight);
-            double carveStart = Speed(carve.State), straightStart = Speed(straight.State), loadIntegral = 0;
-            for (int step = 0; step < Simulation.StepsPerSecond; step++)
-            {
-                double speed = Speed(carve.State);
-                Fix64 heading = carve.State.Heading;
-                carve.Step(CarveRight);
-                straight.Step(Forward);
-                double sideways = speed * D(carve.State.Heading - heading) / dt;
-                loadIntegral += mu * (Math.Sqrt(g * g + sideways * sideways) - g) * dt;
-            }
-
-            Assert.That(carve.State.Stance, Is.EqualTo(Stance.Carve));
-            return (carveStart - Speed(carve.State) - (straightStart - Speed(straight.State)), loadIntegral);
-        }
 
         /// <summary>The direction of travel seen from above, radians clockwise from +Z, like the heading.</summary>
         private static double PathAngle(RiderState state) => Math.Atan2(D(state.Velocity.X), D(state.Velocity.Z));

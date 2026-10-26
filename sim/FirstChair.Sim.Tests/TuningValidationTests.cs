@@ -34,16 +34,32 @@ namespace FirstChair.Sim.Tests
         [TestCase("GrabSteeringThreshold above one")]
         [TestCase("FlowTrickBonus above 10")]
         [TestCase("MinScoredAirTime negative")]
-        [TestCase("CarveRadiusMin zero")]
-        [TestCase("CarveMinSpeed zero")]
-        [TestCase("CarveBlendSpeed zero")]
-        [TestCase("CarveTurnShare above one")]
-        [TestCase("PivotFadeSpeed zero")]
+        [TestCase("EdgeRampTime zero")]
+        [TestCase("EdgeReleaseTime zero")]
+        [TestCase("EdgeFlipTime zero")]
+        [TestCase("TurnRateLow negative")]
+        [TestCase("TurnAcceleration negative")]
+        [TestCase("GripBase above one")]
+        [TestCase("CarveEfficiency above one")]
+        [TestCase("ScrubDrag negative")]
+        [TestCase("TuckTurnFactor above one")]
+        [TestCase("QuickSlipMax zero")]
+        [TestCase("QuickSlipMax a right angle")]
+        [TestCase("QuickKeep negative")]
         [TestCase("SkidStiffness zero")]
-        [TestCase("PivotSlipMax zero")]
-        [TestCase("PivotSlipMax a right angle")]
+        [TestCase("DriftAngle a right angle")]
+        [TestCase("DriftSwingRate zero")]
+        [TestCase("DriftKeep above one")]
+        [TestCase("DriftBoostTime too long")]
+        [TestCase("DriftBoost negative")]
+        [TestCase("HockeyAngle pi")]
+        [TestCase("HockeySwingRate zero")]
+        [TestCase("BrakeKeep above one")]
+        [TestCase("SkateInterval too long")]
+        [TestCase("SkateMinEdge above one")]
         [TestCase("GroomedCarveGrip negative")]
         [TestCase("CrudSkidGrip negative")]
+        [TestCase("PowderTurnFactor negative")]
         public void NewRun_TuningARideCannotRunOn_ThrowsArgumentException(string badValue)
         {
             // Arrange
@@ -65,14 +81,30 @@ namespace FirstChair.Sim.Tests
                 case "GrabSteeringThreshold above one": tuning.GrabSteeringThreshold = Fix64.One + Fix64.FromRaw(1); break;
                 case "FlowTrickBonus above 10": tuning.FlowTrickBonus = Fix64.FromInt(10) + Fix64.FromRaw(1); break;
                 case "MinScoredAirTime negative": tuning.MinScoredAirTime = -Fix64.FromRaw(1); break;
-                case "CarveRadiusMin zero": tuning.CarveRadiusMin = Fix64.Zero; break;
-                case "CarveMinSpeed zero": tuning.CarveMinSpeed = Fix64.Zero; break;
-                case "CarveBlendSpeed zero": tuning.CarveBlendSpeed = Fix64.Zero; break;
-                case "CarveTurnShare above one": tuning.CarveTurnShare = Fix64.One + Fix64.FromRaw(1); break;
-                case "PivotFadeSpeed zero": tuning.PivotFadeSpeed = Fix64.Zero; break;
+                case "EdgeRampTime zero": tuning.EdgeRampTime = Fix64.Zero; break;
+                case "EdgeReleaseTime zero": tuning.EdgeReleaseTime = Fix64.Zero; break;
+                case "EdgeFlipTime zero": tuning.EdgeFlipTime = Fix64.Zero; break;
+                case "TurnRateLow negative": tuning.TurnRateLow = -Fix64.FromRaw(1); break;
+                case "TurnAcceleration negative": tuning.TurnAcceleration = -Fix64.FromRaw(1); break;
+                case "GripBase above one": tuning.GripBase = Fix64.One + Fix64.FromRaw(1); break;
+                case "CarveEfficiency above one": tuning.CarveEfficiency = Fix64.One + Fix64.FromRaw(1); break;
+                case "ScrubDrag negative": tuning.ScrubDrag = -Fix64.FromRaw(1); break;
+                case "TuckTurnFactor above one": tuning.TuckTurnFactor = Fix64.One + Fix64.FromRaw(1); break;
+                case "QuickSlipMax zero": tuning.QuickSlipMax = Fix64.Zero; break;
+                case "QuickSlipMax a right angle": tuning.QuickSlipMax = Fix64.HalfPi; break;
+                case "QuickKeep negative": tuning.QuickKeep = -Fix64.FromRaw(1); break;
                 case "SkidStiffness zero": tuning.SkidStiffness = Fix64.Zero; break;
-                case "PivotSlipMax zero": tuning.PivotSlipMax = Fix64.Zero; break;
-                case "PivotSlipMax a right angle": tuning.PivotSlipMax = Fix64.HalfPi; break;
+                case "DriftAngle a right angle": tuning.DriftAngle = Fix64.HalfPi; break;
+                case "DriftSwingRate zero": tuning.DriftSwingRate = Fix64.Zero; break;
+                case "DriftKeep above one": tuning.DriftKeep = Fix64.One + Fix64.FromRaw(1); break;
+                case "DriftBoostTime too long": tuning.DriftBoostTime = TooLong; break;
+                case "DriftBoost negative": tuning.DriftBoost = -Fix64.FromRaw(1); break;
+                case "HockeyAngle pi": tuning.HockeyAngle = Fix64.Pi; break;
+                case "HockeySwingRate zero": tuning.HockeySwingRate = Fix64.Zero; break;
+                case "BrakeKeep above one": tuning.BrakeKeep = Fix64.One + Fix64.FromRaw(1); break;
+                case "SkateInterval too long": tuning.SkateInterval = TooLong; break;
+                case "SkateMinEdge above one": tuning.SkateMinEdge = Fix64.One + Fix64.FromRaw(1); break;
+                case "PowderTurnFactor negative": tuning.PowderTurnFactor = -Fix64.FromRaw(1); break;
                 case "GroomedCarveGrip negative": tuning.GroomedCarveGrip = -Fix64.FromRaw(1); break;
                 case "CrudSkidGrip negative": tuning.CrudSkidGrip = -Fix64.FromRaw(1); break;
                 default: throw new ArgumentOutOfRangeException(nameof(badValue), badValue, "no such case");

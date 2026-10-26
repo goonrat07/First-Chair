@@ -15,7 +15,9 @@ namespace FirstChair.Sim.Tests
     /// the first close (a near miss) and clips the second's branches (a branch hit, and a near miss of its trunk). Since
     /// Story 006 it rides onto a low box (<see cref="Rails"/>) after the reset, grinds it and leaves it, and its landed jumps
     /// fold to scored tricks. Since Story 008 (sim version 7) it carves and quick-turns, poles on the level ground past
-    /// the map's edge, and falls off the end of the grind.
+    /// the map's edge, and falls off the end of the grind. Since Story 009 (sim version 8) plain steering carves, grab with
+    /// steering on snow drifts, a window of the quick button quick-turns, and the third jump flies off the map's edge, so
+    /// the reset tap comes later, while the rider lies crashed beyond it.
     /// </summary>
     internal static class ScriptedRide
     {
@@ -36,8 +38,8 @@ namespace FirstChair.Sim.Tests
         /// <summary>A 60 degree forward flip at the default <see cref="Tuning.FlipRate"/>: past sketchy, a crash.</summary>
         public const int FlipSteps = 20;
 
-        /// <summary>The step whose input taps reset: the rider is lying crashed after the third jump.</summary>
-        public const int ResetStep = 1200;
+        /// <summary>The step whose input taps reset: the rider is lying crashed after the third jump (it lands at step 1224).</summary>
+        public const int ResetStep = 1260;
 
         private static bool Loading(int step, int release) => step >= release - PopLoadSteps && step < release;
 
@@ -57,13 +59,13 @@ namespace FirstChair.Sim.Tests
         });
 
         /// <summary>
-        /// One ride-on box (Story 006) across the line the rider takes after the reset tap, 8 m long from about 131.6 m
-        /// down: past the third jump's crash, on the level ground beyond the map's edge (version 7 rides faster, so the
-        /// reset spot is near the edge). The rider rides onto it at about 4 m/s.
+        /// One ride-on box (Story 006) along the line the rider takes after the reset tap, about 5.9 m long from 132.4 m
+        /// down, on the level ground beyond the map's edge (the reset spot is at the edge). The rider rides onto it at about
+        /// 3 m/s and grinds it to its end (sim version 8).
         /// </summary>
         public static readonly RailSet Rails = new RailSet(new[]
         {
-            new SlopeRail(57_850, 131_550, 54_450, 138_790, 300, 600, true),
+            new SlopeRail(46_300, 132_400, 44_200, 137_900, 300, 600, true),
         });
 
         /// <summary>
@@ -86,7 +88,7 @@ namespace FirstChair.Sim.Tests
 
             if (InWindow(step, CrashJumpRelease))
             {
-                // The reset tap falls inside this window, while the rider lies crashed.
+                // The reset tap falls just after this window, while the rider lies crashed.
                 SimButtons air = step - CrashJumpRelease < FlipSteps ? SimButtons.Forward : SimButtons.None;
                 return SimInput.Pack(step == ResetStep ? air | SimButtons.Reset : air, 0);
             }
@@ -110,6 +112,12 @@ namespace FirstChair.Sim.Tests
             if (step % 400 >= 390)
             {
                 buttons |= SimButtons.Back;
+            }
+
+            // Quick turns (Story 009): a window every 300 steps; where forward isn't held, the steering quick-turns.
+            if (step % 300 >= 200 && step % 300 < 245)
+            {
+                buttons |= SimButtons.Quick;
             }
 
             // Jump: loaded for PopLoadSteps before each release step.
@@ -169,7 +177,7 @@ namespace FirstChair.Sim.Tests
                     state.SafePosition.X.Raw, state.SafePosition.Y.Raw, state.SafePosition.Z.Raw, state.SafeHeading.Raw,
                     state.Flow.Raw, state.FlowIdleTicks,
                     state.SwitchTakeoff ? 1L : 0L, state.Grinding ? 1L : 0L, state.GrindRail, state.GrindTicks, state.Balance.Raw,
-                    state.GrindLeanSum.Raw,
+                    state.GrindLeanSum.Raw, state.EdgeFlip, state.DriftTicks, state.SkateTicks,
                     snapshot.Events.Length,
                 })
                 {

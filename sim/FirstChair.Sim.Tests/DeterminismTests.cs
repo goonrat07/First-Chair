@@ -45,8 +45,13 @@ namespace FirstChair.Sim.Tests
         // (step 1200), while the rider still lies crashed, and ScriptedRide.Rails' box moved onto the new line after the
         // reset, past the crash, on the level ground beyond the map's edge. The ride now also carves and poles, so it takes
         // every stance. Pinned only after record/replay, interleaving and zero allocation passed with the new numbers.
-        private const ushort GoldenSimVersion = 7;
-        private const string GoldenTraceSha256 = "9181C0B3D642BF25642681EC31647E2BD0C6CAD450FCE0E220DCEDCBD997ABC2";
+        // Re-pinned for version 8 (Story 009): GMA-style riding. Plain steering now carves and keeps speed, so the third jump
+        // flies off the map's edge and lands at step 1224; the reset tap moved to step 1260, while the rider lies crashed,
+        // and the box moved onto the new line after the reset. A window of the quick button and grab with steering on snow
+        // make it take the two new stances (Quick, Drift). The trace adds EdgeFlip, DriftTicks and SkateTicks. Pinned only
+        // after record/replay, interleaving and zero allocation passed with the new numbers.
+        private const ushort GoldenSimVersion = 8;
+        private const string GoldenTraceSha256 = "7C25C8E0FE34A5F73AD076BE2EE22A611225127193C256D23AA2C8234EF63B4A";
 
         [Test]
         public void ScriptedRide_RecordedThenReplayedFromBytes_MatchesBitForBitEveryStep()

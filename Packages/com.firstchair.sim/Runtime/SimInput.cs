@@ -32,7 +32,7 @@ namespace FirstChair.Sim
 
         /// <summary>
         /// Grab: in the air, held with a direction it grabs (none = mute, forward = tip, back = tail, left = Japan,
-        /// right = safety) and stops rotating. Ignored on snow.
+        /// right = safety) and stops rotating. On snow, held while steering it is a drift turn (sim version 8, Story 009).
         /// </summary>
         Grab = 1u << 5,
 
@@ -41,14 +41,20 @@ namespace FirstChair.Sim
         /// safe spot, from any state. Holding it does nothing more. Added in sim version 3 in a bit that was reserved.
         /// </summary>
         Reset = 1u << 6,
+
+        /// <summary>
+        /// Quick: on snow, held while steering it is a quick turn, a sharp pivot that costs speed (GMA's short turn).
+        /// Ignored in the air. Added in sim version 8 (Story 009) in a bit that was reserved.
+        /// </summary>
+        Quick = 1u << 7,
     }
 
     /// <summary>
     /// One step's input packed into one 32-bit integer, the unit the recorder stores.
     /// </summary>
     /// <remarks>
-    /// <para>Bit layout: bits 0-6 are <see cref="SimButtons"/> (bit 6, <see cref="SimButtons.Reset"/>, since sim
-    /// version 3); bit 7 is reserved; bits 8-15 hold the
+    /// <para>Bit layout: bits 0-7 are <see cref="SimButtons"/> (bit 6, <see cref="SimButtons.Reset"/>, since sim
+    /// version 3; bit 7, <see cref="SimButtons.Quick"/>, since sim version 8); bits 8-15 hold the
     /// steering value as a signed byte from -127 (full left) to 127 (full right); bits 16-31 are reserved.
     /// Reserved bits are written as zero and ignored when read.</para>
     /// <para>Analog steering is quantized to this range by the caller before it reaches the sim. The sim steers by
@@ -67,7 +73,7 @@ namespace FirstChair.Sim
         /// <summary>The largest steering magnitude; steering runs from -SteeringMax to SteeringMax.</summary>
         public const int SteeringMax = 127;
 
-        private const uint ButtonMask = 0x7Fu;
+        private const uint ButtonMask = 0xFFu;
         private const int SteeringShift = 8;
 
         /// <summary>The packed bits.</summary>

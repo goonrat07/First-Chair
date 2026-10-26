@@ -5,12 +5,13 @@ namespace FirstChair.Sim
     /// <summary>What the rider does with their body on the snow, chosen each step from the input and the slope.</summary>
     public enum Stance : byte
     {
-        /// <summary>Standing: neither forward nor back held.</summary>
+        /// <summary>Standing: no steering, and neither forward nor back held.</summary>
         Stand = 0,
 
         /// <summary>
-        /// Tucked: forward held without steering, on a slope, or on a flat at or above <see cref="Tuning.PoleSpeedMax"/>.
-        /// Less air drag (<see cref="Tuning.TuckAirDragFactor"/>); on snow that carves, any edge left still carves.
+        /// Tucked: forward held, on a slope, or on a flat at or above <see cref="Tuning.PoleSpeedMax"/>. Less air drag
+        /// (<see cref="Tuning.TuckAirDragFactor"/>); steering still carves, <see cref="Tuning.TuckTurnFactor"/> as sharply
+        /// (sim version 8).
         /// </summary>
         Tuck = 1,
 
@@ -21,11 +22,22 @@ namespace FirstChair.Sim
         Pole = 3,
 
         /// <summary>
-        /// Carving: forward held while steering, on snow that carves (<see cref="Tuning.CarveGrip"/> above 0) at or above
-        /// <see cref="Tuning.CarveMinSpeed"/>. Low like a racer (<see cref="Tuning.CarveAirDragFactor"/>); the skis follow
-        /// their own arc and keep speed (Story 008).
+        /// Carving: steering with no other button, the main turn (sim version 8, Story 009, after GMA). The edges hold the
+        /// skis on their arc and turn sideways speed into forward speed, so a carve keeps speed.
         /// </summary>
         Carve = 4,
+
+        /// <summary>
+        /// Drift turn: grab held while steering (Story 009). The skis swing out <see cref="Tuning.DriftAngle"/> ahead of
+        /// the path and slide: a tighter turn that costs some speed, with <see cref="Tuning.DriftBoost"/> on release.
+        /// </summary>
+        Drift = 5,
+
+        /// <summary>
+        /// Quick turn: <see cref="SimButtons.Quick"/> held while steering (Story 009). The skis pivot fast and the snow
+        /// drags the path after them: the sharpest turn, and the one that costs the most speed.
+        /// </summary>
+        Quick = 6,
     }
 
     /// <summary>The grab held in the air (see <see cref="SimButtons.Grab"/>).</summary>
@@ -216,6 +228,24 @@ namespace FirstChair.Sim
         /// <summary>The sum of |<see cref="Balance"/>| over the current grind's steps: its mean grades the grind.</summary>
         public Fix64 GrindLeanSum;
 
+        /// <summary>
+        /// An edge-to-edge flip in progress (Story 009): +1 toward the right edge, -1 toward the left, 0 none. A flip runs
+        /// at the fast <see cref="Tuning.EdgeFlipTime"/> until the new edge is set.
+        /// </summary>
+        public int EdgeFlip;
+
+        /// <summary>
+        /// Steps the current drift turn has been held, counted up to <see cref="Tuning.DriftBoostTime"/> (Story 009); 0 when
+        /// not drifting.
+        /// </summary>
+        public int DriftTicks;
+
+        /// <summary>
+        /// Steps since the last skate push, counted up to <see cref="Tuning.SkateInterval"/> (Story 009): a push needs that
+        /// many.
+        /// </summary>
+        public int SkateTicks;
+
         /// <inheritdoc/>
         public bool Equals(RiderState other) =>
             Position == other.Position
@@ -251,7 +281,10 @@ namespace FirstChair.Sim
             && GrindRail == other.GrindRail
             && GrindTicks == other.GrindTicks
             && Balance == other.Balance
-            && GrindLeanSum == other.GrindLeanSum;
+            && GrindLeanSum == other.GrindLeanSum
+            && EdgeFlip == other.EdgeFlip
+            && DriftTicks == other.DriftTicks
+            && SkateTicks == other.SkateTicks;
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is RiderState other && Equals(other);
@@ -294,7 +327,10 @@ namespace FirstChair.Sim
                 hash = hash * 397 ^ GrindRail;
                 hash = hash * 397 ^ GrindTicks;
                 hash = hash * 397 ^ Balance.GetHashCode();
-                return hash * 397 ^ GrindLeanSum.GetHashCode();
+                hash = hash * 397 ^ GrindLeanSum.GetHashCode();
+                hash = hash * 397 ^ EdgeFlip;
+                hash = hash * 397 ^ DriftTicks;
+                return hash * 397 ^ SkateTicks;
             }
         }
 
@@ -307,6 +343,9 @@ namespace FirstChair.Sim
             + (Airborne ? " AIR " + AirTicks + " max " + MaxHeight + " spin " + SpinAngle + " flip " + FlipAngle + " grab " + Grab + "/" + GrabTicks + (SwitchTakeoff ? " switch" : string.Empty) : string.Empty)
             + (Crashed ? " CRASHED " + CrashTicks : string.Empty)
             + " safe " + SafePosition + " flow " + Flow + "/" + FlowIdleTicks
-            + (Grinding ? " GRIND " + GrindRail + "/" + GrindTicks + " balance " + Balance + " lean " + GrindLeanSum : string.Empty);
+            + (Grinding ? " GRIND " + GrindRail + "/" + GrindTicks + " balance " + Balance + " lean " + GrindLeanSum : string.Empty)
+            + (EdgeFlip != 0 ? " flip " + EdgeFlip : string.Empty)
+            + (DriftTicks > 0 ? " drift " + DriftTicks : string.Empty)
+            + (SkateTicks > 0 ? " skate " + SkateTicks : string.Empty);
     }
 }
