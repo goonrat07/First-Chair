@@ -43,6 +43,77 @@ namespace FirstChair.Sim.Tests
             Assert.That(tree.BranchRadius, Is.EqualTo(Fix64.FromInt(2)));
         }
 
+        [Test]
+        public void Parse_RunLiftAndTowerRecords_ReadsThem()
+        {
+            // Arrange
+            string text = Valid
+                + "run meadow green 8000 20000 1500 60000 30000 20000 70000\n"
+                + "lift chair1 50000 75000 50000 5000\n"
+                + "tower chair1 50000 60000 11000\n"
+                + "tower chair1 50000 30000 12500\n";
+
+            // Act
+            SlopeLayout layout = SlopeLayout.Parse(text);
+
+            // Assert
+            Assert.That(layout.Runs.Count, Is.EqualTo(1));
+            SlopeRun run = layout.Runs[0];
+            Assert.That(run.Name, Is.EqualTo("meadow"));
+            Assert.That(run.Difficulty, Is.EqualTo(RunDifficulty.Green));
+            Assert.That(run.WidthMm, Is.EqualTo(8000));
+            Assert.That(run.Width, Is.EqualTo(Fix64.FromInt(8)));
+            Assert.That(run.Points.Count, Is.EqualTo(3));
+            Assert.That(new[] { run.Points[1].XMm, run.Points[1].ZMm }, Is.EqualTo(new[] { 60000, 30000 }));
+            Assert.That(layout.Lifts.Count, Is.EqualTo(1));
+            SlopeLift lift = layout.Lifts[0];
+            Assert.That(lift.Name, Is.EqualTo("chair1"));
+            Assert.That(new[] { lift.BottomXMm, lift.BottomZMm, lift.TopXMm, lift.TopZMm }, Is.EqualTo(new[] { 50000, 75000, 50000, 5000 }));
+            Assert.That(lift.Towers.Count, Is.EqualTo(2));
+            Assert.That(new[] { lift.Towers[1].XMm, lift.Towers[1].ZMm, lift.Towers[1].HeightMm }, Is.EqualTo(new[] { 50000, 30000, 12500 }));
+            Assert.That(lift.Towers[1].Height, Is.EqualTo(Fix64.FromRatio(25, 2)));
+        }
+
+        [Test]
+        public void Parse_LayoutWithoutRunsOrLifts_HasNone()
+        {
+            // Act
+            SlopeLayout layout = SlopeLayout.Parse(Valid);
+
+            // Assert
+            Assert.That(layout.Runs.Count, Is.EqualTo(0));
+            Assert.That(layout.Lifts.Count, Is.EqualTo(0));
+        }
+
+        [TestCase("green", RunDifficulty.Green)]
+        [TestCase("blue", RunDifficulty.Blue)]
+        [TestCase("red", RunDifficulty.Red)]
+        [TestCase("black", RunDifficulty.Black)]
+        [TestCase("park", RunDifficulty.Park)]
+        public void Parse_RunDifficultyName_MapsToItsDifficulty(string name, RunDifficulty expected)
+        {
+            // Act
+            SlopeLayout layout = SlopeLayout.Parse(Valid + "run a " + name + " 8000 0 0 1000 1000\n");
+
+            // Assert
+            Assert.That(layout.Runs[0].Difficulty, Is.EqualTo(expected));
+        }
+
+        [TestCase("lift a 0 0 1000 1000\ntower a 1000 1000 0\n")]
+        [TestCase("lift a 0 0 1000 1000\ntower a 1000 1000 -500\n")]
+        [TestCase("lift a 0 0 1000 1000\ntower a 100001 1000 9000\n")]
+        [TestCase("lift a 0 0 1000 1000\ntower a 1000 1000\n")]
+        [TestCase("lift a 0 0 1000 1000\nlift a 0 0 2000 2000\n")]
+        [TestCase("run a green 8000 0 0 1000 1000\nrun a blue 8000 0 0 1000 1000\n")]
+        public void Parse_BadSecondMountainRecord_Throws(string records)
+        {
+            // Arrange: line 11 is a good record, line 12 the bad one.
+            string text = Valid + records;
+
+            // Act and Assert
+            Assert.That(() => SlopeLayout.Parse(text), Throws.ArgumentException.With.Message.Contains("line 12"));
+        }
+
         [TestCase("groomed", SnowType.Groomed)]
         [TestCase("powder", SnowType.Powder)]
         [TestCase("crud", SnowType.Crud)]
@@ -123,6 +194,16 @@ namespace FirstChair.Sim.Tests
         [TestCase("zone other ice 1000 0 1000 1000")]
         [TestCase("zone other ice 0 2000 1000 1000")]
         [TestCase("zone other ice 0 0 100001 1000")]
+        [TestCase("run a green 8000 0 0")]
+        [TestCase("run a purple 8000 0 0 1000 1000")]
+        [TestCase("run a green 0 0 0 1000 1000")]
+        [TestCase("run a green 8000 0 0 1000")]
+        [TestCase("run a green 8000 0 0 100001 1000")]
+        [TestCase("run a green 8000 0 0 0 0")]
+        [TestCase("lift a 0 0 0 0")]
+        [TestCase("lift a 0 0 1000")]
+        [TestCase("lift a 0 0 100001 1000")]
+        [TestCase("tower nolift 1000 1000 10000")]
         public void Parse_BadExtraRecord_Throws(string record)
         {
             // Arrange

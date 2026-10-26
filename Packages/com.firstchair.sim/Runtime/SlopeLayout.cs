@@ -242,10 +242,16 @@ namespace FirstChair.Sim
     /// tree &lt;x&gt; &lt;z&gt; &lt;trunkRadius&gt; &lt;branchRadius&gt;            any number
     /// rail &lt;x0&gt; &lt;z0&gt; &lt;x1&gt; &lt;z1&gt; &lt;height&gt; &lt;width&gt;      any number (Story 006)
     /// box &lt;x0&gt; &lt;z0&gt; &lt;x1&gt; &lt;z1&gt; &lt;height&gt; &lt;width&gt;       any number (Story 006)
+    /// run &lt;name&gt; &lt;difficulty&gt; &lt;width&gt; &lt;x0&gt; &lt;z0&gt; &lt;x1&gt; &lt;z1&gt; ...   any number; names unique (Story 010)
+    /// lift &lt;name&gt; &lt;bottomX&gt; &lt;bottomZ&gt; &lt;topX&gt; &lt;topZ&gt;      any number; names unique (Story 010)
+    /// tower &lt;lift&gt; &lt;x&gt; &lt;z&gt; &lt;height&gt;                    any number, after its lift (Story 010)
     /// </code>
-    /// <para>A snow name is one of <c>groomed powder crud ice slush</c>. Every position must lie on the map. Sizes,
-    /// lengths, widths, heights and radii must be positive; a zone's minimum must be below its maximum; a facing runs
-    /// from 0 to 359999; a branch radius may not be below its trunk radius; a rail's or box's two ends must differ.</para>
+    /// <para>A snow name is one of <c>groomed powder crud ice slush</c>; a difficulty one of <c>green blue red black
+    /// park</c>. Every position must lie on the map. Sizes, lengths, widths, heights and radii must be positive; a zone's
+    /// minimum must be below its maximum; a facing runs from 0 to 359999; a branch radius may not be below its trunk
+    /// radius; a rail's or box's two ends must differ, and so must a lift's; a run has at least two points, no two in a
+    /// row the same. Runs, lifts and towers describe the mountain for the view and for tests; the sim never rides on
+    /// them.</para>
     /// <para>The sim never reads files: the caller passes the text. Anything malformed throws
     /// <see cref="ArgumentException"/> naming the line. Immutable after parsing, so one instance may be shared by any
     /// number of simulations and threads.</para>
@@ -274,6 +280,9 @@ namespace FirstChair.Sim
         // Indexed by SnowType value.
         private static readonly string[] SnowNames = { "groomed", "powder", "crud", "ice", "slush" };
 
+        // Indexed by RunDifficulty value.
+        private static readonly string[] DifficultyNames = { "green", "blue", "red", "black", "park" };
+
         private readonly SlopeZone[] _zones;
         private readonly SlopeKicker[] _kickers;
         private readonly SlopeTree[] _trees;
@@ -281,9 +290,11 @@ namespace FirstChair.Sim
 
         private SlopeLayout(
             HeightmapSpec spec, SnowType background, int startXMm, int startZMm, SlopeZone[] zones, SlopeKicker[] kickers, SlopeTree[] trees,
-            SlopeRail[] rails)
+            SlopeRail[] rails, SlopeRun[] runs, SlopeLift[] lifts)
         {
             _rails = rails;
+            Runs = Array.AsReadOnly(runs);
+            Lifts = Array.AsReadOnly(lifts);
             Spec = spec;
             Background = background;
             StartXMm = startXMm;
@@ -322,6 +333,12 @@ namespace FirstChair.Sim
 
         /// <summary>The rails and boxes, in file order.</summary>
         public IReadOnlyList<SlopeRail> Rails => Array.AsReadOnly(_rails);
+
+        /// <summary>The marked runs, in file order (Story 010).</summary>
+        public IReadOnlyList<SlopeRun> Runs { get; }
+
+        /// <summary>The lifts, in file order, each with its towers (Story 010).</summary>
+        public IReadOnlyList<SlopeLift> Lifts { get; }
 
         /// <summary>Finds a zone by name (ordinal, case-sensitive).</summary>
         /// <param name="name">The zone's name.</param>
@@ -366,6 +383,8 @@ namespace FirstChair.Sim
             var kickers = new List<SlopeKicker>();
             var trees = new List<SlopeTree>();
             var rails = new List<SlopeRail>();
+            var runs = new List<SlopeRun>();
+            var lifts = new List<SlopeLift>();
 
             string[] lines = text.Split('\n');
             for (int index = 0; index < lines.Length; index++)
@@ -498,6 +517,75 @@ namespace FirstChair.Sim
 
                     rails.Add(rail);
                 }
+                else if (Is(keyword, "run"))
+                {
+                    RequireSpec(specSeen, keyword, line);
+                    if (fields.Length < 8 || (fields.Length - 4) % 2 != 0)
+                    {
+                        throw Error(line, "a run needs a name, a difficulty, a width and at least two x z points");
+                    }
+
+                    RunDifficulty difficulty = ParseDifficulty(fields[2], line);
+                    int width = ParseInt(fields[3], line);
+                    if (width <= 0)
+                    {
+                        throw Error(line, "a run's width must be positive");
+                    }
+
+                    var points = new SlopePoint[(fields.Length - 4) / 2];
+                    for (int i = 0; i < points.Length; i++)
+                    {
+                        points[i] = new SlopePoint(ParseInt(fields[4 + 2 * i], line), ParseInt(fields[5 + 2 * i], line));
+                        RequireOnMap(spec, points[i].XMm, points[i].ZMm, line);
+                        if (i > 0 && points[i].XMm == points[i - 1].XMm && points[i].ZMm == points[i - 1].ZMm)
+                        {
+                            throw Error(line, "a run's points must differ from the one before");
+                        }
+                    }
+
+                    foreach (SlopeRun other in runs)
+                    {
+                        if (string.Equals(other.Name, fields[1], StringComparison.Ordinal))
+                        {
+                            throw Error(line, "there is already a run named '" + fields[1] + "'");
+                        }
+                    }
+
+                    runs.Add(new SlopeRun(fields[1], difficulty, width, points));
+                }
+                else if (Is(keyword, "lift"))
+                {
+                    ExpectFields(fields, 6, line);
+                    RequireSpec(specSeen, keyword, line);
+                    var lift = new SlopeLift(fields[1], ParseInt(fields[2], line), ParseInt(fields[3], line), ParseInt(fields[4], line), ParseInt(fields[5], line));
+                    RequireOnMap(spec, lift.BottomXMm, lift.BottomZMm, line);
+                    RequireOnMap(spec, lift.TopXMm, lift.TopZMm, line);
+                    if (lift.BottomXMm == lift.TopXMm && lift.BottomZMm == lift.TopZMm)
+                    {
+                        throw Error(line, "a lift's two stations must differ");
+                    }
+
+                    if (FindLift(lifts, lift.Name) != null)
+                    {
+                        throw Error(line, "there is already a lift named '" + lift.Name + "'");
+                    }
+
+                    lifts.Add(lift);
+                }
+                else if (Is(keyword, "tower"))
+                {
+                    ExpectFields(fields, 5, line);
+                    RequireSpec(specSeen, keyword, line);
+                    SlopeLift lift = FindLift(lifts, fields[1]) ?? throw Error(line, "no lift named '" + fields[1] + "' comes before this tower");
+                    var tower = new SlopeLiftTower(ParseInt(fields[2], line), ParseInt(fields[3], line), ParseInt(fields[4], line));
+                    RequireOnMap(spec, tower.XMm, tower.ZMm, line);
+                    if (tower.HeightMm <= 0)
+                    {
+                        throw Error(line, "a tower's height must be positive");
+                    }
+
+                    lift.AddTower(tower);
+                }
                 else
                 {
                     throw Error(line, "unknown record '" + keyword + "'");
@@ -514,7 +602,8 @@ namespace FirstChair.Sim
                 throw new ArgumentException("A slope layout needs one 'spec', one 'background' and one 'start' record.", TextParameter);
             }
 
-            return new SlopeLayout(spec, background, startX, startZ, zones.ToArray(), kickers.ToArray(), trees.ToArray(), rails.ToArray());
+            return new SlopeLayout(
+                spec, background, startX, startZ, zones.ToArray(), kickers.ToArray(), trees.ToArray(), rails.ToArray(), runs.ToArray(), lifts.ToArray());
         }
 
         internal static Fix64 Metres(int millimetres) => Fix64.FromRatio(millimetres, MillimetresPerMetre);
@@ -564,6 +653,32 @@ namespace FirstChair.Sim
             }
 
             throw Error(line, "unknown snow '" + name + "'; use groomed, powder, crud, ice or slush");
+        }
+
+        private static RunDifficulty ParseDifficulty(string name, int line)
+        {
+            for (int i = 0; i < DifficultyNames.Length; i++)
+            {
+                if (Is(name, DifficultyNames[i]))
+                {
+                    return (RunDifficulty)i;
+                }
+            }
+
+            throw Error(line, "unknown difficulty '" + name + "'; use green, blue, red, black or park");
+        }
+
+        private static SlopeLift FindLift(List<SlopeLift> lifts, string name)
+        {
+            foreach (SlopeLift lift in lifts)
+            {
+                if (string.Equals(lift.Name, name, StringComparison.Ordinal))
+                {
+                    return lift;
+                }
+            }
+
+            return null;
         }
 
         // Culture-free: digits with an optional leading minus, within int range.
