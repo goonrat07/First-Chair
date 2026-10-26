@@ -1,7 +1,7 @@
 # Story 009: GMA-style riding, the Feel Lab and speed cues
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review (sim, view and Feel Lab built and seen in a build; the user's playtest of the feel is open)
 > **Layer**: Core
 > **Type**: Logic (sim) + Visual/Feel (view, camera, Feel Lab)
 > **Estimate**: L
@@ -128,17 +128,30 @@ Speeds on straight runs are unchanged from version 7: the user's call on 2026-10
 
 ## Acceptance Criteria
 
-- [ ] Plain steering on groomed snow carves: the velocity follows the skis with no skid, and key S-turns down the groomer hold at least as much speed as carving with W did in version 7.
-- [ ] A carve's turn rate is TurnRateLow when slow and TurnAcceleration / speed when fast, scaled by the snow's turn factor; a tuck turns TuckTurnFactor as sharply.
-- [ ] Edge to edge takes EdgeFlipTime; a held key reaches full edge in EdgeRampTime; a released one flattens in EdgeReleaseTime.
-- [ ] A quick turn (Quick + steering) turns the path sooner than a carve at the same speed but loses more speed.
-- [ ] A drift turn (Grab + steering on snow) holds the skis DriftAngle ahead of the path, turns tighter than a carve, loses some speed, and releasing it after DriftBoostTime adds DriftBoost.
-- [ ] S plus steering swings the skis HockeyAngle across and stops the rider sooner than a straight brake.
-- [ ] Alternating steering below SkateMaxSpeed on the flat gains speed, never past SkateMaxSpeed.
-- [ ] Straight-run speeds on the test slope still pass story 008's targets (50 km/h within 8 s, 75 within 12).
-- [ ] No riding number is inline in logic; the sim version is 8; the determinism test passes.
-- [ ] The Feel Lab opens with backtick in a build, edits riding, camera and effect numbers, and copies them out (retained screenshot).
-- [ ] At speed the snow visibly moves: optical flow on two frames of a build finds the snow's motion (retained evidence).
+- [x] Plain steering on groomed snow carves: the velocity follows the skis with no skid, and key S-turns down the groomer hold at least as much speed as carving with W did in version 7.
+  `PlainSteering_OnGroomedFlatAtSpeed_CarvesWithoutSkidding_AndKeepsSpeed`; `KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_PlainCarvesHoldVersion7sCarvePace_QuickTurnsLess`: 69.3 km/h against version 7's 63 (quick turns 32.9).
+- [x] A carve's turn rate is TurnRateLow when slow and TurnAcceleration / speed when fast, scaled by the snow's turn factor; a tuck turns TuckTurnFactor as sharply.
+  `CarveAtFullEdge_TurnsAtTurnRateLowWhenSlow_AndTurnAccelerationOverSpeedWhenFast`, `CarveOnPowder_TurnsByPowdersTurnFactor`, `TuckedCarve_TurnsTuckTurnFactorAsSharply`.
+- [x] Edge to edge takes EdgeFlipTime; a held key reaches full edge in EdgeRampTime; a released one flattens in EdgeReleaseTime.
+  `Edge_HeldKeyRampsInEdgeRampTime_ReleaseFlattensInEdgeReleaseTime_OtherKeyFlipsInEdgeFlipTime`.
+- [x] A quick turn (Quick + steering) turns the path sooner than a carve at the same speed but loses more speed.
+  `QuickTurn_TurnsThePathSoonerThanACarve_ButLosesMoreSpeed`.
+- [x] A drift turn (Grab + steering on snow) holds the skis DriftAngle ahead of the path, turns tighter than a carve, loses some speed, and releasing it after DriftBoostTime adds DriftBoost.
+  `Drift_HoldsTheSkisDriftAngleAheadOfThePath_TurnsTighterThanACarve_AndCostsSomeSpeed`, `DriftReleased_AfterDriftBoostTime_AddsDriftBoost_AndNotBefore`.
+- [x] S plus steering swings the skis HockeyAngle across and stops the rider sooner than a straight brake.
+  `HockeyStop_BackWithSteering_ThrowsTheSkisHockeyAngleAcross_AndStopsSoonerThanAStraightBrake`; seen in the build.
+- [x] Alternating steering below SkateMaxSpeed on the flat gains speed, never past SkateMaxSpeed.
+  `Skate_AlternatingSteeringOnTheFlat_GainsSpeed_UpToSkateMaxSpeed`.
+- [x] Straight-run speeds on the test slope still pass story 008's targets (50 km/h within 8 s, 75 within 12).
+  `RiderAtStart_NoInput_PassesFiftyKmhWithinEightSecondsAndSeventyFiveWithinTwelve`.
+- [x] No riding number is inline in logic; the sim version is 8; the determinism test passes.
+  `TuningValidationTests`; `DeterminismTests` (golden pinned at version 8); `dotnet test sim/` 400/400.
+- [x] The Feel Lab opens with backtick in a build, edits riding, camera and effect numbers, and copies them out (retained screenshot).
+  Build 40256892551: `feel-lab-tabs-and-chase-preset.png`, `feel-lab-nudge-apply-copy.png`, `feel-lab-effects-tab.png`.
+- [x] At speed the snow visibly moves: optical flow on two frames of a build finds the snow's motion (retained evidence).
+  `snow-moving-at-53kmh.png`: median 0.76 px against 0.09 before.
+
+Open: the user's sign-off of the feel on the PC (`production/qa/evidence/story-009-gma-style-riding-and-feel-lab/evidence.md`).
 
 ## Out of Scope
 

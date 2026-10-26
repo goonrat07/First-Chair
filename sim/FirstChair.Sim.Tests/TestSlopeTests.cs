@@ -35,8 +35,11 @@ namespace FirstChair.Sim.Tests
         /// <summary>The pace is averaged over this stretch of the groomer, metres down it: up to speed, above the ice patch.</summary>
         private const int PaceStartZ = 60, PaceEndZ = 170;
 
-        /// <summary>Story 009: key S-turns with plain steering, the main turn, hold at least this pace, km/h.</summary>
-        private const double CarvePaceMinKmh = 60;
+        /// <summary>
+        /// Story 009: key S-turns with plain steering, the main turn, hold at least this pace, km/h: what version 7's W carves
+        /// held over the same stretch (story 008).
+        /// </summary>
+        private const double CarvePaceMinKmh = 63;
 
         /// <summary>Story 009: quick turns, the speed check, slow the rider below the carve's pace but never to a crawl, km/h.</summary>
         private const double QuickPaceMinKmh = 25;
@@ -333,12 +336,12 @@ namespace FirstChair.Sim.Tests
         }
 
         /// <summary>
-        /// Story 008: carving (W) keeps speed, and quick turns (no W) are the speed control. On a keyboard every turn is full
-        /// lock. Over the same stretch of the groomer, key S-turns fifty degrees each way hold a higher pace carving than
-        /// quick-turning, and quick turns still hold GMA2's slowest groomer pace.
+        /// Story 009: plain steering carves and keeps speed, and quick turns (the Quick button) are the speed check. On a
+        /// keyboard every turn is full lock. Over the same stretch of the groomer, key S-turns fifty degrees each way hold
+        /// at least CarvePaceMinKmh carving and less quick-turning.
         /// </summary>
         [Test]
-        public void KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_PlainCarvesHoldSixtyKmh_QuickTurnsLess()
+        public void KeyboardSTurnsDownGroomer_FiftyDegreesEachWay_PlainCarvesHoldVersion7sCarvePace_QuickTurnsLess()
         {
             // Arrange
             (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadSlope();
@@ -349,6 +352,7 @@ namespace FirstChair.Sim.Tests
             double quickPace = KeyTurnPace(layout, heightmap, snowMap, groomer, SimButtons.Quick);
 
             // Assert
+            TestContext.Out.WriteLine($"Key S-turns on the groomer: carving {carvePace:F1} km/h, quick turns {quickPace:F1} km/h");
             Assert.That(carvePace, Is.GreaterThanOrEqualTo(CarvePaceMinKmh));
             Assert.That(quickPace, Is.LessThan(carvePace));
             Assert.That(quickPace, Is.GreaterThanOrEqualTo(QuickPaceMinKmh));

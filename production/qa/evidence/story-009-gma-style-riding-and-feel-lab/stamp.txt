@@ -1,0 +1,17 @@
+Reviewed-Content-Hash: Packages/com.firstchair.sim/Runtime/Simulation.cs 3eea27b5142ff97ab45db6ac209ea253cab146a3
+Reviewed-Content-Hash: Packages/com.firstchair.sim/Runtime/Tuning.cs e398831649fc3a465424a8172d6f882cda3cc57b
+Reviewed-Content-Hash: Packages/com.firstchair.sim/Runtime/SimInput.cs 3fce71a5f169af8e74839abb4c5a9289a40e9560
+Reviewed-Content-Hash: Assets/Scripts/Riding/FeelLab.cs 80b0acf0f0a8c7b7ffccda2c6408e310c81c4050
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/FeelLabValues.cs 2a7ea58437802242ed00f2775f9e176def1abc18
+Reviewed-Content-Hash: Assets/Scripts/Riding/FollowCamera.cs f36a7ffe7839426d4cb0de62e0bdc84145f71a38
+Reviewed-Content-Hash: Assets/Scripts/Riding/FollowCameraSettings.cs 5f442f95d302c34ed8e6e28599f67a0a8759d7a6
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/FollowCameraMath.cs f03a8e20d32bcb52f3a8061654d96713a606f501
+Reviewed-Content-Hash: Assets/Scripts/Riding/RiderInputReader.cs 61e6b7acdda6e6ee05b4eb3b456de9a0576362b1
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/RiderInputQuantizer.cs df14f4bd0bce9525d27c16c50fec1cb944096217
+Reviewed-Content-Hash: Assets/Scripts/Riding/SkierView.cs 230e761fdd3a7ecc07a08b70129b80734a7ed8b4
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SkierPoseWeights.cs 3e70144eef817f47ef5badfe4c7062a8036b49b9
+Reviewed-Content-Hash: Assets/Scripts/Riding/SnowSpray.cs b4836100b8b5b678fc4c7eaab696b88e3cbcc388
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SnowSprayMath.cs 1c9e0e9b2b4531392dba98eb8ddb57f55e2e8a2e
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SnowSurface.cs ab5200a9714a83372ef24e0acd69bbb7a8d767b8
+Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeLook.cs 33e3ac98d7d5051b0af511b73b61924b2d749247
+Reviewed-Content-Hash: Assets/Scripts/Riding/SimDriver.cs 68bf5bb2f93af87d48ec6462954ff92a3182f30b
