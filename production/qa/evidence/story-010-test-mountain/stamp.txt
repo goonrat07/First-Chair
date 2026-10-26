@@ -1,0 +1,16 @@
+Reviewed-Content-Hash: Assets/Scripts/Riding/LiftRide.cs 6911aacf2c7e34e5d05692fcc32575315aa99d3c
+Reviewed-Content-Hash: Assets/Scripts/Riding/ChairLift.cs 6d6ac89d89da50d8d5089dc982897ed9e2bb2acc
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/CableLoop.cs 9878930d59e98aad0a2f7e7d8c955bdb1f229c16
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/RunLine.cs 6d0a793828366dfbed55ce9cd5d1af7c268fd750
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/RunTracks.cs cfbcf48aeec46f2f7899f0b2e2a0d6f2db76e209
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SlopeSpots.cs 84401cd99ceafe80cff88159fd21fdd4973f9a93
+Reviewed-Content-Hash: Assets/Scripts/Riding/FeelLab.cs 4702337f3d86baa11ba95793854eb9306e5d3d05
+Reviewed-Content-Hash: Assets/Scripts/Riding/RiderHud.cs 3fb843fc7200410826ed194af923444af00860c6
+Reviewed-Content-Hash: Assets/Scripts/Riding/SimDriver.cs df9e28e32dcdbf0fb4e49ba6c618ccff929d71eb
+Reviewed-Content-Hash: Assets/Scripts/Riding/FollowCamera.cs 22974b5305d588b326f8e469cf1752f18a7984ec
+Reviewed-Content-Hash: Assets/Scripts/Riding/LightingSettings.cs fcee734ce780e966d5dbf271b84bb01ce7dd5920
+Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeLook.cs 335c13e38c243328bc54bc36cf51a2503eb45295
+Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeLook.Mountain.cs 0d20b798930413c8bed5b882471d19caf0dfaf9f
+Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeSceneBuilder.cs 475487f8ec737f9f466c70cbaef55691420932d4
+Reviewed-Content-Hash: Assets/Terrain/TestMountain/TestMountain.txt fab4cd35745e3bc209974a2aa7d82cea5a923104
+Reviewed-Content-Hash: tools/terrain/make_test_mountain.py fff67562b37601a199c00d1614df5194d7bbd69a

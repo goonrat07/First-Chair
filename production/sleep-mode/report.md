@@ -3,11 +3,18 @@
 Started 2026-10-26T01:32:33Z · Ended (running) · Reason (running) · Commits 0 (`6ad33d0..`)
 
 ## Summary
-- Finished: (running)
-- Skipped: (running)
+- Finished: story 009 (GMA-style riding, the Feel Lab, speed cues: In Review); ski tracks that stay (story 007);
+  story 010, a small test mountain with a chairlift, five runs, a park and forest (In Review); the lighting pass
+  (story 007).
+- Skipped: nothing.
 - Waiting on you: 1 question in production/sleep-mode/questions.md
-- Needs the PC: story 003's Windows playtest; the feel of story 009 (yours to judge); GMA2-matched numbers (your clips)
-- Next: (running)
+- Needs the PC: story 003's Windows playtest; the feel of story 009 and the look of stories 007 and 010 (yours to
+  judge); GMA2-matched numbers (your clips).
+- Next: play the newest build (CI run 40287291873): press ` for the Feel Lab, Controls tab, "Ride the test
+  mountain", then "Go to the park" or "Go to the lift".
+- Usage: at 11:05 UTC the binding limit was the seven-day one (resets 2026-11-01 16:00 UTC, status
+  "allowed_warning"). No after-reset wake-up is scheduled for it: if it is hit, the run stops there with no
+  notification, so this report is kept current after every step.
 
 ## story-009-gma-style-riding-and-feel-lab: done, In Review
 - Changed: sim version 8 (`Simulation.cs`, `Tuning.cs`, `RiderState.cs`, `SimInput.cs`), keys and poses
@@ -51,3 +58,25 @@ Started 2026-10-26T01:32:33Z · Ended (running) · Reason (running) · Commits 0
   (0.6 to 0.7) read more (up to 33) but greyed the snow, so 0.8.
 - Not verified: the editor; your eye. On a PC that built the scene since 86bc33a, reset or delete
   `Assets/Data/Riding/LightingSettings.asset` to pick up the new defaults (the scene builder keeps an existing asset).
+
+## story-010-test-mountain (new): done, In Review
+- Changed: the story (new); the generator `tools/terrain/make_test_mountain.py` and its tests; the mountain's files in
+  `Assets/Terrain/TestMountain/`; the sim's `run`, `lift` and `tower` records (`SlopeRunsAndLifts.cs`,
+  `SlopeLayout.cs`) and `TestMountainTests` (each run ridden); Core `CableLoop`, `RunLine`, `RunTracks`, `SlopeSpots`;
+  `ChairLift`, `LiftRide`, `SimDriver` (a slope by name, `Paused`, `RestartRunAt`), `FollowCamera.RideTarget`, the Feel
+  Lab's places and "Go to the lift / park", `RiderHud` (hidden on the lift); the scene builder, terrain builder and
+  build step for a second scene (`TestSlopeLook.Mountain.cs`); CI's second screenshot. Commits a22387e 1f60167
+  832ada8 76d14ad 03b8b04 17ef94b bb48b3b 2d3eafc 5e1d06b dbd2114 75eeeb4.
+- Tests: `dotnet test sim/` 431/431; `python3 -m pytest tools/terrain` 35 passed; Core EditMode tests 154/154 locally;
+  CI run 40287291873: EditMode tests and both players pass.
+- Seen in build 40287291873 (cloud, Linux player): the start beside the lift, facing down the fall line; chairs
+  running round the rope; markers and signs; old tracks on the runs; "Go to the park" rolls down the kicker lane and
+  over the first kicker; "Go to the lift": a short push into the station, the chair, the ride up with the camera on the
+  chair and the HUD hidden, and a new run at the top. Evidence: `production/qa/evidence/story-010-test-mountain/`.
+- Found in builds and fixed: the runs' start levels had cut a trough into the summit, so riders started 51 degrees off
+  the fall line (2d3eafc); "Go to the lift" left a 25 m push across the station's flat hollow, with no hint (dbd2114);
+  the HUD showed the last speed all the way up the lift (75eeeb4).
+- Decisions made for you: the whole layout (names, sizes, where things go); an earlier run keeps its surface where
+  runs meet; the runs leave the summit's surface alone; the start sits 10 m beside the lift line; old tracks on every
+  run, shorter turns on narrow ones; "Go to the lift" starts 12 m out; W hurries the lift five times over.
+- Not verified: the editor; the mountain's look and the lift ride on your PC; the gamepad button that hurries the lift.

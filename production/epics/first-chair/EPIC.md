@@ -31,4 +31,4 @@ mountain with one chairlift on 2026-10-26 (story 010); the full mountain stays o
 | 007 | [First art pass toward the target look](story-007-first-art-pass.md) | Visual/Feel | Ready | N/A (minimal) |
 | 008 | [Turn styles and speed: carve, quick turns, powder, faster slopes](story-008-turn-styles-and-speed.md) | Logic | In Review | N/A (minimal) |
 | 009 | [GMA-style riding, the Feel Lab and speed cues](story-009-gma-style-riding-and-feel-lab.md) | Logic + Visual/Feel | In Review | N/A (minimal) |
-| 010 | [A small test mountain with a chairlift, runs, trees and a park](story-010-test-mountain.md) | Logic + Visual/Feel | In Progress | N/A (minimal) |
+| 010 | [A small test mountain with a chairlift, runs, trees and a park](story-010-test-mountain.md) | Logic + Visual/Feel | In Review | N/A (minimal) |
