@@ -21,7 +21,7 @@ namespace FirstChair.Riding.Editor
     /// TestSlopeLook.Lighting(sun);
     /// </code>
     /// </example>
-    public static class TestSlopeLook
+    public static partial class TestSlopeLook
     {
         /// <summary>Where the generated textures, layers, materials and volume profile go.</summary>
         public const string Folder = "Assets/Data/Riding/Look";
@@ -111,9 +111,10 @@ namespace FirstChair.Riding.Editor
         /// <param name="layers">The layers from <see cref="SnowLayers"/>.</param>
         /// <param name="slopeFolder">The folder holding <c>TestSlopeSnow.raw</c>.</param>
         /// <param name="resolution">Samples a side of the snow map (the heightmap's resolution).</param>
-        public static void PaintSnow(TerrainData data, TerrainLayer[] layers, string slopeFolder, int resolution)
+        /// <param name="snowFile">The snow map's file name (the test mountain's is <c>TestMountainSnow.raw</c>).</param>
+        public static void PaintSnow(TerrainData data, TerrainLayer[] layers, string slopeFolder, int resolution, string snowFile = TestSlopeData.SnowFile)
         {
-            byte[] snow = File.ReadAllBytes(Path.Combine(slopeFolder, TestSlopeData.SnowFile));
+            byte[] snow = File.ReadAllBytes(Path.Combine(slopeFolder, snowFile));
             data.terrainLayers = layers;
             data.alphamapResolution = AlphamapResolution;
             var weights = new float[AlphamapResolution, AlphamapResolution, SnowSurface.LayerCount];

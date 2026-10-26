@@ -8,7 +8,13 @@ public class ScreenshotOnArg : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
     static void Boot()
     {
-        if (Arg("--screenshot") == null) return;
+        if (Arg("--screenshot") == null)
+        {
+            // --scene alone starts the player in that scene (the test mountain, Story 010).
+            var start = Arg("--scene");
+            if (!string.IsNullOrEmpty(start) && SceneManager.GetActiveScene().name != start) SceneManager.LoadScene(start);
+            return;
+        }
         // A virtual display has no window manager to focus the window, and an unfocused player pauses by default.
         Application.runInBackground = true;
         var go = new GameObject(nameof(ScreenshotOnArg));

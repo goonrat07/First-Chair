@@ -8,15 +8,22 @@ using UnityEngine.SceneManagement;
 namespace FirstChair.Riding.Editor
 {
     /// <summary>
-    /// Builds <c>Assets/Scenes/TestSlope.unity</c> from the scripts, instead of a hand-written scene file: terrain,
-    /// sim driver with input, placeholder rider and follow camera, wired together, saved and added to the build.
-    /// Menu: First Chair > Build Test Slope Scene. Safe to run again; it overwrites the scene and keeps existing
-    /// settings assets under <c>Assets/Data/Riding</c>.
+    /// Builds <c>Assets/Scenes/TestSlope.unity</c> and <c>Assets/Scenes/TestMountain.unity</c> (Story 010) from the
+    /// scripts, instead of hand-written scene files: terrain, sim driver with input, rider and follow camera, wired
+    /// together, saved and added to the build; the mountain also gets its chairlift, run markers and the lift ride.
+    /// Menu: First Chair > Build Test Slope Scene / Build Test Mountain Scene. Safe to run again; it overwrites the scene
+    /// and keeps existing settings assets under <c>Assets/Data/Riding</c>.
     /// </summary>
     public static class TestSlopeSceneBuilder
     {
         /// <summary>The scene's path.</summary>
         public const string ScenePath = "Assets/Scenes/TestSlope.unity";
+
+        /// <summary>The test mountain scene's path (Story 010).</summary>
+        public const string MountainScenePath = "Assets/Scenes/TestMountain.unity";
+
+        /// <summary>The test mountain's name in its files and in the player's StreamingAssets.</summary>
+        public const string MountainName = "TestMountain";
 
         /// <summary>Where the settings assets live.</summary>
         public const string SettingsFolder = "Assets/Data/Riding";
@@ -38,25 +45,44 @@ namespace FirstChair.Riding.Editor
             BuildScene();
         }
 
+        /// <summary>Builds and saves the test mountain scene, after offering to save the open scenes.</summary>
+        [MenuItem("First Chair/Build Test Mountain Scene")]
+        public static void BuildMountain()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            BuildMountainScene();
+        }
+
         /// <summary>Builds and saves the scene without asking anything (CI builds call this).</summary>
-        public static void BuildScene()
+        public static void BuildScene() =>
+            BuildScene(ScenePath, TestSlopeTerrainBuilder.SlopeFolder, TestSlopeData.TestSlopeName, false);
+
+        /// <summary>Builds and saves the test mountain scene without asking anything (CI builds call this).</summary>
+        public static void BuildMountainScene() =>
+            BuildScene(MountainScenePath, TestSlopeTerrainBuilder.MountainFolder, MountainName, true);
+
+        private static void BuildScene(string scenePath, string slopeFolder, string slopeName, bool mountain)
         {
             // Assets are loaded after NewScene, which unloads unused assets. Settings created before it were saved as null
             // references in the CI build of 2026-10-22, so the camera never moved; Set now throws instead.
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Single);
-            TerrainData terrainData = TestSlopeTerrainBuilder.RebuildAsset();
-            TestSlopeData slope = TestSlopeData.Load(Path.GetFullPath(TestSlopeTerrainBuilder.SlopeFolder));
+            TerrainData terrainData = TestSlopeTerrainBuilder.RebuildAsset(slopeFolder, slopeName);
+            TestSlopeData slope = TestSlopeData.Load(Path.GetFullPath(slopeFolder), slopeName);
             var cameraSettings = LoadOrCreate<FollowCameraSettings>("FollowCameraSettings");
             var viewSettings = LoadOrCreate<RiderViewSettings>("RiderViewSettings");
             var inputConfig = LoadOrCreate<RiderInputConfig>("RiderInputConfig");
             Material bodyMaterial = LoadOrCreateMaterial("RiderPlaceholder", BodyShader);
             Material trackMaterial = TestSlopeLook.TrackMaterial();
             TerrainLayer[] snowLayers = TestSlopeLook.SnowLayers();
-            TestSlopeLook.PaintSnow(terrainData, snowLayers, TestSlopeTerrainBuilder.SlopeFolder, slope.Heightmap.Resolution);
+            TestSlopeLook.PaintSnow(terrainData, snowLayers, slopeFolder, slope.Heightmap.Resolution, TestSlopeData.SnowFileOf(slopeName));
             Material terrainMaterial = TestSlopeLook.TerrainMaterial();
 
             GameObject terrainObject = Terrain.CreateTerrainGameObject(terrainData);
-            terrainObject.name = "TestSlopeTerrain";
+            terrainObject.name = slopeName + "Terrain";
             terrainObject.transform.position = SimCoordinatesUnity.TerrainOrigin(slope.Layout.Spec);
             var terrain = terrainObject.GetComponent<Terrain>();
             terrain.heightmapPixelError = 1f;
@@ -69,6 +95,9 @@ namespace FirstChair.Riding.Editor
             Set(input, "config", inputConfig);
             var driver = driverObject.AddComponent<SimDriver>();
             Set(driver, "inputReader", input);
+            SetString(driver, "editorSlopeFolder", slopeFolder.Substring("Assets/".Length));
+            SetString(driver, "playerSlopeFolder", slopeName);
+            SetString(driver, "slopeName", slopeName);
 
             var rider = new GameObject("Rider");
             slope.Heightmap.Sample(slope.Layout.StartX, slope.Layout.StartZ, out Fix64 startHeight, out _);
@@ -115,13 +144,31 @@ namespace FirstChair.Riding.Editor
 
             var scenery = new GameObject("Scenery");
             TestSlopeLook.Trees(scenery.transform, slope);
-            TestSlopeLook.OldTracks(scenery.transform, slope);
+            if (!mountain)
+            {
+                TestSlopeLook.OldTracks(scenery.transform, slope);
+            }
+
             TestSlopeLook.RailsAndBoxes(scenery.transform, slope);
+            if (mountain)
+            {
+                // Story 010: the chairlift, the runs' markers, and riding the lift back up.
+                ChairLift lift = TestSlopeLook.Chairlift(scenery.transform, slope);
+                TestSlopeLook.RunMarkers(scenery.transform, slope);
+                if (lift != null)
+                {
+                    var ride = driverObject.AddComponent<LiftRide>();
+                    Set(ride, "driver", driver);
+                    Set(ride, "lift", lift);
+                    Set(ride, "rider", rider.transform);
+                    Set(ride, "followCamera", follow);
+                }
+            }
 
             EnsureFolder("Assets/Scenes");
-            EditorSceneManager.SaveScene(scene, ScenePath);
-            AddToBuildSettings(ScenePath);
-            Debug.Log("Built " + ScenePath + ". Press Play to ride; F5 checks the replay, F6 saves the recording, F1 hides the HUD.");
+            EditorSceneManager.SaveScene(scene, scenePath);
+            AddToBuildSettings(scenePath);
+            Debug.Log("Built " + scenePath + ". Press Play to ride; F5 checks the replay, F6 saves the recording, F1 hides the HUD.");
         }
 
         // The pose clips in SkierPose order, matched by name; Blender may prefix a take with "Armature|".
@@ -245,6 +292,20 @@ namespace FirstChair.Riding.Editor
             {
                 throw new System.InvalidOperationException(component.GetType().Name + "." + field + " did not keep its reference.");
             }
+        }
+
+        // Sets a string field.
+        private static void SetString(Object component, string field, string value)
+        {
+            var serialized = new SerializedObject(component);
+            SerializedProperty property = serialized.FindProperty(field);
+            if (property == null || property.propertyType != SerializedPropertyType.String)
+            {
+                throw new System.InvalidOperationException(component.GetType().Name + " has no serialized string '" + field + "'.");
+            }
+
+            property.stringValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         // Sets an object array field; null entries are allowed (SkierView falls back to the stance clip).

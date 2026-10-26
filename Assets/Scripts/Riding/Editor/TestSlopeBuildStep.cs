@@ -7,7 +7,8 @@ using UnityEngine;
 namespace FirstChair.Riding.Editor
 {
     /// <summary>
-    /// After a Windows or Linux player build, copies the three test-slope files into the player's StreamingAssets, where
+    /// After a Windows or Linux player build, copies the three test-slope files (and the test mountain's, Story 010) into
+    /// the player's StreamingAssets, where
     /// <see cref="SimDriver"/> reads them in a build. The RAW files are not Unity assets a player can load, and copying
     /// after the build keeps a second copy out of the repo.
     /// </summary>
@@ -28,12 +29,21 @@ namespace FirstChair.Riding.Editor
             }
 
             string exe = report.summary.outputPath;
-            string destination = Path.Combine(
-                Path.GetDirectoryName(exe), Path.GetFileNameWithoutExtension(exe) + "_Data", "StreamingAssets", SimDriver.DefaultPlayerSlopeFolder);
-            Directory.CreateDirectory(destination);
-            foreach (string file in new[] { TestSlopeData.LayoutFile, TestSlopeData.HeightmapFile, TestSlopeData.SnowFile })
+            string streamingAssets = Path.Combine(Path.GetDirectoryName(exe), Path.GetFileNameWithoutExtension(exe) + "_Data", "StreamingAssets");
+            Copy(TestSlopeTerrainBuilder.SlopeFolder, TestSlopeData.TestSlopeName, Path.Combine(streamingAssets, SimDriver.DefaultPlayerSlopeFolder));
+            if (Directory.Exists(TestSlopeTerrainBuilder.MountainFolder))
             {
-                File.Copy(Path.Combine(TestSlopeTerrainBuilder.SlopeFolder, file), Path.Combine(destination, file), true);
+                // Story 010: the test mountain rides from its own folder, named as its files are.
+                Copy(TestSlopeTerrainBuilder.MountainFolder, TestSlopeSceneBuilder.MountainName, Path.Combine(streamingAssets, TestSlopeSceneBuilder.MountainName));
+            }
+        }
+
+        private static void Copy(string folder, string name, string destination)
+        {
+            Directory.CreateDirectory(destination);
+            foreach (string file in new[] { TestSlopeData.LayoutFileOf(name), TestSlopeData.HeightmapFileOf(name), TestSlopeData.SnowFileOf(name) })
+            {
+                File.Copy(Path.Combine(folder, file), Path.Combine(destination, file), true);
             }
         }
     }

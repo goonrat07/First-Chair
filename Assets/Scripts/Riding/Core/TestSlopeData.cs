@@ -47,16 +47,40 @@ namespace FirstChair.Riding
         /// <summary>The rails and boxes, from the layout.</summary>
         public RailSet Rails { get; }
 
+        /// <summary>The slope's name in the test slope's file names (<c>TestSlope.txt</c> and so on).</summary>
+        public const string TestSlopeName = "TestSlope";
+
         /// <summary>Loads the three test-slope files from a folder.</summary>
         /// <param name="folder">The folder holding them (in the editor, <c>Assets/Terrain/TestSlope</c>).</param>
         /// <exception cref="InvalidDataException">A binary file is a Git LFS pointer, not the data.</exception>
-        public static TestSlopeData Load(string folder)
+        public static TestSlopeData Load(string folder) => Load(folder, TestSlopeName);
+
+        /// <summary>
+        /// Loads a slope written in the test slope's formats under its own name (Story 010): <c>name.txt</c>,
+        /// <c>name.raw</c> and <c>nameSnow.raw</c>, such as <c>TestMountain</c>.
+        /// </summary>
+        /// <param name="folder">The folder holding them.</param>
+        /// <param name="name">The slope's name, the files' shared stem.</param>
+        /// <exception cref="InvalidDataException">A binary file is a Git LFS pointer, not the data.</exception>
+        public static TestSlopeData Load(string folder, string name)
         {
-            string layoutText = File.ReadAllText(Path.Combine(folder, LayoutFile));
-            byte[] heights = ReadBinary(folder, HeightmapFile);
-            byte[] snow = ReadBinary(folder, SnowFile);
+            string layoutText = File.ReadAllText(Path.Combine(folder, LayoutFileOf(name)));
+            byte[] heights = ReadBinary(folder, HeightmapFileOf(name));
+            byte[] snow = ReadBinary(folder, SnowFileOf(name));
             return FromContents(layoutText, heights, snow);
         }
+
+        /// <summary>A slope's layout file name.</summary>
+        /// <param name="name">The slope's name.</param>
+        public static string LayoutFileOf(string name) => name + ".txt";
+
+        /// <summary>A slope's heightmap file name.</summary>
+        /// <param name="name">The slope's name.</param>
+        public static string HeightmapFileOf(string name) => name + ".raw";
+
+        /// <summary>A slope's snow-map file name.</summary>
+        /// <param name="name">The slope's name.</param>
+        public static string SnowFileOf(string name) => name + "Snow.raw";
 
         /// <summary>Builds the slope from file contents already in memory.</summary>
         /// <param name="layoutText">The text of <c>TestSlope.txt</c>.</param>

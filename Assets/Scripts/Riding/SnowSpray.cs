@@ -93,7 +93,7 @@ namespace FirstChair.Riding
             Vector3 velocity = SimCoordinatesUnity.ToVector3(state.Velocity);
             float speed = velocity.magnitude;
             float factor = SnowSprayMath.SnowFactor(state.Snow, settings.SprayPowderFactor, settings.SprayIceFactor);
-            bool onSnow = !state.Airborne && !state.Crashed;
+            bool onSnow = !state.Airborne && !state.Crashed && !driver.Paused;
             double maxEdge = SimCoordinates.ToDouble(driver.Session.Tuning.MaxEdgeAngle);
             double edge = maxEdge > 0.0 ? SimCoordinates.ToDouble(state.EdgeAngle) / maxEdge : 0.0;
             float rate = Mathf.Min(settings.SprayMaxRate,

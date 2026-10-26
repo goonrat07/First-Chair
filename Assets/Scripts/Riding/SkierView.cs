@@ -118,6 +118,13 @@ namespace FirstChair.Riding
             RiderState current = session.Current;
             Tuning tuning = session.Tuning;
             SkierPoseWeights.Target(current, tuning, _target);
+            if (driver.Paused)
+            {
+                // Riding the chairlift (Story 010): sitting, near enough, in the crouch.
+                System.Array.Clear(_target, 0, _target.Length);
+                _target[(int)SkierPose.Crouch] = 1f;
+            }
+
             SkierPoseWeights.Smooth(_shown, _target, Time.deltaTime, settings.PoseSmoothTime);
             if (_graph.IsValid())
             {
@@ -136,7 +143,7 @@ namespace FirstChair.Riding
             }
 
             // The tracks break across a reset or a new run, so no ribbon is drawn between the two spots.
-            bool onSnow = !current.Airborne && !current.Crashed;
+            bool onSnow = !current.Airborne && !current.Crashed && !driver.Paused;
             bool jumped = session.SnappedThisFrame || session != _paintedSession;
             _paintedSession = session;
             Paint(_trackLeft, _skiLeft, position, normal, onSnow, jumped);

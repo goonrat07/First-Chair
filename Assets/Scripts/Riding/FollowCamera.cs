@@ -29,6 +29,12 @@ namespace FirstChair.Riding
         private bool _hasTravelYaw;
         private float _shakeTime;
 
+        /// <summary>
+        /// While set, the camera follows this instead of the sim's rider: the chair the rider sits on (Story 010). It is
+        /// treated as standing still on level snow.
+        /// </summary>
+        public Transform RideTarget { get; set; }
+
         private void Awake()
         {
             _camera = GetComponent<Camera>();
@@ -56,7 +62,11 @@ namespace FirstChair.Riding
             Vector3 velocity = Vector3.zero;
             // The rider's feet from the sim, not the view's root, which a flip swings about the middle of the body.
             Vector3 rider = target.position;
-            if (driver != null && driver.Session != null)
+            if (RideTarget != null)
+            {
+                rider = RideTarget.position;
+            }
+            else if (driver != null && driver.Session != null)
             {
                 RiderPose pose = driver.Pose;
                 velocity = new Vector3(pose.VelocityX, 0f, pose.VelocityZ);

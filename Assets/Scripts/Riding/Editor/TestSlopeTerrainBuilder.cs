@@ -18,12 +18,24 @@ namespace FirstChair.Riding.Editor
         /// <summary>Where the TerrainData asset is written.</summary>
         public const string TerrainAssetPath = SlopeFolder + "/TestSlopeTerrain.asset";
 
+        /// <summary>The test mountain's folder, relative to the project root (Story 010).</summary>
+        public const string MountainFolder = "Assets/Terrain/TestMountain";
+
         /// <summary>Rebuilds the TerrainData asset from the RAW file, creating it if needed, and returns it.</summary>
-        public static TerrainData RebuildAsset()
+        public static TerrainData RebuildAsset() => RebuildAsset(SlopeFolder, TestSlopeData.TestSlopeName);
+
+        /// <summary>
+        /// Rebuilds a slope's TerrainData asset (<c>folder/nameTerrain.asset</c>) from its RAW file, creating it if needed,
+        /// and returns it.
+        /// </summary>
+        /// <param name="folder">The slope's folder, relative to the project root.</param>
+        /// <param name="name">The slope's name, as in its file names.</param>
+        public static TerrainData RebuildAsset(string folder, string name)
         {
-            SlopeLayout layout = SlopeLayout.Parse(File.ReadAllText(Path.Combine(SlopeFolder, TestSlopeData.LayoutFile)));
-            byte[] r16 = File.ReadAllBytes(Path.Combine(SlopeFolder, TestSlopeData.HeightmapFile));
-            TerrainData data = AssetDatabase.LoadAssetAtPath<TerrainData>(TerrainAssetPath);
+            SlopeLayout layout = SlopeLayout.Parse(File.ReadAllText(Path.Combine(folder, TestSlopeData.LayoutFileOf(name))));
+            byte[] r16 = File.ReadAllBytes(Path.Combine(folder, TestSlopeData.HeightmapFileOf(name)));
+            string assetPath = folder + "/" + name + "Terrain.asset";
+            TerrainData data = AssetDatabase.LoadAssetAtPath<TerrainData>(assetPath);
             bool created = data == null;
             if (created)
             {
@@ -33,7 +45,7 @@ namespace FirstChair.Riding.Editor
             Fill(data, r16, layout.Spec);
             if (created)
             {
-                AssetDatabase.CreateAsset(data, TerrainAssetPath);
+                AssetDatabase.CreateAsset(data, assetPath);
             }
             else
             {

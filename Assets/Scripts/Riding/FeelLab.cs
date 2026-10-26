@@ -6,6 +6,7 @@ using System.Reflection;
 using FirstChair.Sim;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 namespace FirstChair.Riding
 {
@@ -31,6 +32,9 @@ namespace FirstChair.Riding
 
         private static readonly string[] Tabs = { "Riding", "Camera", "Effects", "Controls" };
 
+        // The scenes in the build to ride (Story 010), by scene name.
+        private static readonly string[] Places = { "TestSlope", "TestMountain" };
+
         // The old game's chase camera (Bluebird src/render/scene.ts): close behind and low, a 62 degree view widening with
         // speed, quick to follow the travel, banking and shaking more.
         private static readonly Dictionary<string, float> ChasePreset = new Dictionary<string, float>
@@ -54,6 +58,7 @@ namespace FirstChair.Riding
             "Space: hold to load, release to pop",
             "In the air: A / D spin, W / S flip, Shift + direction grab",
             "R: back to the last safe spot.  F5: replay check.  F6: save the ride",
+            "Test mountain: ski into the lift's bottom station to ride up; W hurries the lift",
             "` or F1: this panel",
         };
 
@@ -81,6 +86,16 @@ namespace FirstChair.Riding
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Install()
+        {
+            // Every scene gets its own lab: the test slope and the test mountain (Story 010) each have a rider.
+            SceneManager.sceneLoaded -= InstallIn;
+            SceneManager.sceneLoaded += InstallIn;
+            InstallHere();
+        }
+
+        private static void InstallIn(Scene scene, LoadSceneMode mode) => InstallHere();
+
+        private static void InstallHere()
         {
             if (FindAnyObjectByType<FeelLab>() == null && FindAnyObjectByType<SimDriver>() != null)
             {
@@ -202,6 +217,18 @@ namespace FirstChair.Riding
                         GUILayout.Label(line);
                     }
 
+                    // Story 010: where to ride.
+                    GUILayout.Space(8f);
+                    GUILayout.BeginHorizontal();
+                    foreach (string place in Places)
+                    {
+                        if (GUILayout.Button("Ride the " + FeelLabValues.Label(place).ToLowerInvariant()))
+                        {
+                            SceneManager.LoadScene(place);
+                        }
+                    }
+
+                    GUILayout.EndHorizontal();
                     break;
             }
 

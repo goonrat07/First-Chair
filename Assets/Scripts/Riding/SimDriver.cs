@@ -42,6 +42,9 @@ namespace FirstChair.Riding
         [Tooltip("Test-slope folder under StreamingAssets/, read in a built player.")]
         [SerializeField] private string playerSlopeFolder = DefaultPlayerSlopeFolder;
 
+        [Tooltip("The slope's files' shared name: <name>.txt, <name>.raw and <name>Snow.raw (TestSlope or TestMountain).")]
+        [SerializeField] private string slopeName = TestSlopeData.TestSlopeName;
+
         private FixedStepClock _clock;
         private float _nextDropLogTime;
         private long _droppedSinceLog;
@@ -60,6 +63,15 @@ namespace FirstChair.Riding
 
         /// <summary>Every event of this frame's steps, read-only.</summary>
         public IReadOnlyList<SimEvent> FrameEvents => Session?.FrameEvents;
+
+        /// <summary>
+        /// While true, no sim steps run and the ride stands still: the rider is on the chairlift (Story 010). The views
+        /// lay no tracks while it is set.
+        /// </summary>
+        public bool Paused { get; set; }
+
+        /// <summary>The slope's name, as in its file names.</summary>
+        public string SlopeName => slopeName;
 
         /// <summary>The riding numbers runs start with: <see cref="Tuning.Default"/> until the Feel Lab changes them.</summary>
         public Tuning RunTuning { get; private set; } = Tuning.Default;
@@ -83,7 +95,7 @@ namespace FirstChair.Riding
             TestSlopeData slope;
             try
             {
-                slope = TestSlopeData.Load(SlopeFolder);
+                slope = TestSlopeData.Load(SlopeFolder, slopeName);
             }
             catch (Exception e)
             {
@@ -208,7 +220,7 @@ namespace FirstChair.Riding
 
         private void Update()
         {
-            if (Session == null)
+            if (Session == null || Paused)
             {
                 return;
             }

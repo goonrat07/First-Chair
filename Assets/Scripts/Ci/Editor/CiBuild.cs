@@ -46,6 +46,7 @@ namespace FirstChair.Ci.Editor
 
                 AssetDatabase.SaveAssets();
                 TestSlopeSceneBuilder.BuildScene();
+                TestSlopeSceneBuilder.BuildMountainScene();
                 if (!BuildPlayer())
                 {
                     EditorApplication.Exit(1);
@@ -159,7 +160,7 @@ namespace FirstChair.Ci.Editor
 
             var options = new BuildPlayerOptions
             {
-                scenes = new[] { TestSlopeSceneBuilder.ScenePath },
+                scenes = new[] { TestSlopeSceneBuilder.ScenePath, TestSlopeSceneBuilder.MountainScenePath },
                 locationPathName = path,
                 target = target,
                 targetGroup = BuildPipeline.GetBuildTargetGroup(target),
