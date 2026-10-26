@@ -11,7 +11,7 @@ Unity-side work is built and ridden in CI and reported as not verified in the ed
 |---|------|-------|--------|---------|
 | 1 | story-009-gma-style-riding-and-feel-lab: sim v8, Unity input/poses/spray, Feel Lab, speed cues, build + ride | dev-story, then story-done | done: In Review, your feel sign-off is open | 2c55dee b28a2b1 0863fed c838bb8 dad1dba, this commit |
 | 2 | story-007-first-art-pass: snow shader with tracks that build up and stay (the user's "snow shaders") | dev-story (that item) | running | 716391a |
-| 3 | story-010 (new): a small test mountain with a lift, runs, trees and a park (the user's request) | create the story, then dev-story | queued | |
+| 3 | story-010-test-mountain (new): a small test mountain with a lift, runs, trees and a park (the user's request) | create the story, then dev-story | queued (story written) | |
 | 4 | story-007-first-art-pass: the lighting pass, so the slope's shape reads | dev-story (that item) | queued | |
 
 ## Left for the PC
