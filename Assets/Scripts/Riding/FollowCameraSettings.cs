@@ -14,17 +14,18 @@ namespace FirstChair.Riding
     {
         [Header("Placement (behind the rider along the travel)")]
         [Tooltip("How far behind the rider, metres along the ground, standing still.")]
-        [SerializeField, Min(0.5f)] private float backDistance = 5.5f;
+        [SerializeField, Min(0.5f)] private float backDistance = 4.8f;
         [Tooltip("How far behind at full speed (Close-in speed), not tucked, metres.")]
-        [SerializeField, Min(0.5f)] private float fastBackDistance = 4.5f;
+        [SerializeField, Min(0.5f)] private float fastBackDistance = 4.2f;
         [Tooltip("How far behind at full speed in a tuck, metres: a fast tuck pulls the camera in, so it reads faster.")]
-        [SerializeField, Min(0.5f)] private float tuckBackDistance = 3.5f;
-        [Tooltip("The camera's height above the snow under it, standing still, metres.")]
-        [SerializeField, Min(0.1f)] private float height = 1.7f;
+        [SerializeField, Min(0.5f)] private float tuckBackDistance = 3.4f;
+        [Tooltip("The camera's height above the snow under it, standing still, metres: high enough to look over the rider's "
+            + "head, so the slope ahead shows between the rider and the horizon.")]
+        [SerializeField, Min(0.1f)] private float height = 2.5f;
         [Tooltip("Its height at full speed, not tucked, metres.")]
-        [SerializeField, Min(0.1f)] private float fastHeight = 1.4f;
+        [SerializeField, Min(0.1f)] private float fastHeight = 2.1f;
         [Tooltip("Its height at full speed in a tuck, metres.")]
-        [SerializeField, Min(0.1f)] private float tuckHeight = 1.0f;
+        [SerializeField, Min(0.1f)] private float tuckHeight = 1.4f;
         [Tooltip("The speed where the full-speed and tuck numbers apply in full, m/s (25 is 90 km/h); between, they ease in.")]
         [SerializeField, Min(0.1f)] private float closeInSpeed = 25f;
         [Tooltip("Aim point height above the rider's feet, metres.")]
@@ -46,9 +47,9 @@ namespace FirstChair.Riding
         [Tooltip("Aim this far ahead of the rider along the travel when stopped, metres.")]
         [SerializeField, Min(0f)] private float lookAheadBase = 1.5f;
         [Tooltip("Extra look-ahead per metre per second of speed, seconds.")]
-        [SerializeField, Min(0f)] private float lookAheadPerSpeed = 0.1f;
-        [Tooltip("Most look-ahead, metres.")]
-        [SerializeField, Min(0f)] private float lookAheadMax = 4f;
+        [SerializeField, Min(0f)] private float lookAheadPerSpeed = 0.05f;
+        [Tooltip("Most look-ahead, metres. More pushes a fast rider down the screen.")]
+        [SerializeField, Min(0f)] private float lookAheadMax = 3f;
         [Tooltip("The near and far points ahead along the travel where the camera reads the snow, metres: where it drops away "
             + "more steeply than under the rider (a rollover, a steep face), the camera tilts down to show it.")]
         [SerializeField, Min(0.5f)] private float aheadNearMetres = 6f;
@@ -74,8 +75,9 @@ namespace FirstChair.Riding
         [SerializeField, Min(0f)] private float settleSmoothTime = 0.5f;
 
         [Header("Lens")]
-        [Tooltip("Focal length, millimetres: 20 on the 24 mm sensor is a wide 62 degree vertical view, as in Steep.")]
-        [SerializeField, Min(1f)] private float focalLengthMm = 20f;
+        [Tooltip("Focal length, millimetres: 26 on the 24 mm sensor is a 50 degree vertical view (about 80 degrees across "
+            + "a 16:9 screen), as in Steep; wider shrinks the rider.")]
+        [SerializeField, Min(1f)] private float focalLengthMm = 26f;
         [Tooltip("24 mm is full-frame height.")]
         [SerializeField, Min(1f)] private float sensorHeightMm = 24f;
         [SerializeField, Min(0.01f)] private float nearClip = 0.15f;

@@ -36,15 +36,18 @@ What the screenshots show, and what this camera does about it. Every number is a
 `FollowCameraSettings` and live in the Feel Lab's Camera tab.
 
 - **Chase framing.** Behind the rider along the direction of travel (the yaw follows the velocity, about 0.3 s behind;
-  below 1.5 m/s it holds its last direction), 5.5 m from an aim point about 1.2 m above the feet and a little ahead,
-  pitched so the rider sits in the lower middle of the screen. A wide lens, about 62 degrees vertical.
+  nearly stopped, it sits behind the skis), 4.8 m back along the ground and 2.5 m above the snow under it, looking at a
+  point 1.2 m above the feet and a little ahead, so it looks over the rider's head: on a 17 degree groomer the rider
+  spans about 52 to 82 percent of the screen's height and the slope's far end sits about 37 percent down. A 50 degree
+  vertical lens (about 80 degrees across a 16:9 screen). Placing the camera above the snow, rather than pitching it a
+  margin past the slope, makes the view follow the slope by itself.
 - **Dynamic to the terrain.** The pitch follows the snow ahead, not just under the rider: the drop from the rider to
   points 5 and 15 m along the travel, so over a rollover or into a steep face the camera tilts down to show what is
   coming, and on flats and run-outs it levels out.
 - **Never under the snow.** The camera keeps 1 m or more above the snow beneath it, and its line to the rider keeps
   0.5 m above the snow in between; where it would not, the camera rises (the pitch steepens) until it does.
-- **Speed.** It closes in with speed, to 4.5 m at full speed, and lower and closer still in a tuck (3.5 m), so a
-  fast tuck reads faster. The view widens with speed (up to 12 degrees more), and from about 55 km/h the screen's
+- **Speed.** It closes in and drops with speed, to 4.2 m back and 2.1 m up at full speed (90 km/h), and lower and
+  closer still in a tuck (3.4 m, 1.4 m), so a fast tuck reads faster and the rider grows on screen. The view widens with speed (up to 12 degrees more), and from about 55 km/h the screen's
   edges blur with the camera's motion (URP motion blur, camera and objects, so the rider stays sharp), more the
   faster.
 - **Turns.** A little bank into the turn and a gentle shake at speed, as before.
@@ -53,6 +56,14 @@ What the screenshots show, and what this camera does about it. Every number is a
 - **The lift.** It follows the chair, as before.
 - **Removed.** The GMA2 far camera and both Feel Lab camera presets ("GMA far", "chase (old game)"). The Camera tab
   gets "Steep chase (default)", which puts every camera number back to these defaults.
+
+## As built (2026-10-26)
+
+- First build (run 40406647164, commit 50c6358), ridden in the cloud: the chase works (it follows the travel through
+  carves and traverses, never dips into the snow), but the framing was too wide and too level: with a 62 degree lens,
+  5.5 m back and 1.7 m up, the slope's far end sat at mid-screen and the rider filled only about 20 percent of the
+  height, the head on the horizon. A framing model (camera height, distance and lens against the rider's feet, head and
+  the slope's far end) reproduced that frame within a few percent of the screen; the numbers above come from it.
 
 ## Acceptance Criteria
 
