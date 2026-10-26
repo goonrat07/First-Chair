@@ -35,6 +35,9 @@ namespace FirstChair.Riding
         // How far above the lift's boarding point "Go to the lift" starts the rider, metres.
         private const float LiftApproachMetres = 25f;
 
+        // How far above the first kicker's foot "Go to the park" starts the rider, metres.
+        private const double ParkApproachMetres = 40.0;
+
         // The scenes in the build to ride (Story 010), by scene name.
         private static readonly string[] Places = { "TestSlope", "TestMountain" };
 
@@ -244,6 +247,14 @@ namespace FirstChair.Riding
                         Vector3 start = lift.BoardingPoint - Vector3.forward * LiftApproachMetres;
                         _status = _driver.RestartRunAt(_driver.RunTuning, SimCoordinates.FromMetres(start.x), SimCoordinates.FromMetres(start.z))
                             ?? "Started above the lift: roll into the station to ride up.";
+                    }
+
+                    SlopeLayout layout = _driver != null && _driver.Session != null ? _driver.Session.Slope.Layout : null;
+                    if (layout != null && SlopeSpots.AboveTheKickers(layout, ParkApproachMetres, out double parkX, out double parkZ)
+                        && GUILayout.Button("Go to the park (start above its first kicker)"))
+                    {
+                        _status = _driver.RestartRunAt(_driver.RunTuning, SimCoordinates.FromMetres(parkX), SimCoordinates.FromMetres(parkZ))
+                            ?? "Started above the park: let go to roll down the kicker line.";
                     }
 
                     break;
