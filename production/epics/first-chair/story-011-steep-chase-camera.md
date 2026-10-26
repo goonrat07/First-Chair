@@ -37,7 +37,7 @@ What the screenshots show, and what this camera does about it. Every number is a
 
 - **Chase framing.** Behind the rider along the direction of travel (the yaw follows the velocity, about 0.3 s behind;
   nearly stopped, it sits behind the skis), 4.8 m back along the ground and 2.5 m above the snow under it, looking at a
-  point 1.2 m above the feet and a little ahead, so it looks over the rider's head: on a 17 degree groomer the rider
+  point 1.2 m above the feet and 1.5 m ahead, so it looks over the rider's head: on a 17 degree groomer the rider
   spans about 52 to 82 percent of the screen's height and the slope's far end sits about 37 percent down. A 50 degree
   vertical lens (about 80 degrees across a 16:9 screen). Placing the camera above the snow, rather than pitching it a
   margin past the slope, makes the view follow the slope by itself.
@@ -46,10 +46,12 @@ What the screenshots show, and what this camera does about it. Every number is a
   coming, and on flats and run-outs it levels out.
 - **Never under the snow.** The camera keeps 1 m or more above the snow beneath it, and its line to the rider keeps
   0.5 m above the snow in between; where it would not, the camera rises (the pitch steepens) until it does.
-- **Speed.** It closes in and drops with speed, to 4.2 m back and 2.1 m up at full speed (90 km/h), and lower and
-  closer still in a tuck (3.4 m, 1.4 m), so a fast tuck reads faster and the rider grows on screen. The view widens with speed (up to 12 degrees more), and from about 55 km/h the screen's
-  edges blur with the camera's motion (URP motion blur, camera and objects, so the rider stays sharp), more the
-  faster.
+- **Speed.** It closes in with speed, to 4 m back at full speed (90 km/h), and in a fast tuck right in, 2.4 m back
+  and 1.8 m up, aiming lower (0.4 m above the feet), so the tucked rider grows to about 40 percent of the screen's
+  height (the Steep tuck shots show about 35 to 60) while the slope ahead stays high on the screen: a fast tuck reads
+  faster. The view widens with speed (up to 12 degrees more), and from about 55 km/h the screen's edges blur with the
+  camera's motion (URP motion blur, camera and objects, so the rider stays sharp), more the faster. The blur's strength
+  is set as at 60 frames a second and scales with each frame's length, so the streaks are as long at any frame rate.
 - **Turns.** A little bank into the turn and a gentle shake at speed, as before.
 - **Air.** The yaw keeps following the travel, so flips and spins turn the rider, not the camera; the pitch reads the
   snow ahead of where the rider is over the ground.
@@ -64,11 +66,27 @@ What the screenshots show, and what this camera does about it. Every number is a
   5.5 m back and 1.7 m up, the slope's far end sat at mid-screen and the rider filled only about 20 percent of the
   height, the head on the horizon. A framing model (camera height, distance and lens against the rider's feet, head and
   the slope's far end) reproduced that frame within a few percent of the screen; the numbers above come from it.
+- Second build (run 40410870423, commit 87ab14a): at rest the framing matched the model (the rider 52 to 81 percent of
+  the height, the slope's far end 39 percent down). A fast tuck did the opposite of the Steep shots: the rider shrank
+  (34 to 28-31 percent of the height) and the slope's far end sank to mid-screen, because the 12 degree widening undid
+  the close-in, the crouch shortened the rider, and the look-ahead, level with the rider, lifted the view off the slope
+  as it grew with speed. The framing model, matched to the measured frames, gave the tuck numbers above (and a fixed
+  1.5 m look-ahead); loaded live into that build through the Feel Lab, the tucked rider filled 36 to 47 percent of the
+  height at 85 to 150 km/h (about a third wider than before) with the far end about 31 percent down.
+- The blur depended on the frame rate. URP blurs across a share of each frame's motion, and the cloud's software
+  rendering runs about 7 frames a second, each capped at 12 sim steps, so each frame moved the camera through 100 ms of
+  riding against 17 ms on a PC at 60 fps: the cloud showed six times a PC's blur (and a halo of the rider's colours in
+  the streaked snow beside it), and a 144 Hz screen would show less than half of a 60 Hz one. The sim clock now
+  reports the ride time each frame moved the view through, and the blur scales by it. Previewed in the cloud at the
+  60 fps strength: the edges streak from about 100 km/h, the rider stays sharp, no halo.
+- To reach race speed in the cloud's slow sim, the fast-tuck rides load gravity times 4 through the Feel Lab (cloud
+  evidence only). The camera reads only the speed, the tuck and the snow, so its framing at a given speed is the same.
 
 ## Acceptance Criteria
 
 - [ ] Unit tests cover the new math: the pitch from the snow ahead, the distance and height with speed and tuck, the
-  rise that keeps the camera and its line to the rider above the snow, and the motion blur's strength with speed.
+  rise that keeps the camera and its line to the rider above the snow, and the motion blur's strength with speed and
+  with each frame's length.
 - [ ] In a build, on the test slope and the test mountain: the chase framing at rest, carving, in a fast tuck (closer,
   lower, wider, edges blurred), over a rollover into steeper snow (tilted down), on a traverse, and off a kicker
   (retained screenshots).
@@ -83,8 +101,9 @@ What the screenshots show, and what this camera does about it. Every number is a
 
 ## Test Evidence
 
-**Story Type**: Logic + Visual/Feel. Unit tests in `Assets/Tests/EditMode/FollowCameraMathTests.cs`; retained
-screenshots in `production/qa/evidence/story-011-steep-chase-camera/`; the feel is the user's call on the PC.
+**Story Type**: Logic + Visual/Feel. Unit tests in `Assets/Tests/EditMode/FollowCameraMathTests.cs` and
+`FixedStepClockTests.cs` (the ride time each frame moved the view through); retained screenshots in
+`production/qa/evidence/story-011-steep-chase-camera/`; the feel is the user's call on the PC.
 
 ## Dependencies
 

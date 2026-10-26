@@ -9,10 +9,10 @@ namespace FirstChair.Riding
     /// A Steep-style chase camera (Story 011): behind the rider along the travel, at a height above the snow under it,
     /// looking at a point just ahead of the rider, so the rider sits in the lower middle of the screen and the view
     /// follows the slope by itself. It tilts further down where the snow ahead drops away more steeply than under the
-    /// rider, closes in and drops lower with speed and further in a fast tuck, widens, banks, shakes gently and blurs at
-    /// the screen's edges with speed, and rises to keep itself and its line to the rider above the snow. Nearly stopped,
-    /// it sits behind the skis; on the chairlift it follows the chair. Presentation only: it reads the rider view's
-    /// transform and the sim's state, and writes nothing back.
+    /// rider, closes in with speed and comes in close and lower in a fast tuck, widens, banks, shakes gently and blurs
+    /// at the screen's edges with speed, and rises to keep itself and its line to the rider above the snow. Nearly
+    /// stopped, it sits behind the skis; on the chairlift it follows the chair. Presentation only: it reads the rider
+    /// view's transform and the sim's state, and writes nothing back.
     /// </summary>
     [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Camera))]
@@ -23,6 +23,9 @@ namespace FirstChair.Riding
 
         // The camera is never closer than this to the snow under it, metres, whatever the smoothing.
         private const float HardClearance = 0.3f;
+
+        // The blur's strengths are set as at 60 frames a second; other frame rates scale to streaks as long.
+        private const double BlurReferenceFrameSeconds = 1.0 / 60;
 
         [SerializeField] private Transform target;
         [Tooltip("Gives the rider's velocity, stance and heading, and the snow. Without it the camera follows the target down +Z.")]
@@ -119,8 +122,9 @@ namespace FirstChair.Riding
             _camera.fieldOfView = _fov;
             if (_blur != null)
             {
+                double frameSeconds = driver != null ? driver.ViewDeltaSeconds : dt;
                 _blur.intensity.Override((float)FollowCameraMath.MotionBlurIntensity(
-                    speed, settings.BlurFromSpeed, settings.BlurFullSpeed, settings.BlurMost));
+                    speed, settings.BlurFromSpeed, settings.BlurFullSpeed, settings.BlurMost, frameSeconds, BlurReferenceFrameSeconds));
             }
 
             float turnAcceleration = 0f;

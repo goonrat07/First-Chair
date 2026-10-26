@@ -9,6 +9,9 @@ namespace FirstChair.Riding.Tests
     /// </summary>
     public sealed class FollowCameraMathTests
     {
+        // A frame at 60 Hz, seconds: the blur's reference frame.
+        private const double SixtyHertzFrame = 1.0 / 60;
+
         [Test]
         public void ViewDirection_SlowerThanMinTravelSpeed_LooksDownTheFallLine()
         {
@@ -251,12 +254,23 @@ namespace FirstChair.Riding.Tests
         [Test]
         public void MotionBlurIntensity_NoneBelowItsSpeed_ThenRisingToItsMost()
         {
-            // Assert: from 15 m/s, full at 30 m/s, at most 0.6, on the shake's squared ramp.
-            Assert.That(FollowCameraMath.MotionBlurIntensity(10.0, 15.0, 30.0, 0.6), Is.EqualTo(0.0));
-            Assert.That(FollowCameraMath.MotionBlurIntensity(22.5, 15.0, 30.0, 0.6), Is.EqualTo(0.15).Within(1e-12));
-            Assert.That(FollowCameraMath.MotionBlurIntensity(30.0, 15.0, 30.0, 0.6), Is.EqualTo(0.6).Within(1e-12));
-            Assert.That(FollowCameraMath.MotionBlurIntensity(45.0, 15.0, 30.0, 0.6), Is.EqualTo(0.6).Within(1e-12));
-            Assert.That(FollowCameraMath.MotionBlurIntensity(45.0, 15.0, 30.0, -1.0), Is.EqualTo(0.0), "a negative most is off");
+            // Assert: from 15 m/s, full at 30 m/s, at most 0.6, on the shake's squared ramp, at the reference frame rate.
+            Assert.That(FollowCameraMath.MotionBlurIntensity(10.0, 15.0, 30.0, 0.6, SixtyHertzFrame, SixtyHertzFrame), Is.EqualTo(0.0));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(22.5, 15.0, 30.0, 0.6, SixtyHertzFrame, SixtyHertzFrame), Is.EqualTo(0.15).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(30.0, 15.0, 30.0, 0.6, SixtyHertzFrame, SixtyHertzFrame), Is.EqualTo(0.6).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(45.0, 15.0, 30.0, 0.6, SixtyHertzFrame, SixtyHertzFrame), Is.EqualTo(0.6).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(45.0, 15.0, 30.0, -1.0, SixtyHertzFrame, SixtyHertzFrame), Is.EqualTo(0.0), "a negative most is off");
+        }
+
+        [Test]
+        public void MotionBlurIntensity_ScalesWithTheFrame_SoTheStreaksAreAsLongAtAnyFrameRate()
+        {
+            // Assert: URP blurs across a share of each frame's motion, so a frame half as long needs twice the share (up to
+            // URP's most, 1), a slow machine's long frame less, and a frame that moved the view nowhere none.
+            Assert.That(FollowCameraMath.MotionBlurIntensity(22.5, 15.0, 30.0, 0.6, 1.0 / 120, SixtyHertzFrame), Is.EqualTo(0.3).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(30.0, 15.0, 30.0, 0.6, 1.0 / 120, SixtyHertzFrame), Is.EqualTo(1.0).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(30.0, 15.0, 30.0, 0.6, 0.1, SixtyHertzFrame), Is.EqualTo(0.1).Within(1e-12));
+            Assert.That(FollowCameraMath.MotionBlurIntensity(30.0, 15.0, 30.0, 0.6, 0.0, SixtyHertzFrame), Is.EqualTo(0.0));
         }
     }
 }

@@ -167,15 +167,29 @@ namespace FirstChair.Riding
             Math.Max(0.0, Math.Min(Math.Max(0.0, most), Math.Max(0.0, factor) * (dropAheadDegrees - slopeHereDegrees)));
 
         /// <summary>
-        /// How strongly the screen's edges blur at a speed, 0 to <paramref name="most"/> (Story 011): nothing below
-        /// <paramref name="fromSpeed"/>, rising on the shake's squared ramp to the most at <paramref name="fullSpeed"/>.
+        /// How strongly the screen's edges blur at a speed, as URP's motion blur intensity, 0 to 1 (Story 011): nothing
+        /// below <paramref name="fromSpeed"/>, rising on the shake's squared ramp to <paramref name="most"/> at
+        /// <paramref name="fullSpeed"/>, at the reference frame rate. URP blurs across a share of each frame's motion, so
+        /// the share scales by the reference frame over this frame's ride time: the streaks are as long at any frame
+        /// rate, as far as URP's most of 1 allows. A frame that moved the view nowhere needs none.
         /// </summary>
+        /// <example><c>MotionBlurIntensity(30, 15, 30, 0.5, 1.0 / 120, 1.0 / 60)</c> is 1: twice the share at 120 Hz.</example>
         /// <param name="speed">Rider speed, m/s.</param>
         /// <param name="fromSpeed">Speed where the blur starts, m/s.</param>
         /// <param name="fullSpeed">Speed of the full blur, m/s.</param>
-        /// <param name="most">The strongest blur (URP motion blur intensity, 0 to 1); 0 or less turns it off.</param>
-        public static double MotionBlurIntensity(double speed, double fromSpeed, double fullSpeed, double most) =>
-            Math.Max(0.0, most) * ShakeAmount(speed, fromSpeed, fullSpeed);
+        /// <param name="most">The strongest blur at the reference frame rate; 0 or less turns it off.</param>
+        /// <param name="frameSeconds">The ride time the view moved through this frame, seconds.</param>
+        /// <param name="referenceFrameSeconds">The frame the strengths are set for, seconds.</param>
+        public static double MotionBlurIntensity(
+            double speed, double fromSpeed, double fullSpeed, double most, double frameSeconds, double referenceFrameSeconds)
+        {
+            if (!(frameSeconds > 0.0) || !(referenceFrameSeconds > 0.0))
+            {
+                return 0.0;
+            }
+
+            return Math.Min(1.0, Math.Max(0.0, most) * ShakeAmount(speed, fromSpeed, fullSpeed) * referenceFrameSeconds / frameSeconds);
+        }
 
         /// <summary>How far ahead of the rider to aim, metres: grows with speed up to a cap.</summary>
         /// <param name="baseMetres">Look-ahead when stopped.</param>

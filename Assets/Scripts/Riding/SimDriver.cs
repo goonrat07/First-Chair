@@ -61,6 +61,12 @@ namespace FirstChair.Riding
         /// <summary>The rider's interpolated pose for this frame.</summary>
         public RiderPose Pose => Session == null ? default : RiderPose.Interpolate(Session.Previous, Session.Current, InterpolationAlpha);
 
+        /// <summary>
+        /// The ride time the view moved through this frame, seconds: the frame's time, less what the step cap dropped on a
+        /// machine too slow to keep up; 0 while paused or without a run. The camera's motion blur scales by it.
+        /// </summary>
+        public float ViewDeltaSeconds { get; private set; }
+
         /// <summary>Every event of this frame's steps, read-only.</summary>
         public IReadOnlyList<SimEvent> FrameEvents => Session?.FrameEvents;
 
@@ -251,6 +257,7 @@ namespace FirstChair.Riding
 
         private void Update()
         {
+            ViewDeltaSeconds = 0f;
             if (Session == null || Paused)
             {
                 return;
@@ -259,6 +266,7 @@ namespace FirstChair.Riding
             // Input is read once per frame; every step of this frame gets the same packed value.
             SimInput input = inputReader != null ? inputReader.ReadInput() : SimInput.Pack(SimButtons.None, 0);
             int steps = _clock.Advance(Time.deltaTime);
+            ViewDeltaSeconds = (float)_clock.LastAdvancedSeconds;
             ReportDroppedTime();
             Session.RunSteps(input, steps);
             HandleDebugKeys();

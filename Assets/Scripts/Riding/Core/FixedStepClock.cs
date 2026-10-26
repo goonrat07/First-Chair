@@ -51,6 +51,12 @@ namespace FirstChair.Riding
         public long TotalDroppedSteps { get; private set; }
 
         /// <summary>
+        /// The ride time the view moved through in the last <see cref="Advance"/>, seconds: the frame's time, less what the
+        /// cap dropped. The camera's motion blur scales by it, so the streaks are as long at any frame rate.
+        /// </summary>
+        public double LastAdvancedSeconds { get; private set; }
+
+        /// <summary>
         /// Adds one frame's time and returns how many steps are due. A negative, zero or non-finite frame time runs
         /// none. When more than <see cref="MaxStepsPerFrame"/> are due, the extra time is dropped (the ride slows down
         /// for that frame instead of the game spiralling) and <see cref="LastDroppedSteps"/> says how much.
@@ -59,11 +65,13 @@ namespace FirstChair.Riding
         public int Advance(double frameSeconds)
         {
             LastDroppedSteps = 0;
+            LastAdvancedSeconds = 0.0;
             if (double.IsNaN(frameSeconds) || double.IsInfinity(frameSeconds) || frameSeconds <= 0.0)
             {
                 return 0;
             }
 
+            double before = _accumulator;
             _accumulator += frameSeconds;
             double due = Math.Floor((_accumulator + Epsilon) / StepSeconds);
             int steps;
@@ -86,6 +94,8 @@ namespace FirstChair.Riding
                 _accumulator = 0.0;
             }
 
+            // The steps run, plus how far the view moved between the last two states.
+            LastAdvancedSeconds = Math.Max(0.0, steps * StepSeconds + _accumulator - before);
             return steps;
         }
 
@@ -94,6 +104,7 @@ namespace FirstChair.Riding
         {
             _accumulator = 0.0;
             LastDroppedSteps = 0;
+            LastAdvancedSeconds = 0.0;
         }
     }
 }

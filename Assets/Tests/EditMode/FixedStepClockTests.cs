@@ -61,6 +61,51 @@ namespace FirstChair.Riding.Tests
             Assert.That(clock.Alpha, Is.LessThan(1.0));
         }
 
+        [Test]
+        public void FrameWithinTheCap_MovesTheViewThroughAllOfIt()
+        {
+            // Arrange
+            var clock = new FixedStepClock(StepsPerSecond, Cap);
+
+            // Act: a frame of two steps, then one too short for a step (the view moves half a step between states).
+            clock.Advance(1.0 / 60);
+            double sixtyHertz = clock.LastAdvancedSeconds;
+            clock.Advance(1.0 / 240);
+
+            // Assert
+            Assert.That(sixtyHertz, Is.EqualTo(1.0 / 60).Within(1e-12));
+            Assert.That(clock.LastAdvancedSeconds, Is.EqualTo(1.0 / 240).Within(1e-12));
+        }
+
+        [Test]
+        public void LongFrame_MovesTheViewOnlyThroughTheStepsItRan()
+        {
+            // Arrange
+            var clock = new FixedStepClock(StepsPerSecond, Cap);
+
+            // Act
+            clock.Advance(0.5);
+
+            // Assert: 12 steps of 1/120 s; the 48 dropped never reach the view.
+            Assert.That(clock.LastAdvancedSeconds, Is.EqualTo(0.1).Within(1e-12));
+        }
+
+        [TestCase(0.0)]
+        [TestCase(-0.1)]
+        [TestCase(double.NaN)]
+        public void ZeroNegativeOrNonFiniteFrame_MovesTheViewThroughNothing(double seconds)
+        {
+            // Arrange: a normal frame first, so a stale value would show.
+            var clock = new FixedStepClock(StepsPerSecond, Cap);
+            clock.Advance(1.0 / 60);
+
+            // Act
+            clock.Advance(seconds);
+
+            // Assert
+            Assert.That(clock.LastAdvancedSeconds, Is.EqualTo(0.0));
+        }
+
         [TestCase(0.0)]
         [TestCase(-0.1)]
         [TestCase(double.NaN)]
