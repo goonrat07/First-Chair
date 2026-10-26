@@ -188,6 +188,39 @@ def test_start_is_on_the_summit_above_the_lifts_top_and_the_bottom_station_is_in
     assert drop >= MIN_DROP_MM
 
 
+def test_the_top_station_area_falls_steadily_down_the_fall_line_and_is_level_across(layout, heights_mm):
+    """Riders start here, so it must have no dip or rise: the runs leaving the summit must not cut their start levels
+    into it or raise their cross slopes out of it behind them."""
+    start_x, start_z = layout["start"]
+    top_z = layout["lifts"][0]["top"][1]
+    grid_x, grid_z = np.meshgrid(np.arange(start_x - 30_000, start_x + 30_001, 1_000), np.arange(top_z, start_z + 15_001, 1_000))
+    h = height_at(heights_mm, layout, grid_x, grid_z)
+    down_the_fall_line = np.diff(h, axis=0) / 1_000.0
+    across = np.diff(h, axis=1) / 1_000.0
+
+    assert down_the_fall_line.max() <= 0.0, "the snow rises going down the fall line"
+    assert np.abs(across).max() <= 0.08, "the snow tilts across the fall line"
+
+
+def test_the_rider_starts_beside_the_lift_line_not_under_it(layout):
+    """Under it, the top tower would stand between the camera, behind the rider, and the rider."""
+    (bx, bz), (tx, tz) = layout["lifts"][0]["bottom"], layout["lifts"][0]["top"]
+    sx, sz = layout["start"]
+    off_line_mm = abs((sx - bx) * (tz - bz) - (sz - bz) * (tx - bx)) / math.hypot(tx - bx, tz - bz)
+
+    assert off_line_mm >= 8_000
+
+
+def test_the_rider_starts_facing_down_the_fall_line(layout, heights_mm):
+    """The sim starts the rider facing downhill from the snow at the start, so the slope there must point down +Z."""
+    x, z = layout["start"]
+    gx = (height_at(heights_mm, layout, x + 1_000, z) - height_at(heights_mm, layout, x - 1_000, z)) / 2_000.0
+    gz = (height_at(heights_mm, layout, x, z + 1_000) - height_at(heights_mm, layout, x, z - 1_000)) / 2_000.0
+
+    assert gz < 0.0, "downhill is +Z"
+    assert abs(math.degrees(math.atan2(-gx, -gz))) <= 10.0
+
+
 def test_the_bottom_station_sits_in_a_hollow_so_riders_stop_there(layout, heights_mm):
     x, z = layout["lifts"][0]["bottom"]
     at = height_at(heights_mm, layout, x, z)

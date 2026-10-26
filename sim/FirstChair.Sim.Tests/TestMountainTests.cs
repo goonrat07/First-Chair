@@ -71,6 +71,21 @@ namespace FirstChair.Sim.Tests
             Assert.That(summit.Contains(layout.StartX, layout.StartZ), Is.True);
         }
 
+        [Test]
+        public void TheRider_StartsBelowTheTopStation_FacingDownTheFallLine()
+        {
+            // Arrange
+            (SlopeLayout layout, Heightmap heightmap, SnowMap snowMap) = LoadMountain();
+            var setup = new RunSetup(Sport.Skis, 0, 7UL, layout.StartX, layout.StartZ);
+
+            // Act
+            var simulation = new Simulation(setup, heightmap, snowMap, new Forest(layout.Trees), new RailSet(layout.Rails), Tuning.Default);
+
+            // Assert: the sim faces the rider down the snow's slope at the start, and the mountain falls along +Z
+            // (heading 0), so a rider who just lets go rides down the middle of the mountain.
+            Assert.That(Math.Abs(TestTerrain.ToDouble(simulation.State.Heading)) * 180.0 / Math.PI, Is.LessThanOrEqualTo(10.0));
+        }
+
         [TestCase("meadow-way")]
         [TestCase("kettle-run")]
         [TestCase("ridge-run")]

@@ -15,7 +15,7 @@ zone summit groomed 464000 14000 560000 110000
 zone base groomed 265000 875000 759000 1024000
 zone park groomed 744000 455000 796000 720000
 # start <x> <z>: where a run begins, at the top station
-start 512000 78000
+start 522000 78000
 # kicker <lipX> <lipZ> <facing> <length> <width> <height>
 kicker 762000 472000 0 4000 5000 800
 kicker 762000 540000 0 5000 6000 1200
@@ -41,7 +41,7 @@ tower kettle-chair 512000 512000 8000
 tower kettle-chair 512000 402000 10000
 tower kettle-chair 512000 292000 8000
 tower kettle-chair 512000 182000 8000
-tower kettle-chair 512000 82000 13900
+tower kettle-chair 512000 72000 10600
 # tree <x> <z> <trunkRadius> <branchRadius>
 tree 5354 150091 326 1437
 tree 26409 154010 264 1415

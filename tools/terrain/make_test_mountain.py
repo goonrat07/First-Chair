@@ -98,7 +98,8 @@ BASE_BLEND_M = 30.0
 TREE_LINE_HEIGHT_M = 205.0  # open snow above this, as on GMA2's upper mountains
 TREE_LINE_SPREAD_M = 18.0  # trees thin out over this much height below the line
 
-START_M = (512.0, 78.0)  # where a run begins: the top station's unload area, facing down the fall line
+START_M = (522.0, 78.0)  # where a run begins: the top station's unload area, facing down the fall line, beside the
+# lift line so the top tower never stands between the camera and the rider
 
 # --- Runs -----------------------------------------------------------------------------------
 # name, difficulty, width metres, shape, snow, centre line (x, z) metres from top to foot. Shapes:
@@ -131,6 +132,7 @@ RUNS = (
 GULLY_DEPTH_M = 7.0
 GULLY_FADE_M = (40.0, 70.0)  # the channel deepens over its first metres and fills in over its last
 SHOULDER_M = {"open": 22.0, "smooth": 22.0, "cat": 14.0, "gully": 26.0}  # the surface blends back into the mountain over this
+END_FADE_M = 10.0  # beyond either end of its centre line a run blends out over this
 DENSIFY_STEP_M = 2.0  # centre lines are sampled this finely along their splines
 CENTRE_SMOOTH_M = 18.0  # a run's height and cross slope along its centre line are averaged over this, each way
 CAT_CROSS_KEPT = 0.15  # a cat track keeps this much of the mountain's cross slope (drains, never a wall)
@@ -427,14 +429,26 @@ def shape_run(heights: np.ndarray, noise: np.ndarray, run, claimed: np.ndarray) 
         envelope = smoothstep(s_at / GULLY_FADE_M[0]) * smoothstep((total - s_at) / GULLY_FADE_M[1])
         target = target - GULLY_DEPTH_M * envelope * (1.0 - u * u)
     weight = np.where(near, 1.0 - smoothstep((distance - half) / shoulder), 0.0)
+    # Beyond its ends the run's level would carry on as a flat disc, and its cross slope as a tilted plane (as they did
+    # into the summit behind the runs' starts, cutting a trough where riders start), so it fades out there.
+    coords = sample_coords_m()
+    x = coords[np.newaxis, :]
+    z = coords[:, np.newaxis]
+    before = -((x - line[0, 0]) * tangent[0, 0] + (z - line[0, 1]) * tangent[0, 1])
+    after = (x - line[-1, 0]) * tangent[-1, 0] + (z - line[-1, 1]) * tangent[-1, 1]
+    beyond = np.where((segment == 0) & (position <= 0.0), before,
+                      np.where((segment == len(line) - 2) & (position >= 1.0), after, 0.0))
+    weight = weight * (1.0 - smoothstep(beyond / END_FADE_M))
     heights[:] = heights + (np.where(near, target, heights) - heights) * weight * (1.0 - claimed)
     claimed[:] = np.maximum(claimed, weight)
     return {"name": name, "line": line, "s": s, "distance": distance, "s_at": s_at, "half": half}
 
 
-def shape_summit(heights: np.ndarray) -> None:
+def shape_summit(heights: np.ndarray) -> np.ndarray:
     """The top station's area: the fall line's own gentle top without the noise or the peak, so it is level across X
-    and rounds over into the face as the mountain does."""
+    and rounds over into the face as the mountain does. Returns how much of each sample it shaped (1 on the level
+    area, easing to 0 across the blend), the summit's claim: the runs leave its surface alone, as a later run leaves
+    an earlier one's."""
     coords = sample_coords_m()
     x = coords[np.newaxis, :]
     z = coords[:, np.newaxis]
@@ -444,6 +458,7 @@ def shape_summit(heights: np.ndarray) -> None:
     distance = np.sqrt((x - cx) ** 2 + (z - cz) ** 2)
     weight = 1.0 - smoothstep((distance - SUMMIT_RADIUS_M) / SUMMIT_BLEND_M)
     heights[:] = heights + (target - heights) * weight
+    return weight
 
 
 def shape_base(heights: np.ndarray) -> None:
@@ -482,9 +497,9 @@ def build():
     cx, cz = SUMMIT_CENTRE_M
     noise = noise_m() * smoothstep((np.sqrt((x - cx) ** 2 + (z - cz) ** 2) - SUMMIT_NOISE_FREE_M[0]) / (SUMMIT_NOISE_FREE_M[1] - SUMMIT_NOISE_FREE_M[0]))
     heights = base_heights_m() + noise
-    # The summit first, so the runs leaving it take their heights from it; the base last, so every run ends on it.
-    shape_summit(heights)
-    claimed = np.zeros((RESOLUTION, RESOLUTION))
+    # The summit first, so the runs leaving it take their heights from it (and leave its surface, where riders start,
+    # as it is); the base last, so every run ends on it.
+    claimed = shape_summit(heights)
     runs = []
     for run in RUNS:
         runs.append(shape_run(heights, noise, run, claimed))
