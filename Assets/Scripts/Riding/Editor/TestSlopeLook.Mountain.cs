@@ -28,6 +28,14 @@ namespace FirstChair.Riding.Editor
         private const float MarkerSpacing = 30f;
         private const float MarkerHeight = 1.6f;
 
+        // Old tracks on the runs: a point every RunTrackStep metres (the mountain is seen from further off than the test
+        // slope), RunTrackEdgeMargin metres in from the run's edges and RunTrackFeatureClearance from a kicker, rail or
+        // box; a run narrower than RunTrackFullWidth metres gets proportionally shorter turns.
+        private const double RunTrackStep = 1.0;
+        private const double RunTrackEdgeMargin = 1.0;
+        private const double RunTrackFeatureClearance = 1.5;
+        private const double RunTrackFullWidth = 40.0;
+
         /// <summary>
         /// Builds the layout's first chairlift: a post and crossarm at each tower, a bullwheel and a hut at each station,
         /// and the <see cref="ChairLift"/> that runs the chairs round the rope. Null when the layout has no lift.
@@ -192,6 +200,34 @@ namespace FirstChair.Riding.Editor
                 board.name = "SignBoard_" + run.Name;
                 board.SetPositionAndRotation(foot + Vector3.up * 2.2f, facing);
                 board.localScale = new Vector3(1.4f, 0.9f, 0.08f);
+            }
+        }
+
+        /// <summary>
+        /// Lays old ski tracks down each run (<see cref="RunTracks"/>): the test slope's S-turns, bent round the run's
+        /// curves, clear of its edges and the park's features. A run narrower than <see cref="RunTrackFullWidth"/> gets
+        /// proportionally shorter turns, so its tracks fit across it. One mesh per run, saved in <see cref="Folder"/>.
+        /// Display only.
+        /// </summary>
+        /// <param name="parent">Parent for the track meshes.</param>
+        /// <param name="slope">The slope.</param>
+        public static void RunOldTracks(Transform parent, TestSlopeData slope)
+        {
+            Material material = Translucent(LitMaterial("OldTrack", "Universal Render Pipeline/Lit", OldTrackColour, 0f, false));
+            for (int r = 0; r < slope.Layout.Runs.Count; r++)
+            {
+                SlopeRun run = slope.Layout.Runs[r];
+                double narrow = Math.Min(1.0, run.WidthMm / 1000.0 / RunTrackFullWidth);
+                OldTrackSettings settings = OldTrackSettings.Default;
+                settings.StepMetres = RunTrackStep;
+                settings.MinSwingDegrees = OldTrackMinSwingDegrees;
+                settings.MaxSwingDegrees = OldTrackMaxSwingDegrees;
+                settings.MinWavelengthMetres = OldTrackMinWavelengthMetres * narrow;
+                settings.MaxWavelengthMetres = OldTrackMaxWavelengthMetres * narrow;
+                List<OldTrackLine> lines = RunTracks.Generate(
+                    run, OldTrackSeed + (ulong)r, settings, OldTrackAreaPerTrack, RunTrackEdgeMargin,
+                    (x, z) => RunTracks.NearAFeature(slope.Layout, x, z, RunTrackFeatureClearance));
+                OldTracksObject(parent, slope, lines, "OldTracks_" + run.Name, material);
             }
         }
 

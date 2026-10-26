@@ -149,7 +149,11 @@ namespace FirstChair.Riding.Editor
 
             var scenery = new GameObject("Scenery");
             TestSlopeLook.Trees(scenery.transform, slope);
-            if (!mountain)
+            if (mountain)
+            {
+                TestSlopeLook.RunOldTracks(scenery.transform, slope);
+            }
+            else
             {
                 TestSlopeLook.OldTracks(scenery.transform, slope);
             }

@@ -480,18 +480,25 @@ namespace FirstChair.Riding.Editor
                 settings.MaxWavelengthMetres = OldTrackMaxWavelengthMetres;
                 var lines = FirstChair.Riding.OldTracks.Generate(
                     OldTrackSeed + (ulong)z, xMin, zMin, xMax, zMax, settings, (x, zz) => NearTree(slope, x, zz));
-                Mesh mesh = TrackRibbons(slope, lines, "OldTracks_" + zone.Name);
-                string path = Folder + "/OldTracks_" + zone.Name + ".asset";
-                AssetDatabase.DeleteAsset(path);
-                AssetDatabase.CreateAsset(mesh, path);
-
-                var tracks = new GameObject("OldTracks_" + zone.Name);
-                tracks.transform.SetParent(parent, false);
-                tracks.AddComponent<MeshFilter>().sharedMesh = mesh;
-                var renderer = tracks.AddComponent<MeshRenderer>();
-                renderer.sharedMaterial = material;
-                renderer.shadowCastingMode = ShadowCastingMode.Off;
+                OldTracksObject(parent, slope, lines, "OldTracks_" + zone.Name, material);
             }
+        }
+
+        /// <summary>Saves the lines' ribbons as a mesh in <see cref="Folder"/> and shows it under the parent.</summary>
+        private static void OldTracksObject(
+            Transform parent, TestSlopeData slope, System.Collections.Generic.List<OldTrackLine> lines, string name, Material material)
+        {
+            Mesh mesh = TrackRibbons(slope, lines, name);
+            string path = Folder + "/" + name + ".asset";
+            AssetDatabase.DeleteAsset(path);
+            AssetDatabase.CreateAsset(mesh, path);
+
+            var tracks = new GameObject(name);
+            tracks.transform.SetParent(parent, false);
+            tracks.AddComponent<MeshFilter>().sharedMesh = mesh;
+            var renderer = tracks.AddComponent<MeshRenderer>();
+            renderer.sharedMaterial = material;
+            renderer.shadowCastingMode = ShadowCastingMode.Off;
         }
 
         private static bool NearTree(TestSlopeData slope, double x, double z)

@@ -59,7 +59,8 @@ Riding is unchanged, so the sim version stays 8. `TestSlopeData` loads a slope b
 ### Unity
 
 - A second scene, `TestMountain.unity`, built by the same scene builder: terrain, snow layers, trees, park features,
-  old tracks on the groomers, the rider, camera, HUD and Feel Lab.
+  old tracks down each run (the test slope's S-turns bent round the run's curves, clear of its edges and the park's
+  kickers, rails and boxes; narrow runs get shorter turns), the rider, camera, HUD and Feel Lab.
 - The chairlift: stations at both ends, towers, the cable, and chairs moving round the loop.
 - Run markers: coloured poles along the runs' edges and a sign at each run's top, as in GMA2.
 - **Riding the lift:** at the base station, slow down in the boarding area and the rider sits on the next chair and
