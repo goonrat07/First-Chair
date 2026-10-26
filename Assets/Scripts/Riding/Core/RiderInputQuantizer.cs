@@ -36,6 +36,9 @@ namespace FirstChair.Riding
         /// <summary>Grab held.</summary>
         public bool Grab;
 
+        /// <summary>The quick-turn button (Story 009): a sharp, speed-costing turn while steering.</summary>
+        public bool Quick;
+
         /// <summary>Reset held.</summary>
         public bool Reset;
     }
@@ -145,6 +148,11 @@ namespace FirstChair.Riding
             if (raw.Grab)
             {
                 buttons |= SimButtons.Grab;
+            }
+
+            if (raw.Quick)
+            {
+                buttons |= SimButtons.Quick;
             }
 
             if (raw.Reset)

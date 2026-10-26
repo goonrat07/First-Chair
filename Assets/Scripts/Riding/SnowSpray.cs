@@ -5,8 +5,8 @@ using UnityEngine.Rendering;
 namespace FirstChair.Riding
 {
     /// <summary>
-    /// Snow thrown by the skis (Story 008): quick turns and skids throw it out of the turn, a brake throws it ahead, and a
-    /// clean carve throws none, so the two kinds of turn read apart on screen. How many flakes comes from
+    /// Snow thrown by the skis (Story 008): quick turns, drifts and skids throw it out of the turn, a brake throws it ahead,
+    /// and a hard, fast carve throws a little (Story 009), so the kinds of turn read apart on screen. How many flakes comes from
     /// <see cref="SnowSprayMath"/>; where they go, from the rider's velocity across the skis. Presentation only: it reads
     /// sim state and never writes it.
     /// </summary>
@@ -93,9 +93,14 @@ namespace FirstChair.Riding
             Vector3 velocity = SimCoordinatesUnity.ToVector3(state.Velocity);
             float speed = velocity.magnitude;
             float factor = SnowSprayMath.SnowFactor(state.Snow, settings.SprayPowderFactor, settings.SprayIceFactor);
-            float rate = SnowSprayMath.Rate(SimCoordinates.ToDouble(state.SlipAngle), speed, state.Stance == Stance.Brake,
-                !state.Airborne && !state.Crashed, factor, settings.SprayPerSlideMetre, settings.SprayPerBrakeMetre,
-                settings.SprayMaxRate);
+            bool onSnow = !state.Airborne && !state.Crashed;
+            double maxEdge = SimCoordinates.ToDouble(driver.Session.Tuning.MaxEdgeAngle);
+            double edge = maxEdge > 0.0 ? SimCoordinates.ToDouble(state.EdgeAngle) / maxEdge : 0.0;
+            float rate = Mathf.Min(settings.SprayMaxRate,
+                SnowSprayMath.Rate(SimCoordinates.ToDouble(state.SlipAngle), speed, state.Stance == Stance.Brake, onSnow, factor,
+                    settings.SprayPerSlideMetre, settings.SprayPerBrakeMetre, settings.SprayMaxRate)
+                + SnowSprayMath.CarveRate(edge, speed, onSnow, factor, settings.SprayPerCarveMetre, settings.SprayCarveEdge,
+                    settings.SprayCarveMinSpeed));
             if (rate <= 0f)
             {
                 _owed = 0f;

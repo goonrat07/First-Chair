@@ -43,7 +43,11 @@ namespace FirstChair.Riding
                 raw.Forward = keyboard.wKey.isPressed || keyboard.upArrowKey.isPressed;
                 raw.Back = keyboard.sKey.isPressed || keyboard.downArrowKey.isPressed;
                 raw.Jump = keyboard.spaceKey.isPressed;
-                raw.Grab = keyboard.leftShiftKey.isPressed;
+                // GMA's keys (Story 009): Shift with a turn drifts on the snow (and grabs in the air), Ctrl or Alt with a
+                // turn is a quick turn.
+                raw.Grab = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
+                raw.Quick = keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed
+                    || keyboard.leftAltKey.isPressed || keyboard.rightAltKey.isPressed;
                 raw.Reset = keyboard.rKey.isPressed;
             }
 
@@ -58,6 +62,7 @@ namespace FirstChair.Riding
                 raw.SteerRight |= gamepad.dpad.right.isPressed;
                 raw.Jump |= gamepad.buttonSouth.isPressed;
                 raw.Grab |= gamepad.buttonWest.isPressed || gamepad.rightShoulder.isPressed;
+                raw.Quick |= gamepad.leftShoulder.isPressed;
                 raw.Reset |= gamepad.selectButton.isPressed;
             }
 

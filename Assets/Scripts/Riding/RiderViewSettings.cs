@@ -64,6 +64,12 @@ namespace FirstChair.Riding
         [SerializeField, Min(0f)] private float sprayPerSlideMetre = 80f;
         [Tooltip("Flakes per metre travelled while braking.")]
         [SerializeField, Min(0f)] private float sprayPerBrakeMetre = 12f;
+        [Tooltip("Flakes per metre a carve at full edge throws (Story 009); softer edges throw fewer, down to none at the carve spray edge.")]
+        [SerializeField, Min(0f)] private float sprayPerCarveMetre = 4f;
+        [Tooltip("Edge fraction, 0 to 1, below which a carve throws no snow.")]
+        [SerializeField, Range(0f, 0.99f)] private float sprayCarveEdge = 0.6f;
+        [Tooltip("Slowest carve that throws snow, m/s.")]
+        [SerializeField, Min(0f)] private float sprayCarveMinSpeed = 10f;
         [Tooltip("The most flakes per second.")]
         [SerializeField, Min(0f)] private float sprayMaxRate = 300f;
         [Tooltip("Powder throws this much more snow.")]
@@ -156,6 +162,12 @@ namespace FirstChair.Riding
         public float SprayPerBrakeMetre => sprayPerBrakeMetre;
         /// <summary>The most spray flakes per second.</summary>
         public float SprayMaxRate => sprayMaxRate;
+        /// <summary>Flakes per metre a carve at full edge throws.</summary>
+        public float SprayPerCarveMetre => sprayPerCarveMetre;
+        /// <summary>Edge fraction below which a carve throws no snow.</summary>
+        public float SprayCarveEdge => sprayCarveEdge;
+        /// <summary>Slowest carve that throws snow, m/s.</summary>
+        public float SprayCarveMinSpeed => sprayCarveMinSpeed;
         /// <summary>Powder's spray factor.</summary>
         public float SprayPowderFactor => sprayPowderFactor;
         /// <summary>Ice's spray factor.</summary>

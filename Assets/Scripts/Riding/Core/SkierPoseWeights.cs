@@ -48,7 +48,7 @@ namespace FirstChair.Riding
         /// <summary>Air grab: the right hand on the right ski's outside edge (<see cref="GrabKind.Safety"/>).</summary>
         GrabSafety = 13,
 
-        /// <summary>A low racer's carve on the left edges, hands forward (<see cref="Stance.Carve"/>, Story 008).</summary>
+        /// <summary>A low racer's carve on the left edges, hands forward (tucked turns, <see cref="Stance.Tuck"/>; Stories 008 and 009).</summary>
         RaceCarveLeft = 14,
 
         /// <summary>A low racer's carve on the right edges.</summary>
@@ -63,7 +63,7 @@ namespace FirstChair.Riding
     /// Rules, in order: a crash shows <see cref="SkierPose.Crash"/>; in the air, the held grab's pose
     /// (<see cref="GrabPose"/>), else <see cref="SkierPose.Air"/>; on snow, the
     /// stance (<see cref="Stance.Tuck"/>, <see cref="Stance.Brake"/> or <see cref="Stance.Pole"/>) takes over from the
-    /// carve blend. The carve blend goes with the edge angle: a carve with W (<see cref="Stance.Carve"/>, Story 008) from
+    /// carve blend. The carve blend goes with the edge angle: a tucked carve (<see cref="Stance.Tuck"/>, W held) from
     /// <see cref="SkierPose.RaceCarveLeft"/> through <see cref="SkierPose.Tuck"/> to <see cref="SkierPose.RaceCarveRight"/>,
     /// any other turn from <see cref="SkierPose.CarveLeft"/> through <see cref="SkierPose.Stance"/> to
     /// <see cref="SkierPose.CarveRight"/>. Loading a pop crouches the whole pose. Weights always sum to 1.
@@ -141,8 +141,7 @@ namespace FirstChair.Riding
                 return;
             }
 
-            SkierPose? held = stance == Stance.Tuck ? SkierPose.Tuck
-                : stance == Stance.Brake ? SkierPose.Brake
+            SkierPose? held = stance == Stance.Brake ? SkierPose.Brake
                 : stance == Stance.Pole ? SkierPose.Pole
                 : (SkierPose?)null;
             if (held.HasValue)
@@ -154,7 +153,9 @@ namespace FirstChair.Riding
             float edge = (float)Math.Max(-1.0, Math.Min(1.0, edgeFraction));
             float load = (float)Math.Max(0.0, Math.Min(1.0, popLoadFraction));
             float carve = 1f - load;
-            bool low = stance == Stance.Carve;
+            // Tucked (W), the rider carves low like a racer, coming out of the tuck as the edge comes on; every other turn
+            // (a plain carve, a drift, a quick turn) is the standing carve (sim version 8, Story 009).
+            bool low = stance == Stance.Tuck;
             weights[(int)(low ? SkierPose.RaceCarveLeft : SkierPose.CarveLeft)] = carve * Math.Max(0f, -edge);
             weights[(int)(low ? SkierPose.RaceCarveRight : SkierPose.CarveRight)] = carve * Math.Max(0f, edge);
             weights[(int)(low ? SkierPose.Tuck : SkierPose.Stance)] = carve * (1f - Math.Abs(edge));

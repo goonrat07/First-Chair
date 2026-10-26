@@ -57,10 +57,11 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
-        public void Target_CarveStanceHalfRightEdge_BlendsTuckAndRaceCarveRight()
+        public void Target_TuckStanceHalfRightEdge_BlendsTuckAndRaceCarveRight()
         {
-            // Act: W and steering carve low (Story 008), coming out of the tuck as the edge comes on.
-            SkierPoseWeights.Target(0.5, 0.0, Stance.Carve, false, false, GrabKind.None, _weights);
+            // Act: W and steering carve low (Story 008; tucked since sim version 8), coming out of the tuck as the edge
+            // comes on.
+            SkierPoseWeights.Target(0.5, 0.0, Stance.Tuck, false, false, GrabKind.None, _weights);
 
             // Assert
             Assert.That(_weights[(int)SkierPose.RaceCarveRight], Is.EqualTo(0.5f).Within(1e-6f));
@@ -70,10 +71,10 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
-        public void Target_CarveStanceFullLeftEdgeLoadingAPop_CrouchesTheRaceCarve()
+        public void Target_TuckStanceFullLeftEdgeLoadingAPop_CrouchesTheRaceCarve()
         {
             // Act
-            SkierPoseWeights.Target(-1.0, 0.5, Stance.Carve, false, false, GrabKind.None, _weights);
+            SkierPoseWeights.Target(-1.0, 0.5, Stance.Tuck, false, false, GrabKind.None, _weights);
 
             // Assert
             Assert.That(_weights[(int)SkierPose.RaceCarveLeft], Is.EqualTo(0.5f).Within(1e-6f));
@@ -81,7 +82,32 @@ namespace FirstChair.Riding.Tests
             Assert.That(Sum(), Is.EqualTo(1f).Within(1e-6f));
         }
 
-        [TestCase(Stance.Tuck, SkierPose.Tuck)]
+        [Test]
+        public void Target_TuckStanceNoEdge_IsTheTuck()
+        {
+            // Act
+            SkierPoseWeights.Target(0.0, 0.0, Stance.Tuck, false, false, GrabKind.None, _weights);
+
+            // Assert
+            Assert.That(_weights[(int)SkierPose.Tuck], Is.EqualTo(1f));
+            Assert.That(Sum(), Is.EqualTo(1f).Within(1e-6f));
+        }
+
+        [TestCase(Stance.Carve)]
+        [TestCase(Stance.Drift)]
+        [TestCase(Stance.Quick)]
+        public void Target_PlainCarveDriftOrQuickTurnHalfRightEdge_BlendsStanceAndCarveRight(Stance stance)
+        {
+            // Act: steering without W, the main turn since sim version 8 (Story 009), stands up.
+            SkierPoseWeights.Target(0.5, 0.0, stance, false, false, GrabKind.None, _weights);
+
+            // Assert
+            Assert.That(_weights[(int)SkierPose.CarveRight], Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(_weights[(int)SkierPose.Stance], Is.EqualTo(0.5f).Within(1e-6f));
+            Assert.That(_weights[(int)SkierPose.RaceCarveRight], Is.EqualTo(0f));
+            Assert.That(Sum(), Is.EqualTo(1f).Within(1e-6f));
+        }
+
         [TestCase(Stance.Brake, SkierPose.Brake)]
         [TestCase(Stance.Pole, SkierPose.Pole)]
         public void Target_HeldStance_TakesOver(Stance stance, SkierPose expected)

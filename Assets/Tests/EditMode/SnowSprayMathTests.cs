@@ -67,6 +67,26 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
+        public void CarveRate_SoftOrSlowCarvesThrowNothing_HardFastOnesThrowByEdgeAndSpeed()
+        {
+            // Act: from 60% edge and 10 m/s, rising to 4 flakes a metre at full edge.
+            float soft = SnowSprayMath.CarveRate(0.5, 20.0, true, 1f, 4f, 0.6f, 10f);
+            float slow = SnowSprayMath.CarveRate(1.0, 8.0, true, 1f, 4f, 0.6f, 10f);
+            float air = SnowSprayMath.CarveRate(1.0, 20.0, false, 1f, 4f, 0.6f, 10f);
+            float half = SnowSprayMath.CarveRate(-0.8, 20.0, true, 1f, 4f, 0.6f, 10f);
+            float full = SnowSprayMath.CarveRate(1.0, 20.0, true, 1f, 4f, 0.6f, 10f);
+            float powder = SnowSprayMath.CarveRate(1.0, 20.0, true, 1.6f, 4f, 0.6f, 10f);
+
+            // Assert
+            Assert.That(soft, Is.EqualTo(0f));
+            Assert.That(slow, Is.EqualTo(0f));
+            Assert.That(air, Is.EqualTo(0f));
+            Assert.That(half, Is.EqualTo(40f).Within(1e-3f), "half way from 0.6 to full edge, either side");
+            Assert.That(full, Is.EqualTo(80f).Within(1e-3f));
+            Assert.That(powder, Is.EqualTo(128f).Within(1e-3f));
+        }
+
+        [Test]
         public void SnowFactor_PowderSpraysMoreAndIceLess_TheRestOne()
         {
             // Act and Assert

@@ -38,6 +38,30 @@ namespace FirstChair.Riding
             return (float)Math.Min(rate, maxRate);
         }
 
+        /// <summary>
+        /// Flakes per second a hard carve throws (Story 009, after the Bluebird prototype, which sprayed at 40% on fast
+        /// carves): none below <paramref name="minSpeed"/> or with less edge than <paramref name="edgeFrom"/>, then rising
+        /// to <paramref name="perMetre"/> per metre travelled at full edge.
+        /// </summary>
+        /// <param name="edgeFraction">The edge, -1 to 1 (the sim's edge angle over its maximum).</param>
+        /// <param name="speed">The rider's speed, m/s.</param>
+        /// <param name="onSnow">On the snow: neither airborne nor crashed.</param>
+        /// <param name="snowFactor">The snow's factor (<see cref="SnowFactor"/>).</param>
+        /// <param name="perMetre">Flakes per metre travelled at full edge.</param>
+        /// <param name="edgeFrom">Edge fraction, 0 to 1, below which a carve throws nothing.</param>
+        /// <param name="minSpeed">Slowest carve that throws snow, m/s.</param>
+        public static float CarveRate(double edgeFraction, double speed, bool onSnow, float snowFactor, float perMetre,
+            float edgeFrom, float minSpeed)
+        {
+            double edge = Math.Min(Math.Abs(edgeFraction), 1.0);
+            if (!onSnow || !(speed >= minSpeed) || !(edge > edgeFrom) || edgeFrom >= 1f)
+            {
+                return 0f;
+            }
+
+            return (float)(perMetre * speed * (edge - edgeFrom) / (1.0 - edgeFrom) * snowFactor);
+        }
+
         /// <summary>The snow's factor on the spray: powder throws more, ice less, the rest 1.</summary>
         /// <param name="snow">The snow under the skis.</param>
         /// <param name="powder">Powder's factor.</param>

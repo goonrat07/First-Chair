@@ -61,6 +61,19 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
+        public void QuickHeld_PressesTheQuickButton()
+        {
+            // Arrange
+            var quantizer = new RiderInputQuantizer(RiderInputQuantizerSettings.Default);
+
+            // Act
+            SimInput packed = quantizer.Pack(new RawRiderInput { Quick = true, SteerRight = true });
+
+            // Assert
+            Assert.That(packed.Buttons, Is.EqualTo(SimButtons.Quick | SimButtons.Right));
+        }
+
+        [Test]
         public void TriggerPastThreshold_PressesForwardAndBelowDoesNot()
         {
             // Arrange
