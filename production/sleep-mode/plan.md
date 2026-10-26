@@ -1,31 +1,20 @@
 # Sleep mode plan
 
-Started: 2026-10-24T02:38:00Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 0f146e0
-Finished: 2026-10-24T04:23:00Z · Reason: done
+Started: 2026-10-26T01:32:33Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 6ad33d0cdb87fc17cf3f3c85cb73d942d979ce02
 
-The user chose tonight's items on 2026-10-24 (story 003 "Decisions", story 007 "Next"). Unity now builds on GitHub
-Actions (`unity.yml`; the repo is public, so minutes are free), and each Linux build is ridden in this session under
-Xvfb with scripted keys, so Unity-side items can run here. They are still reported as **not verified in the Unity
-editor**, and feel stays the user's call. Each item follows `/dev-story`'s method (tests first where there is logic,
-commit after every step); none of them closes a story, so there is no `/story-done` tonight.
+The user (2026-10-26, before sleeping): finish story 009, then keep working on more items, "maybe visual changes like
+the snow shaders or like starting on a small test mountain with a lift, runs, trees, park, etc."; resume after the
+5-hour usage resets and always have something in progress. Items 2 to 4 are queued on that instruction. Their
+Unity-side work is built and ridden in CI and reported as not verified in the editor.
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
-| 1 | Story 003 playtest fixes: ride build 40055981760 (40054775510 and 40055604010 were cancelled by later pushes), confirm skis, poles and the lower, narrower camera | dev-story (verify) | done | 82d24de (CI queues instead of cancelling), (this commit) |
-| 2 | Speed: retune story 002's numbers toward a GMA2-like pace (40-60 km/h on the groomer), tests show before and after, sim version bump | dev-story | done | (this commit) |
-| 3 | Tree lines along the groomer and park edges in `make_test_slope.py` (real, collidable trees in the sim layout) | dev-story | done | (this commit) |
-| 4 | Show tricks: rotate the skier by the sim's spin and flip angles in the air | dev-story | done | (this commit) |
-| 5 | Grab poses for CH_Skier (Mute, Tip, Tail, Japan, Safety) and the view blending them in the air | dev-story | done | (this commit) |
-| 6 | Old ski tracks over the groomers and powder (display only) | dev-story | done | (this commit) |
-| 7 | Camera drift: let the rider move a little side to side before the camera follows | dev-story | done | (this commit) |
-| 8 | Story 007: equipment colours that read on snow, GPU instancing on the tree | dev-story | done | (this commit) |
-| 9 | Story 007: tree billboard (far LOD) | dev-story | done | (this commit) |
-| 10 | Story 007: stamped snow trails with a URP snow shader, blue shading and sparkle | dev-story | done: sparkle; skipped: stamped trails and the snow shader (need the editor) | 0007471 |
-| 11 | Verify the final build: old tracks, camera drift, pole colours, the instancing and billboard import tests, the billboard at a distance, sparkle | dev-story (verify) | done (the billboard is not visible from the gameplay camera; its import test passes) | 918633c, (this commit) |
+| 1 | story-009-gma-style-riding-and-feel-lab: sim v8, Unity input/poses/spray, Feel Lab, speed cues, build + ride | dev-story, then story-done | queued | |
+| 2 | story-007-first-art-pass: snow shader with tracks that build up and stay (the user's "snow shaders") | dev-story (that item) | queued | |
+| 3 | story-010 (new): a small test mountain with a lift, runs, trees and a park (the user's request) | create the story, then dev-story | queued | |
+| 4 | story-007-first-art-pass: the lighting pass, so the slope's shape reads | dev-story (that item) | queued | |
 
 ## Left for the PC
-- Story 003: the gamepad check, and the user's own playtest of each new build (feel, look, speed).
-- Story 007: sign-off on the look.
-- Story 007: stamped snow trails and a URP snow shader. They need a custom terrain shader or Shader Graph, checked in
-  the editor; a mistake turns the slope magenta.
-- Feel tuning beyond item 2: the user judges the new speed and says what to change.
+- story-003-test-slope-unity-view: the Windows playtest and the gamepad need the user's PC
+- story-008-turn-styles-and-speed: In Review; the user's playtest of the feel (now superseded by story 009's riding)
+- story-009's feel sign-off and GMA2-matched numbers: the user's playtest and the GMA2 clips they will record

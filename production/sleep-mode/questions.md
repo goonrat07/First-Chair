@@ -1,3 +1,3 @@
-# Sleep mode questions
+# Questions waiting on the user
 
-Questions only you can answer. Each says whether it stopped an item; nothing was guessed.
+None yet.
