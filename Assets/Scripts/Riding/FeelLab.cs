@@ -30,7 +30,7 @@ namespace FirstChair.Riding
         private const float TurnScaleDegrees = 180f;
         private const string SaveFileName = "feel-lab.txt";
 
-        private static readonly string[] Tabs = { "Riding", "Camera", "Effects", "Controls" };
+        private static readonly string[] Tabs = { "Riding", "Camera", "Effects", "Light", "Controls" };
 
         // How far above the lift's boarding point "Go to the lift" starts the rider, metres.
         private const float LiftApproachMetres = 25f;
@@ -67,6 +67,7 @@ namespace FirstChair.Riding
 
         private readonly List<SettingField> _cameraFields = new List<SettingField>();
         private readonly List<SettingField> _viewFields = new List<SettingField>();
+        private readonly List<SettingField> _lightFields = new List<SettingField>();
         private readonly Dictionary<string, string> _texts = new Dictionary<string, string>();
         private readonly float[] _speeds = new float[GraphSamples];
         private readonly float[] _turns = new float[GraphSamples];
@@ -112,6 +113,7 @@ namespace FirstChair.Riding
             _pending = _driver != null ? _driver.RunTuning : Tuning.Default;
             Collect(SettingsOf(FindAnyObjectByType<FollowCamera>()), _cameraFields);
             Collect(SettingsOf(FindAnyObjectByType<SkierView>()), _viewFields);
+            Collect(SettingsOf(FindAnyObjectByType<LightingRig>()), _lightFields);
             _pixels = new Color32[GraphWidth * GraphHeight];
             _graph = new Texture2D(GraphWidth, GraphHeight, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point };
         }
@@ -213,6 +215,9 @@ namespace FirstChair.Riding
                     break;
                 case 2:
                     SettingsTab(_viewFields, "view");
+                    break;
+                case 3:
+                    SettingsTab(_lightFields, "light");
                     break;
                 default:
                     foreach (string line in ControlsText)
@@ -326,12 +331,16 @@ namespace FirstChair.Riding
                 GUILayout.EndHorizontal();
                 GUILayout.Label("Live. Speed effects: field of view, bank and shake.");
             }
+            else if (fields == _lightFields)
+            {
+                GUILayout.Label("Live: the sun, the sky light and the camera's exposure and contrast.");
+            }
             else
             {
                 GUILayout.Label("Live, except spray size, lifetime, gravity and count: those take the next launch.");
             }
 
-            string prefix = fields == _cameraFields ? "Camera." : "View.";
+            string prefix = fields == _cameraFields ? "Camera." : fields == _lightFields ? "Light." : "View.";
             foreach (SettingField field in fields)
             {
                 if (!Matches(field.Field.Name))
@@ -479,6 +488,7 @@ namespace FirstChair.Riding
 
             AddChanged(values, _cameraFields, "Camera.");
             AddChanged(values, _viewFields, "View.");
+            AddChanged(values, _lightFields, "Light.");
             return "# First Chair Feel Lab, sim version " + Simulation.Version + ", "
                 + DateTime.Now.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) + "\n"
                 + "# Numbers changed from the defaults; riding numbers are those of the running ride.\n"
@@ -541,6 +551,7 @@ namespace FirstChair.Riding
 
             SetByName(values, _cameraFields, "Camera.");
             SetByName(values, _viewFields, "View.");
+            SetByName(values, _lightFields, "Light.");
             _pending = tuning;
             _texts.Clear();
             Apply(true);

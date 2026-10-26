@@ -88,7 +88,12 @@ namespace FirstChair.Riding.Editor
             terrain.heightmapPixelError = 1f;
             terrain.basemapDistance = 600f;
             terrain.materialTemplate = terrainMaterial;
-            TestSlopeLook.Lighting(FindSun(scene));
+            Light sun = FindSun(scene);
+            TestSlopeLook.Lighting(sun);
+
+            // Story 007's lighting pass: the sun, sky light and grade as data, live in the Feel Lab's Light tab.
+            var lighting = sun.gameObject.AddComponent<LightingRig>();
+            Set(lighting, "settings", LoadOrCreate<LightingSettings>("LightingSettings"));
 
             var driverObject = new GameObject("SimDriver");
             var input = driverObject.AddComponent<RiderInputReader>();
