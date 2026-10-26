@@ -7,7 +7,8 @@ namespace FirstChair.Riding
     /// <summary>
     /// A small test HUD in the top-right corner, in GMA2's style (white, bold, a soft shadow): speed in km/h, the slope's
     /// steepness under the rider in degrees, the snow type and the run score. It helps judge the riding feel while tuning.
-    /// F1 hides it. Read only.
+    /// F1 hides it, and it hides itself while the sim is paused (on the chairlift, where it would show the last speed).
+    /// Read only.
     /// </summary>
     public sealed class RiderHud : MonoBehaviour
     {
@@ -33,7 +34,7 @@ namespace FirstChair.Riding
 
         private void OnGUI()
         {
-            if (!visible || driver == null || driver.Session == null)
+            if (!visible || driver == null || driver.Session == null || driver.Paused)
             {
                 return;
             }
