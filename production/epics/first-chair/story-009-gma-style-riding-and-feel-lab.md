@@ -102,6 +102,30 @@ Speeds on straight runs are unchanged from version 7: the user's call on 2026-10
 - **The camera:** follows turns faster, rolls a little into them, widens its field of view at speed and shakes gently when fast. All are settings, and all are in the Feel Lab.
 - **Spray** from fast carves as well as skids, and tracks that last longer.
 
+## As built (2026-10-26, sleep mode)
+
+- **Sim version 8** (commit 2c55dee). The step is as designed above, with the numbers tuned on a prototype of it first:
+  a 60° turn at 54 km/h carves in 1.07 s for 7% of the speed, quick-turns in 0.70 s for 15%, drifts in 0.66 s for 12%;
+  a drift held 0.8 s gives its loss back on release; S-turns with plain keys hold 71 km/h on the prototype's 17° plane
+  (quick turns 34, drifts 51); a hockey stop from 54 km/h stops in 7.8 m against 12.9 m for a straight brake; skating
+  tops out at 29 km/h. Every snow type's edges now grip (powder 13, crud 16, ice 6 m/s²), and straight-run speeds are
+  unchanged. Two settings were added to the design: `HockeyMinSpeed` (below it back plus steering just turns) and the
+  scrub kept low (0.3) so letting go of a drift doesn't brake hard.
+- **Keys** (commit b28a2b1): Shift (either) with a turn drifts on snow and still grabs in the air; Ctrl or Alt with a
+  turn quick-turns; gamepad left shoulder quick-turns. Tucked turns take the low racer pose; plain carves, drifts and
+  quick turns the standing carve. Hard, fast carves throw a little spray (from 60% edge and 10 m/s).
+- **The Feel Lab** (commit 0863fed): ` or F1. Riding, Camera, Effects and Controls tabs, a filter box, nudge buttons,
+  "Apply: restart here / at top", camera presets "GMA far (default)" and "chase (old game)" (Bluebird's numbers mapped
+  onto this camera), a graph of the last 6 s of speed and turn rate, and Copy values / Save / Load saved
+  (`feel-lab.txt` in the game's persistent data folder; the path shows in the panel and the player log). Typing in its
+  boxes doesn't steer. A hint at the bottom left says how to open it.
+  - Not built: switching back to the version 7 controls. Version 8 replaced that step outright; keeping both would mean
+    two riding models in the sim. The previous build (run 40122603687) is the comparison.
+- **Speed cues** (commits 0863fed, c838bb8): the view widens 0.12° per m/s (up to 5°), banks 2.5° per g into turns (up
+  to 3°) and shakes gently from 18 m/s; groomed snow keeps its corduroy over round metre-wide patches with stronger
+  shade and relief (at the camera's scale its brightness spread goes from 1.8 to 7.8 levels and its edges across the
+  path from 0.25 to 0.92); old tracks are denser and swing wider; live tracks stay two minutes.
+
 ## Acceptance Criteria
 
 - [ ] Plain steering on groomed snow carves: the velocity follows the skis with no skid, and key S-turns down the groomer hold at least as much speed as carving with W did in version 7.
@@ -125,7 +149,7 @@ Speeds on straight runs are unchanged from version 7: the user's call on 2026-10
 ## Test Evidence
 
 **Story Type**: Logic + Visual/Feel. Unit tests in `sim/FirstChair.Sim.Tests/`; retained screenshots in
-`production/qa/evidence/story-009-gma-style-riding/`.
+`production/qa/evidence/story-009-gma-style-riding-and-feel-lab/`.
 
 ## Dependencies
 
