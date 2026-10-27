@@ -111,11 +111,17 @@ namespace FirstChair.Riding
         [Tooltip("The most the body leans into a turn, degrees.")]
         [SerializeField, Range(0f, 80f)] private float leanMaxDegrees = 55f;
         [Tooltip("The most it adds over (or takes back from) the carve clips' lean, degrees.")]
-        [SerializeField, Range(0f, 60f)] private float leanMaxExtraDegrees = 25f;
-        [Tooltip("How far a full carve clip already leans the body, degrees (CH_Skier's CarveLeft rolls the hips 22).")]
-        [SerializeField, Range(0f, 60f)] private float leanCarveClipDegrees = 22f;
-        [Tooltip("How far a full race-carve clip already leans the body, degrees (RaceCarveLeft: 26).")]
-        [SerializeField, Range(0f, 60f)] private float leanRaceClipDegrees = 26f;
+        [SerializeField, Range(0f, 60f)] private float leanMaxExtraDegrees = 15f;
+        [Tooltip("How far a full carve clip already leans the body from its feet to its head, degrees (CH_Skier's "
+            + "CarveLeft rolls the hips 22, and the whole body about 30 from the chase camera, measured in a cloud ride).")]
+        [SerializeField, Range(0f, 60f)] private float leanCarveClipDegrees = 30f;
+        [Tooltip("How far a full race-carve clip already leans the body, degrees (RaceCarveLeft rolls the hips 26).")]
+        [SerializeField, Range(0f, 60f)] private float leanRaceClipDegrees = 34f;
+        [Tooltip("The speed the extra lean starts at, m/s (6 is about 22 km/h). Slower turns are pivots that swing the "
+            + "travel round fast, which the balance formula reads as a big lean; the carve clips' own lean suits them.")]
+        [SerializeField, Range(0f, 40f)] private float leanFromSpeed = 6f;
+        [Tooltip("The speed the extra lean is full from, m/s (14 is about 50 km/h).")]
+        [SerializeField, Range(0f, 60f)] private float leanFullSpeed = 14f;
         [Tooltip("How quickly the extra lean follows the turn, Hz (critically damped).")]
         [SerializeField, Range(0.1f, 10f)] private float leanFrequency = 1.8f;
         [Tooltip("0 to 1: the share of the extra lean the chest takes back, so the upper body stays quieter than the legs.")]
@@ -290,6 +296,10 @@ namespace FirstChair.Riding
         public float LeanCarveClipDegrees => leanCarveClipDegrees;
         /// <summary>A full race-carve clip's own lean, degrees.</summary>
         public float LeanRaceClipDegrees => leanRaceClipDegrees;
+        /// <summary>The speed the extra lean starts at, m/s.</summary>
+        public float LeanFromSpeed => leanFromSpeed;
+        /// <summary>The speed the extra lean is full from, m/s.</summary>
+        public float LeanFullSpeed => leanFullSpeed;
         /// <summary>The extra lean's spring frequency, Hz.</summary>
         public float LeanFrequency => leanFrequency;
         /// <summary>The chest's share of the extra lean taken back, 0 to 1.</summary>

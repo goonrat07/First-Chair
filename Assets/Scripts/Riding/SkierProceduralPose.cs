@@ -139,7 +139,8 @@ namespace FirstChair.Riding
                 Vector3 up = root.InverseTransformDirection(Vector3.up);
                 double needed = TurnLean.ExtraOverFrame(physical, shownLean, TurnLean.FrameRoll(up.x, up.y),
                     _settings.LeanMaxExtraDegrees * Mathf.Deg2Rad);
-                target = (float)needed * _settings.LeanWeight;
+                double fade = TurnLean.SpeedFade(speed, _settings.LeanFromSpeed, _settings.LeanFullSpeed);
+                target = (float)(needed * fade) * _settings.LeanWeight;
             }
 
             _lean.Step(target, _settings.LeanFrequency, 1.0, dt);

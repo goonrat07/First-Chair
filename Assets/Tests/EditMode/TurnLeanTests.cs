@@ -126,6 +126,52 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
+        public void SpeedFade_BelowItsStart_IsZero()
+        {
+            // Act: a 13 km/h pivot, where the sim's GMA-style turn spins at about 3 rad/s (story 013's second ride)
+            double fade = TurnLean.SpeedFade(3.6, 6.0, 14.0);
+
+            // Assert
+            Assert.That(fade, Is.EqualTo(0.0));
+        }
+
+        [Test]
+        public void SpeedFade_FromItsFullSpeed_IsOne()
+        {
+            // Act
+            double fade = TurnLean.SpeedFade(20.0, 6.0, 14.0);
+
+            // Assert
+            Assert.That(fade, Is.EqualTo(1.0));
+        }
+
+        [Test]
+        public void SpeedFade_Between_RisesSmoothlyThroughAHalfAtTheMiddle()
+        {
+            // Act
+            double low = TurnLean.SpeedFade(8.0, 6.0, 14.0);
+            double middle = TurnLean.SpeedFade(10.0, 6.0, 14.0);
+            double high = TurnLean.SpeedFade(12.0, 6.0, 14.0);
+
+            // Assert: a smoothstep, symmetric about the middle
+            Assert.That(middle, Is.EqualTo(0.5).Within(1e-12));
+            Assert.That(low, Is.GreaterThan(0.0).And.LessThan(middle));
+            Assert.That(high, Is.EqualTo(1.0 - low).Within(1e-12));
+        }
+
+        [Test]
+        public void SpeedFade_FullSpeedNotAboveTheStart_StepsAtTheStart()
+        {
+            // Act
+            double below = TurnLean.SpeedFade(5.9, 6.0, 6.0);
+            double at = TurnLean.SpeedFade(6.0, 6.0, 6.0);
+
+            // Assert
+            Assert.That(below, Is.EqualTo(0.0));
+            Assert.That(at, Is.EqualTo(1.0));
+        }
+
+        [Test]
         public void FrameRoll_FrameLeaningRight_IsPositive()
         {
             // Arrange: a frame rolled 17 degrees right sees world up toward its left

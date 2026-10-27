@@ -35,6 +35,26 @@ namespace FirstChair.Riding
             return Math.Max(-maxLean, Math.Min(maxLean, lean));
         }
 
+        /// <summary>
+        /// How much of the extra lean a speed earns, 0 to 1: none below <paramref name="from"/>, all from
+        /// <paramref name="full"/>, a smoothstep between. Slow turns in the sim are pivots that swing the travel round
+        /// fast (about 3 rad/s at 13 km/h), which the balance formula reads as a 50 degree lean; the carve clips' own lean
+        /// is right for them, so the extra waits for speed.
+        /// </summary>
+        /// <param name="speed">Speed, m/s.</param>
+        /// <param name="from">The speed the extra starts at, m/s.</param>
+        /// <param name="full">The speed it is full at, m/s; at or below <paramref name="from"/> it steps there.</param>
+        public static double SpeedFade(double speed, double from, double full)
+        {
+            if (!(full > from))
+            {
+                return speed >= from ? 1.0 : 0.0;
+            }
+
+            double t = Math.Max(0.0, Math.Min(1.0, (speed - from) / (full - from)));
+            return t * t * (3.0 - 2.0 * t);
+        }
+
         /// <summary>The lean the blended carve clips already show, radians, positive to the right.</summary>
         /// <param name="carveLeft">The CarveLeft clip's weight.</param>
         /// <param name="carveRight">The CarveRight clip's weight.</param>

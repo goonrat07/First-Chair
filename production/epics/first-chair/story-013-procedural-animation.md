@@ -54,6 +54,25 @@ on `RiderViewSettings`, so the Feel Lab's Effects tab tunes it live, and each la
    clip. Two-bone IK on the arm (upper arm, forearm) places the hand so the pole, held rigidly in it, reaches the
    tip point. The timing (reach, planted, release) and reach distances are settings.
 
+## As built (2026-10-27, in progress)
+
+- **The math** (bf20bd7): `TurnLean`, `DampedSpring`, `TwoBoneIk`, `LegReach` and `PolePlantTimer` in `Riding/Core`,
+  with EditMode tests (CI: 224/224).
+- **The layers** (c875a57): `SkierProceduralPose`, run by `SkierView` after the clip blend; every value a
+  `RiderViewSettings` field, so the Feel Lab's Effects tab tunes it.
+- **First cloud ride** (c875a57, 2026-10-27): at every edge change on the test slope, even at 13 km/h, the skier lay
+  almost flat on the snow with the skis on edge near 80 degrees. Ridden with every weight at 0, the same turns lean
+  about 45 degrees from the chase camera. Two causes:
+  - the lean layer counted the clips' lean but not the frame's tilt to the snow (`RiderPlacement` aligns the skier
+    to the slope); fixed in ee60523 (`TurnLean.FrameRoll`, `ExtraOverFrame`), which alone did not cure it;
+  - slow turns in the sim are GMA-style pivots that swing the travel round at about 3 rad/s, which the balance
+    formula (tan = v x turn rate / g) reads as a 50 degree lean, while the carve clip already leans the whole body
+    about 30 degrees (the 22 in the settings was its hips' roll). The layer therefore added its full 25 degrees on top.
+  Ridden again on ee60523 with one layer on at a time, the first edge change at 8 to 15 km/h: with the lean layer
+  alone the skier lies flat; with the legs layer alone, or with no layer, it leans only as far as the clips. The fix:
+  the extra lean fades in with speed (none below about 22 km/h, all from about 50 km/h, `TurnLean.SpeedFade`), the
+  clips' own lean is taken as 30 and 34 degrees, and the extra is capped at 15.
+
 ## Acceptance Criteria
 
 - [ ] Core math with EditMode tests: lean from speed and turn rate (zero when straight, sign follows the turn,
