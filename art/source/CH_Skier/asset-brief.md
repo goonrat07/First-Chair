@@ -2,10 +2,11 @@
 
 Status: Phases 5 (light), 6, 8 (nine pose clips) and 9 done, 2026-10-23. The user asked for the real skier with
 animation in the next test build, so the work went past the Phase 4 review stop. Exported to
-`Assets/Art/Characters/CH_Skier/` (FBX, manifest, animation contract); **not verified in the Unity editor**. Open: the
-seat shows through the lower jacket back in back three-quarter close-ups (see Gate results). The proportions, palette,
-helmet, stripes and socket names are approved (user, 2026-10-20).
-Story: `production/epics/first-chair/story-007-first-art-pass.md`.
+`Assets/Art/Characters/CH_Skier/` (FBX, manifest, animation contract); **not verified in the Unity editor**. The
+seat showing through the lower jacket back is fixed (story 012, 2026-10-27; see Gate results). The proportions,
+palette, helmet, stripes and socket names are approved (user, 2026-10-20).
+Stories: `production/epics/first-chair/story-007-first-art-pass.md`; the detail pass for the chase camera,
+`production/epics/first-chair/story-012-skier-detail-pass.md` (in progress).
 
 ```text
 ASSET      CH_Skier
@@ -303,10 +304,15 @@ Phase 6 (`review/06_rig/`): `validate.py` on LOW, SOCKETS, RIG_DEF with `--budge
 (no UV layers, expected). On all three body LODs: 0 unweighted, 0 over 4 influences, 0 not normalised, 0 tiny
 weights (`validate.json`, `weights.json`). Pose sheets `pose_sheet.png` and `pose_sheet_front/side/game.png` show all
 nine clips with PR_Ski and PR_SkiPole attached at the sockets; `joints_sheet.png` has front and back three-quarter
-close-ups of Tuck, Crouch, Brake, CarveLeft and Crash. Shoulders, elbows and knees hold their volume. **Open:** navy
-patches of the seat show through the lower jacket back in the back three-quarter close-ups. Reducing leg weights
-behind the hip joint did not remove them. Next step: render the rest pose from behind to see whether the overlap
-predates rigging, then copy the jacket's weights onto the seat vertices just beneath it.
+close-ups of Tuck, Crouch, Brake, CarveLeft and Crash. Shoulders, elbows and knees hold their volume. **Fixed
+(story 012, 2026-10-27):** navy patches of the seat showed through the lower jacket back. The rest pose from behind
+showed them too, so the overlap predated rigging: the jacket's back ring has five points, and its flat chords cut
+inside a seat drawn to the jacket's own size (the seat rings at z 0.88 and 0.95 were 3.4 and 1.0 mm outside the
+jacket). Those two rings now sit 22 and 29.5 mm inside (`03_forms.py` SEAT). The analytic weight field moves
+overlapping shells together, so no weight change was needed. Checked on back three-quarter close-ups of all 16
+clips, rendered again with the trouser faces removed: no pixel that is trousers in front of jacket remains, except
+the near thigh in front of the jacket's side in the five grabs (correct occlusion) and a 29 px sliver at the hem
+edge in Brake. Body LOD0 2,865 tris (was 2,895: more of the seat is now buried and removed as interior faces).
 
 Phase 8 lowest points per clip (m; the snow is -0.045; `review/06_rig/poses/lowest_points.json`):
 

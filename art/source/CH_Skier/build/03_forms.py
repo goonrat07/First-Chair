@@ -38,7 +38,11 @@ JACKET = [(0.82, .245, .162), (0.87, .245, .162), (0.93, .232, .152), (1.02, .23
 JACKET_YC, PUFF_P = 0.02, 2.6                 # section centre y; superellipse exponent (2 = ellipse)
 SHOULDER_PUFF = 0.095                         # front: shoulder top 1.45, width 0.55 (table 1.445, 0.53)
 SLEEVE = [(0.0, .088), (0.08, .088), (0.18, .082), (0.29, .076), (0.40, .072)]   # (from shoulder, radius)
-SEAT = [(0.77, .13, .09), (0.80, .185, .13), (0.88, .19, .14), (0.95, .18, .13)]
+# Seat rings above the jacket hem (z 0.82) sit well inside the jacket: the jacket's back ring is coarse, and its flat
+# chords cut inside a seat drawn to the jacket's own size, so the seat showed through the lower back as two navy
+# patches either side of the spine, even at rest (story 012; was .19/.14 and .18/.13, 3.4 and 1.0 mm outside).
+# Now 22 and 29.5 mm inside (measured against the jacket ring at the same height).
+SEAT = [(0.77, .13, .09), (0.80, .185, .13), (0.88, .17, .115), (0.95, .155, .10)]
 LEG = [(0.92, .105, 0.0), (0.82, .108, 0.0), (0.72, .106, 0.0), (0.62, .102, 0.0), (0.55, .101, -.006),
        (0.50, .100, -.010), (0.45, .098, -.006), (0.38, .096, 0.0), (0.29, .100, 0.0)]   # (z, radius, knee push)
 FOOT = [(0.13, .10, .12), (0.10, .115, .13), (0.0, .118, .135), (-0.10, .115, .12), (-0.16, .105, .10),
