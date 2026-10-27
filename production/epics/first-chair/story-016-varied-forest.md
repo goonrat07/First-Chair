@@ -40,6 +40,36 @@ Written by Claude in sleep mode; the design choices are logged under Decisions a
 3. **Unity:** each variant is its own model with GPU instancing on its materials; the mix is a setting on the look
    (the Feel Lab doesn't need it).
 
+## As built (2026-10-27)
+
+- **Four tree assets, not variants inside EN_Conifer** (55ad865): `EN_ConiferSlim` (a slim fir, 14 m), `EN_ConiferBroad`
+  (a broad spruce, 11 m, branches nearly to the ground), `EN_ConiferYoung` (4.5 m) and `EN_Snag` (9 m, a grey trunk
+  with 18 broken stubs, half with snow), each in its own `art/source/<ASSET>/` with its params, brief, master and
+  `review/final/`. The tree kit builds one shape per params file, so a shape variant is a new asset; their params are
+  written from EN_Conifer's by `tools/blender/trees/make_variant_params.py`, changing only the shape, the budgets and the
+  colour variant. Every LOD0 passes front, side and top IoU at 0.985 to 0.998.
+- **The snag is made from conifer parameters**, not a new `snag` kind in `tree_params.py`: the kit's skill files can't
+  be edited in sleep mode. Short, stiff, irregular branches in dead-wood grey read as stubs; a kind of its own (a
+  broken top, bare twigs) is for when the skill is next edited.
+- **Budgets:** the slim fir and the broad spruce keep the spruce's (LOD0 300 to 1,500, LOD1 100 to 400); the young tree
+  (LOD0 150 to 900, LOD1 50 to 300) and the snag (80 to 600, 30 to 250) get smaller ones, for a tree a third the
+  spruce's height and one of 18 stubs. The slim fir's LOD1 keeps 3 branches a tier (4 came to 444 tris, over 400).
+- **Exports** (81380ac): one FBX per tree with both LODs, its manifest and its billboard atlas, in
+  `Assets/Art/Environment/<ASSET>/`; export check 30 of 30 and the FBX round trip pass for each.
+- **Billboards sized to each tree.** The billboard script's cell was fixed at EN_Conifer's 3.6 x 14.4 m, which cut the
+  broad spruce's crown off on both sides (and touched EN_Conifer's own side view), unseen by the gate, which compares
+  against a render cut alike. Each cell is now the tree's LOD0 plus a margin at 72 texels a metre, the gate fails any
+  cell whose alpha reaches its sides or top, and EN_Conifer's billboard is rebuilt. All five pass, IoU 0.983 to 0.996.
+- **The choice and the scale** (`TreeVariantPicker`, 11 EditMode tests): a hash of each layout tree's position picks
+  from the mix (45, 25, 20, 7, 3), and the model's crown is fitted to the sim's branch radius as before, but no taller
+  than 16.5 m (`TestSlopeLook.MaxTreeHeightMetres`): matched crowns alone would grow 28 m slim firs on the test slope,
+  whose tallest spruce is 16.2 m. Above the limit the crown falls short of the sim's branch circle; the slim fir's
+  lowest tiers are 3 m up, over a passing rider. The snag is scaled as the spruce is, not blown up to the branch
+  radius by its narrow stubs.
+- **Unity:** `TestSlopeLook` places a model per tree from the mix with its own billboard LOD; a variant whose files are
+  missing drops out with a warning (seen in CI run 40579929851, before the exports), and with none the cone stands in.
+  The mix is a table in `TestSlopeLook`. Not verified in the editor.
+
 ## Acceptance Criteria
 
 - [ ] Each new variant passes the tree kit's gates: front, side and top IoU at or above 0.90 against its profile,
