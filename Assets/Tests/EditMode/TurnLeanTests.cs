@@ -1,3 +1,4 @@
+using System;
 using FirstChair.Riding;
 using NUnit.Framework;
 
@@ -122,6 +123,45 @@ namespace FirstChair.Riding.Tests
 
             // Assert
             Assert.That(shown, Is.EqualTo(0.75 * 0.4 - 0.25 * 0.5).Within(1e-12));
+        }
+
+        [Test]
+        public void FrameRoll_FrameLeaningRight_IsPositive()
+        {
+            // Arrange: a frame rolled 17 degrees right sees world up toward its left
+            double roll = 17.0 * Math.PI / 180.0;
+
+            // Act
+            double shown = TurnLean.FrameRoll(-Math.Sin(roll), Math.Cos(roll));
+
+            // Assert
+            Assert.That(shown, Is.EqualTo(roll).Within(1e-12));
+        }
+
+        [Test]
+        public void ExtraOverFrame_StraightTraverseOnAFrameTiltedToTheSnow_StandsTheSkierUp()
+        {
+            // Arrange: no turn, no carve clip, the frame tilted 17 degrees right by the slope (story 013's first ride)
+            double frame = 17.0 * Math.PI / 180.0;
+
+            // Act
+            double extra = TurnLean.ExtraOverFrame(0.0, 0.0, frame, 0.5);
+
+            // Assert
+            Assert.That(extra, Is.EqualTo(-frame).Within(1e-12));
+        }
+
+        [Test]
+        public void ExtraOverFrame_ClipsAndFrameAlreadyLeanAsFarAsTheTurnNeeds_AddsNothing()
+        {
+            // Arrange: the turn needs 0.68; the carve clip shows 0.38 and the frame's tilt the other 0.30
+            const double physical = 0.68, clips = 0.38, frame = 0.30;
+
+            // Act
+            double extra = TurnLean.ExtraOverFrame(physical, clips, frame, 0.5);
+
+            // Assert: counting the clips alone would add 0.30 more
+            Assert.That(extra, Is.EqualTo(0.0).Within(1e-12));
         }
     }
 }

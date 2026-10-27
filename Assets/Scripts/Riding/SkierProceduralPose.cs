@@ -116,7 +116,7 @@ namespace FirstChair.Riding
                 targetRight = FootTarget(_legRight, heightmap, root);
             }
 
-            float extra = Lean(previous, current, speed, shownLean, onSnow, dt);
+            float extra = Lean(previous, current, root, speed, shownLean, onSnow, dt);
             Springs(root, up, (shownLean + extra) * Mathf.Rad2Deg, dt);
             if (legs)
             {
@@ -126,16 +126,20 @@ namespace FirstChair.Riding
             Plants(current, heightmap, root, speed, onSnow, dt);
         }
 
-        // 1. LEAN: roll the whole skier about the skis' line on the snow by the lean the turn needs over the clips' own,
-        // then give part of it back at the chest and head. Returns the extra lean shown, radians, positive right.
-        private float Lean(in RiderState previous, in RiderState current, float speed, float shownLean, bool onSnow, float dt)
+        // 1. LEAN: roll the whole skier about the skis' line on the snow by the lean the turn needs over what it already
+        // shows (the carve clips' own lean and its frame's tilt to the snow), then give part of it back at the chest and
+        // head. Returns the extra lean shown, radians, positive right.
+        private float Lean(in RiderState previous, in RiderState current, Transform root, float speed, float shownLean, bool onSnow, float dt)
         {
             float target = 0f;
             if (onSnow && _settings.LeanWeight > 0f)
             {
                 double physical = TurnLean.Physical(speed, TurnRate(previous.Velocity, current.Velocity, speed),
                     Gravity, _settings.LeanMaxDegrees * Mathf.Deg2Rad);
-                target = (float)TurnLean.Extra(physical, shownLean, _settings.LeanMaxExtraDegrees * Mathf.Deg2Rad) * _settings.LeanWeight;
+                Vector3 up = root.InverseTransformDirection(Vector3.up);
+                double needed = TurnLean.ExtraOverFrame(physical, shownLean, TurnLean.FrameRoll(up.x, up.y),
+                    _settings.LeanMaxExtraDegrees * Mathf.Deg2Rad);
+                target = (float)needed * _settings.LeanWeight;
             }
 
             _lean.Step(target, _settings.LeanFrequency, 1.0, dt);
