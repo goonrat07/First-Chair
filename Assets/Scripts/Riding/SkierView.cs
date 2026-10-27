@@ -80,6 +80,7 @@ namespace FirstChair.Riding
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             _shown[(int)SkierPose.Stance] = 1f;
             BuildGraph(animator);
+            ShowFullDetail(skier);
 
             // The props are attached in the Stance pose, where both feet are flat and point forward (see AttachSki).
             Quaternion skierRotation = skier.transform.rotation;
@@ -186,6 +187,32 @@ namespace FirstChair.Riding
             }
 
             _graph.Evaluate(0f);
+        }
+
+        // Unity builds a LODGroup from CH_Skier's CH_Skier_Body_LOD0/1/2 meshes on import, and its default switch heights
+        // are not documented for Unity 6. The chase camera keeps the rider at 34 to 46 percent of the screen's height
+        // (story 011), where those defaults may already show LOD1, so the player's own skier always draws LOD0, the mesh
+        // made for that distance (story 012). LODGroup.ForceLOD: Unity 6.3 ScriptReference. The log records the heights
+        // Unity picked.
+        private void ShowFullDetail(GameObject skier)
+        {
+            LODGroup group = skier.GetComponentInChildren<LODGroup>();
+            if (group == null)
+            {
+                Debug.Log("SkierView: CH_Skier has no LODGroup; every mesh draws.", this);
+                return;
+            }
+
+            LOD[] lods = group.GetLODs();
+            var heights = new string[lods.Length];
+            for (int i = 0; i < lods.Length; i++)
+            {
+                heights[i] = lods[i].screenRelativeTransitionHeight.ToString("0.###");
+            }
+
+            group.ForceLOD(0);
+            Debug.Log("SkierView: CH_Skier LODGroup on " + group.name + ", switch heights " + string.Join(", ", heights) +
+                      "; forced to LOD0.", this);
         }
 
         // CH_Skier keeps Blender's axes on its armature (its sockets' Unity axes are not the props' Unity axes), so a prop
