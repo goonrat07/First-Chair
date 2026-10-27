@@ -1,0 +1,190 @@
+# The First Chair test mountain (story 010), as a mountain file (story 015).
+# Build:   python3 tools/mountain/mountain.py build design/mountains/test-mountain.mountain.toml
+# Preview: python3 tools/mountain/mountain.py preview design/mountains/test-mountain.mountain.toml
+# Check:   python3 tools/mountain/mountain.py check design/mountains/test-mountain.mountain.toml
+# The format, field by field: tools/mountain/README.md. Positions are metres on the map: x across, z down the fall line
+# from the summit side (z = 0) toward the base.
+
+format = 1
+name = "TestMountain"                 # the files' name: Assets/Terrain/TestMountain/TestMountain.raw and so on
+title = "First Chair test mountain"
+start_m = [522.0, 78.0]               # where a run begins: the top station's unload area, beside the lift line
+
+[grid]
+resolution = 2049                     # samples a side (2^11 + 1): 0.5 m a sample, fine enough to shape a kicker
+size_m = 1024.0
+min_height_m = 0.0
+max_height_m = 400.0                  # about 6.1 mm a height step
+
+[profile]
+# The mountain down its fall line: a rounded summit, a steep upper face (about 24 degrees), a long middle (about 18),
+# an easing lower mountain (about 11) and the base area, which dips to a shallow hollow in front of the lift's bottom
+# station so riders stop there.
+base_height_m = 12.0
+centre_x_m = 512.0
+gradient = [                          # [z, drop per metre] knots, eased into each other
+    [0.0, 0.04], [50.0, 0.06], [115.0, 0.45], [285.0, 0.45], [345.0, 0.33], [600.0, 0.33],
+    [680.0, 0.20], [820.0, 0.20], [890.0, 0.04], [950.0, 0.0], [985.0, -0.03], [1024.0, -0.03],
+]
+
+[peak]                                # near the top the face falls away to each side as well
+drop_m = 45.0                         # at the map's sides, under the summit
+fade_z_m = [60.0, 380.0]              # full at the top, gone below this
+
+[ridges]                              # lower down, the sides rise into wooded ridges, so the face reads as a bowl
+rise_m = 38.0
+start_off_centre_m = 300.0
+width_m = 200.0
+fade_z_m = [240.0, 520.0]             # gone above this, full below
+
+[noise]
+run_kept = 0.25                       # the share of the undulation a run's surface keeps: gentle rollers, no bumps
+layers = [
+    { spacing_m = 96.0, amplitude_m = 5.0, seed = 11 },
+    { spacing_m = 36.0, amplitude_m = 1.6, seed = 12 },
+]
+
+[summit]                              # the top station's level area
+centre_m = [512.0, 62.0]
+radius_m = 48.0
+blend_m = 45.0                        # it rounds over into the face across this much
+noise_free_m = [60.0, 170.0]          # no undulation within the first distance, full beyond the second
+tree_free_m = 25.0                    # trees keep this far beyond its edge
+
+[base]                                # the base area, level across x
+area_m = [250.0, 860.0, 774.0, 1024.0]
+blend_m = 30.0
+
+[tree_line]
+height_m = 205.0                      # open snow above this, as on GMA2's upper mountains
+spread_m = 18.0                       # trees thin out over this much height below it
+
+[run_shaping]
+gully_depth_m = 7.0
+gully_fade_m = [40.0, 70.0]           # a gully deepens over its first metres and fills in over its last
+shoulder_m = { open = 22.0, smooth = 22.0, cat = 14.0, gully = 26.0 }
+end_fade_m = 10.0
+densify_step_m = 2.0
+centre_smooth_m = 18.0
+cat_cross_kept = 0.15                 # a cat track keeps this much of the mountain's cross slope (drains, never a wall)
+
+# Runs are shaped in this order; an earlier run keeps its surface where a later one meets it, so each branch comes
+# after its trunk.
+[[runs]]
+name = "kettle-run"
+difficulty = "blue"
+width_m = 50.0
+shape = "open"
+snow = "groomed"
+points_m = [
+    [530.0, 90.0], [575.0, 145.0], [610.0, 240.0], [630.0, 360.0], [648.0, 480.0], [642.0, 600.0],
+    [612.0, 720.0], [582.0, 820.0], [560.0, 900.0],
+]
+
+[[runs]]
+name = "ridge-run"
+difficulty = "red"
+width_m = 40.0
+shape = "open"
+snow = "groomed"
+points_m = [
+    [494.0, 90.0], [455.0, 160.0], [425.0, 280.0], [405.0, 420.0], [388.0, 560.0], [395.0, 690.0],
+    [428.0, 810.0], [468.0, 900.0],
+]
+
+[[runs]]
+name = "the-chute"
+difficulty = "black"
+width_m = 34.0
+shape = "gully"
+snow = "crud"
+points_m = [[548.0, 82.0], [612.0, 112.0], [660.0, 180.0], [676.0, 262.0], [664.0, 340.0], [640.0, 400.0]]
+
+[[runs]]
+name = "kettle-park"
+difficulty = "park"
+width_m = 56.0
+shape = "smooth"
+snow = "groomed"
+points_m = [
+    [640.0, 300.0], [685.0, 335.0], [728.0, 372.0], [760.0, 410.0], [772.0, 455.0], [772.0, 700.0],
+    [744.0, 780.0], [680.0, 850.0], [610.0, 905.0],
+]
+
+[[runs]]
+name = "meadow-way"
+difficulty = "green"
+width_m = 11.0
+shape = "cat"
+snow = "groomed"
+points_m = [
+    [486.0, 90.0], [440.0, 100.0], [330.0, 112.0], [230.0, 130.0], [140.0, 155.0], [118.0, 174.0],
+    [145.0, 192.0], [240.0, 216.0], [330.0, 248.0], [352.0, 268.0], [330.0, 290.0], [230.0, 318.0],
+    [140.0, 352.0], [118.0, 374.0], [145.0, 396.0], [240.0, 428.0], [318.0, 466.0], [336.0, 490.0],
+    [312.0, 512.0], [222.0, 548.0], [150.0, 590.0], [138.0, 620.0], [170.0, 650.0], [260.0, 700.0],
+    [330.0, 760.0], [380.0, 830.0], [420.0, 900.0],
+]
+
+[snow]
+background = "crud"                   # off the runs below the tree line
+above_tree_line = "powder"
+
+[[snow.run_patches]]                  # a polished patch on the black's steepest part
+run = "the-chute"
+from_m = 110.0
+to_m = 170.0
+snow = "ice"
+
+[[snow.areas]]                        # wet snow where riders queue for the lift
+snow = "slush"
+rect_m = [467.0, 922.0, 557.0, 960.0]
+
+[park]
+run = "kettle-park"
+kicker_lane_x_m = 762.0
+jib_lane_x_m = 784.0
+zone_m = [744.0, 455.0, 796.0, 720.0]
+kicker_shoulder_m = 1.0
+kicker_back_per_height = 2.0
+kickers = [                           # each faces straight down the fall line, on the park's straight
+    { lip_z_m = 472.0, length_m = 4.0, width_m = 5.0, height_m = 0.8 },
+    { lip_z_m = 540.0, length_m = 5.0, width_m = 6.0, height_m = 1.2 },
+    { lip_z_m = 612.0, length_m = 6.0, width_m = 7.0, height_m = 1.6 },
+    { lip_z_m = 684.0, length_m = 8.0, width_m = 8.0, height_m = 2.2 },
+]
+rails = [                             # straight down the jib lane
+    { kind = "box", from_z_m = 476.0, to_z_m = 491.0, height_m = 0.3, width_m = 0.6 },
+    { kind = "rail", from_z_m = 546.0, to_z_m = 564.0, height_m = 0.5, width_m = 0.08 },
+    { kind = "box", from_z_m = 620.0, to_z_m = 638.0, height_m = 0.3, width_m = 0.6 },
+    { kind = "rail", from_z_m = 688.0, to_z_m = 704.0, height_m = 0.5, width_m = 0.08 },
+]
+
+[[lifts]]
+name = "kettle-chair"
+bottom_m = [512.0, 952.0]
+top_m = [512.0, 50.0]
+station_cable_m = 5.0                 # the cable's height above the snow at each station
+span_min_m = 40.0
+span_max_m = 110.0
+tower_min_m = 8.0
+tower_easy_m = 14.0                   # a span reaches as far as it can with a tower this tall or shorter
+tower_max_m = 26.0
+station_approach_m = 25.0             # the cable comes down to each station over this much line
+min_clearance_m = 7.0                 # elsewhere it clears the snow by at least this
+corridor_half_width_m = 12.0          # cleared of trees
+
+[trees]                               # one per kept cell of a grid over the whole map
+cell_mm = 8000
+seed = 21
+keep_near_per_mille = 850             # near a run or the lift line: dense, so runs read as runs
+keep_far_per_mille = 620
+near_m = 40.0
+jitter_mm = 2500
+trunk_mm = [180, 380]
+branch_mm = [1400, 1450]              # the canopy's radius
+run_clearance_m = 2.0                 # a canopy stays this far off a run's edge
+glades = [                            # open stands to ride through
+    { area_m = [190.0, 610.0, 300.0, 690.0], keep_per_mille = 380 },
+    { area_m = [440.0, 560.0, 490.0, 760.0], keep_per_mille = 420 },
+    { area_m = [690.0, 470.0, 735.0, 690.0], keep_per_mille = 400 },
+]

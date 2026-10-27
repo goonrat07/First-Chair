@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using FirstChair.Sim;
 using UnityEditor;
@@ -8,11 +9,12 @@ using UnityEngine.SceneManagement;
 namespace FirstChair.Riding.Editor
 {
     /// <summary>
-    /// Builds <c>Assets/Scenes/TestSlope.unity</c> and <c>Assets/Scenes/TestMountain.unity</c> (Story 010) from the
-    /// scripts, instead of hand-written scene files: terrain, sim driver with input, rider and follow camera, wired
-    /// together, saved and added to the build; the mountain also gets its chairlift, run markers and the lift ride.
-    /// Menu: First Chair > Build Test Slope Scene / Build Test Mountain Scene. Safe to run again; it overwrites the scene
-    /// and keeps existing settings assets under <c>Assets/Data/Riding</c>.
+    /// Builds <c>Assets/Scenes/TestSlope.unity</c> and a scene for every mountain (Story 010's test mountain, and since
+    /// Story 015 every mountain <see cref="MountainCatalog"/> finds) from the scripts, instead of hand-written scene
+    /// files: terrain, sim driver with input, rider and follow camera, wired together, saved and added to the build; a
+    /// mountain also gets its chairlift, run markers and the lift ride. Menu: First Chair > Build Test Slope Scene /
+    /// Build Test Mountain Scene / Build Mountain Scenes. Safe to run again; it overwrites the scene and keeps existing
+    /// settings assets under <c>Assets/Data/Riding</c>.
     /// </summary>
     public static class TestSlopeSceneBuilder
     {
@@ -57,13 +59,49 @@ namespace FirstChair.Riding.Editor
             BuildMountainScene();
         }
 
+        /// <summary>Builds and saves every mountain's scene, after offering to save the open scenes.</summary>
+        [MenuItem("First Chair/Build Mountain Scenes")]
+        public static void BuildMountains()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            BuildMountainScenes();
+        }
+
         /// <summary>Builds and saves the scene without asking anything (CI builds call this).</summary>
         public static void BuildScene() =>
             BuildScene(ScenePath, TestSlopeTerrainBuilder.SlopeFolder, TestSlopeData.TestSlopeName, false);
 
-        /// <summary>Builds and saves the test mountain scene without asking anything (CI builds call this).</summary>
-        public static void BuildMountainScene() =>
-            BuildScene(MountainScenePath, TestSlopeTerrainBuilder.MountainFolder, MountainName, true);
+        /// <summary>Builds and saves the test mountain scene without asking anything.</summary>
+        public static void BuildMountainScene() => BuildMountainScene(MountainName);
+
+        /// <summary>
+        /// Builds and saves every mountain's scene without asking anything (CI builds call this): one for each mountain
+        /// <see cref="MountainCatalog"/> finds under <c>Assets/Terrain/</c>. Returns the scenes' paths.
+        /// </summary>
+        public static string[] BuildMountainScenes()
+        {
+            IReadOnlyList<string> names = MountainCatalog.Names();
+            var paths = new string[names.Count];
+            for (int i = 0; i < names.Count; i++)
+            {
+                paths[i] = BuildMountainScene(names[i]);
+            }
+
+            return paths;
+        }
+
+        /// <summary>Builds and saves one mountain's scene from its folder under <c>Assets/Terrain/</c>. Returns its path.</summary>
+        /// <param name="name">The mountain's name, as its folder and files are named.</param>
+        public static string BuildMountainScene(string name)
+        {
+            string path = MountainCatalog.ScenePathOf(name);
+            BuildScene(path, MountainCatalog.FolderOf(name), name, true);
+            return path;
+        }
 
         private static void BuildScene(string scenePath, string slopeFolder, string slopeName, bool mountain)
         {

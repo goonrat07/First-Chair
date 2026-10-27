@@ -40,7 +40,8 @@ namespace FirstChair.Riding
         private const double ParkApproachMetres = 40.0;
 
         // The scenes in the build to ride (Story 010), by scene name.
-        private static readonly string[] Places = { "TestSlope", "TestMountain" };
+        // Where to ride: every scene in the build, in build order (Story 015: each mountain has one).
+        private static string[] _places;
 
         private static readonly string[] ControlsText =
         {
@@ -90,6 +91,22 @@ namespace FirstChair.Riding
         }
 
         private static void InstallIn(Scene scene, LoadSceneMode mode) => InstallHere();
+
+        // Every scene in the build by name, in build order, read once: the test slope and each mountain.
+        private static string[] Places()
+        {
+            if (_places == null)
+            {
+                int count = SceneManager.sceneCountInBuildSettings;
+                _places = new string[count];
+                for (int i = 0; i < count; i++)
+                {
+                    _places[i] = Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(i));
+                }
+            }
+
+            return _places;
+        }
 
         private static void InstallHere()
         {
@@ -220,7 +237,7 @@ namespace FirstChair.Riding
                     // Story 010: where to ride.
                     GUILayout.Space(8f);
                     GUILayout.BeginHorizontal();
-                    foreach (string place in Places)
+                    foreach (string place in Places())
                     {
                         if (GUILayout.Button("Ride the " + FeelLabValues.Label(place).ToLowerInvariant()))
                         {

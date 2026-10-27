@@ -46,8 +46,8 @@ namespace FirstChair.Ci.Editor
 
                 AssetDatabase.SaveAssets();
                 TestSlopeSceneBuilder.BuildScene();
-                TestSlopeSceneBuilder.BuildMountainScene();
-                if (!BuildPlayer())
+                string[] mountainScenes = TestSlopeSceneBuilder.BuildMountainScenes();
+                if (!BuildPlayer(mountainScenes))
                 {
                     EditorApplication.Exit(1);
                 }
@@ -137,7 +137,15 @@ namespace FirstChair.Ci.Editor
             return true;
         }
 
-        private static bool BuildPlayer()
+        private static string[] Scenes(string first, string[] rest)
+        {
+            var scenes = new string[rest.Length + 1];
+            scenes[0] = first;
+            rest.CopyTo(scenes, 1);
+            return scenes;
+        }
+
+        private static bool BuildPlayer(string[] mountainScenes)
         {
             BuildTarget target = EditorUserBuildSettings.activeBuildTarget;
             string path = Argument("-customBuildPath");
@@ -160,7 +168,8 @@ namespace FirstChair.Ci.Editor
 
             var options = new BuildPlayerOptions
             {
-                scenes = new[] { TestSlopeSceneBuilder.ScenePath, TestSlopeSceneBuilder.MountainScenePath },
+                // The test slope first (the player opens on it), then every mountain (Story 015).
+                scenes = Scenes(TestSlopeSceneBuilder.ScenePath, mountainScenes),
                 locationPathName = path,
                 target = target,
                 targetGroup = BuildPipeline.GetBuildTargetGroup(target),

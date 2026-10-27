@@ -7,10 +7,10 @@ using UnityEngine;
 namespace FirstChair.Riding.Editor
 {
     /// <summary>
-    /// After a Windows or Linux player build, copies the three test-slope files (and the test mountain's, Story 010) into
-    /// the player's StreamingAssets, where
-    /// <see cref="SimDriver"/> reads them in a build. The RAW files are not Unity assets a player can load, and copying
-    /// after the build keeps a second copy out of the repo.
+    /// After a Windows or Linux player build, copies the three test-slope files, and every mountain's (Story 010's test
+    /// mountain, and since Story 015 each one <see cref="MountainCatalog"/> finds), into the player's StreamingAssets,
+    /// where <see cref="SimDriver"/> reads them in a build. The RAW files are not Unity assets a player can load, and
+    /// copying after the build keeps a second copy out of the repo.
     /// </summary>
     public sealed class TestSlopeBuildStep : IPostprocessBuildWithReport
     {
@@ -31,10 +31,10 @@ namespace FirstChair.Riding.Editor
             string exe = report.summary.outputPath;
             string streamingAssets = Path.Combine(Path.GetDirectoryName(exe), Path.GetFileNameWithoutExtension(exe) + "_Data", "StreamingAssets");
             Copy(TestSlopeTerrainBuilder.SlopeFolder, TestSlopeData.TestSlopeName, Path.Combine(streamingAssets, SimDriver.DefaultPlayerSlopeFolder));
-            if (Directory.Exists(TestSlopeTerrainBuilder.MountainFolder))
+            foreach (string mountain in MountainCatalog.Names())
             {
-                // Story 010: the test mountain rides from its own folder, named as its files are.
-                Copy(TestSlopeTerrainBuilder.MountainFolder, TestSlopeSceneBuilder.MountainName, Path.Combine(streamingAssets, TestSlopeSceneBuilder.MountainName));
+                // Each mountain rides from its own folder, named as its files are.
+                Copy(MountainCatalog.FolderOf(mountain), mountain, Path.Combine(streamingAssets, mountain));
             }
         }
 
