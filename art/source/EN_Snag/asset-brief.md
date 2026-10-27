@@ -31,6 +31,8 @@ LODS       Budgets below the spruce's, for a tree of 18 stubs: LOD0 232 tris (bu
            30 to 250). LOD2 billboard: two crossed quads.
 GATES      PASS. IoU against the profiles: front 0.990, side 0.992, top 0.994 (minimum 0.90); LOD1 front 0.970, top
            0.910 (minimum 0.70). Proportions within 2 percent, base on the ground, trunk on the axis, identity transforms.
+BILLBOARD  Two 160 x 672 px cells of 2.22 x 9.33 m (72 texels a metre), a 320 x 672 atlas; IoU 0.985 front, 0.983 side
+           against LOD0 (minimum 0.90), nothing reaching a cell edge.
 INFERRED   All colours, the shape values and the smaller budgets: design choices, provisional until the look review.
 TARGET     Unity 6.3 LTS URP, FBX, Assets/Art/Environment/EN_Snag/. The forest's mix gives it 3 percent of the trees
            (TestSlopeLook.TreeVariants). Not verified in the editor.
@@ -47,3 +49,10 @@ bash art/source/EN_Snag/build/phases.sh all                  # phases 1 to 5, th
 
 Change the tree by changing its entry in `make_variant_params.py` (or the params) and rerunning. Never edit the mesh or
 the FBX by hand.
+
+## Status
+
+- 2026-10-27: exported (tree-kit Phase 6) to `Assets/Art/Environment/EN_Snag/`: `EN_Snag.fbx` (Git LFS)
+  with `EN_Snag_LOD0` and `EN_Snag_LOD1`, `asset-manifest.json`, `animation-contract.json` and the billboard atlas
+  and layout. Export check PASS (30 of 30), round trip height 9.0 m. The evidence is in `review/final/`. Not verified in the Unity
+  editor.

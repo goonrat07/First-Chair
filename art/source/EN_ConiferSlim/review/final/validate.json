@@ -1,0 +1,62 @@
+{
+  "blend": "/home/user/First-Chair/art/source/EN_ConiferSlim/EN_ConiferSlim_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 1205,
+      "1": 336
+    },
+    "fail": [],
+    "warn": [
+      "EN_ConiferSlim_LOD0: no UV layer",
+      "EN_ConiferSlim_LOD1: no UV layer"
+    ]
+  },
+  "objects": [
+    {
+      "name": "EN_ConiferSlim_LOD0",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1205,
+        "verts_evaluated": 909,
+        "verts": 909,
+        "faces": 803,
+        "boundary_edges": 413,
+        "nonmanifold_edges": 0,
+        "islands": 101,
+        "materials": [
+          "M_ConiferSlim_Bark",
+          "M_ConiferSlim_Needle",
+          "M_ConiferSlim_Snow"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "EN_ConiferSlim_LOD1",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 336,
+        "verts_evaluated": 283,
+        "verts": 283,
+        "faces": 332,
+        "boundary_edges": 12,
+        "nonmanifold_edges": 0,
+        "islands": 56,
+        "materials": [
+          "M_ConiferSlim_Bark",
+          "M_ConiferSlim_Needle",
+          "M_ConiferSlim_Snow"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}

@@ -26,6 +26,8 @@ LODS       LOD0 1,193 tris (budget 300 to 1,500). LOD1 372 tris (budget 100 to 4
            per tier, tent sections 55 percent wide. LOD2 billboard: two crossed quads.
 GATES      PASS. IoU against the profiles: front 0.995, side 0.995, top 0.998 (minimum 0.90); LOD1 front 0.723, top
            0.811 (minimum 0.70). Proportions within 2 percent, base on the ground, trunk on the axis, identity transforms.
+BILLBOARD  Two 352 x 832 px cells of 4.89 x 11.56 m (72 texels a metre), a 704 x 832 atlas; IoU 0.996 front, 0.995 side
+           against LOD0 (minimum 0.90), nothing reaching a cell edge.
 INFERRED   All colours and the shape values: design choices, provisional until the look review.
 TARGET     Unity 6.3 LTS URP, FBX, Assets/Art/Environment/EN_ConiferBroad/. The forest's mix gives it 20 percent of the
            trees (TestSlopeLook.TreeVariants). Not verified in the editor.
@@ -42,3 +44,10 @@ bash art/source/EN_ConiferBroad/build/phases.sh all          # phases 1 to 5, th
 
 Change the tree by changing its entry in `make_variant_params.py` (or the params) and rerunning. Never edit the mesh or
 the FBX by hand.
+
+## Status
+
+- 2026-10-27: exported (tree-kit Phase 6) to `Assets/Art/Environment/EN_ConiferBroad/`: `EN_ConiferBroad.fbx` (Git LFS)
+  with `EN_ConiferBroad_LOD0` and `EN_ConiferBroad_LOD1`, `asset-manifest.json`, `animation-contract.json` and the billboard atlas
+  and layout. Export check PASS (30 of 30), round trip height 11.0 m. The evidence is in `review/final/`. Not verified in the Unity
+  editor.

@@ -1,0 +1,13 @@
+{
+  "atlas": "EN_ConiferBroad_Billboard.png",
+  "cells": 2,
+  "cellWidthMetres": 4.8889,
+  "cellHeightMetres": 11.5556,
+  "bottomMetres": -0.1,
+  "alphaCutoff": 0.5019607843137255,
+  "views": [
+    "front",
+    "side"
+  ],
+  "source": "tools/blender/trees/billboard.py and billboard_atlas.py"
+}

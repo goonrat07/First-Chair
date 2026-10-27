@@ -1,0 +1,59 @@
+{
+  "file": "/home/user/First-Chair/Assets/Art/Environment/EN_Snag/EN_Snag.fbx",
+  "errors": [],
+  "meshes": [
+    {
+      "name": "EN_Snag_LOD0",
+      "tris": 232,
+      "verts": 179,
+      "uv": false,
+      "materials": [
+        "M_Snag_Bark",
+        "M_Snag_Needle",
+        "M_Snag_Snow"
+      ],
+      "skinned": false,
+      "shape_keys": 0
+    },
+    {
+      "name": "EN_Snag_LOD1",
+      "tris": 120,
+      "verts": 103,
+      "uv": false,
+      "materials": [
+        "M_Snag_Bark",
+        "M_Snag_Needle",
+        "M_Snag_Snow"
+      ],
+      "skinned": false,
+      "shape_keys": 0
+    }
+  ],
+  "armatures": [],
+  "clips": [],
+  "materials": [
+    "M_Snag_Bark",
+    "M_Snag_Needle",
+    "M_Snag_Snow"
+  ],
+  "images": [],
+  "bounds_m": {
+    "min": [
+      -0.7134,
+      -0.6268,
+      -0.0
+    ],
+    "max": [
+      0.8866,
+      0.9082,
+      9.0
+    ],
+    "size": [
+      1.6,
+      1.5351,
+      9.0
+    ]
+  },
+  "height_m": 9.0,
+  "render": "/home/user/First-Chair/art/source/EN_Snag/review/export/roundtrip_clay_threequarter.png"
+}

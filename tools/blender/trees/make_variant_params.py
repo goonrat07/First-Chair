@@ -109,7 +109,9 @@ def params_for(asset, spec, base):
         p["lods"][level]["select"].update(select)
     p["lods"][2]["notes"] = "Flat far version: two crossed quads on an alpha atlas from tools/blender/trees/billboard.py and billboard_atlas.py."
     p["cluster"]["scale"] = spec["cluster_scale"]
-    p["cluster"]["notes"] = "scale %s of the %s m base" % (spec["cluster_scale"], spec["shape"]["height_m"])
+    p["cluster"]["notes"] = ("the kit's cluster renders scale it %s of the %s m base; in the game the forest fits its crown to "
+                             "the layout's branch radius, no taller than 16.5 m (TestSlopeLook)"
+                             % (spec["cluster_scale"], spec["shape"]["height_m"]))
     p["cluster"]["min_spacing_m"] = spec.get("cluster_spacing_m", p["cluster"]["min_spacing_m"])
     p["cluster"]["radius_m"] = spec.get("cluster_radius_m", p["cluster"]["radius_m"])
     return p

@@ -1,0 +1,271 @@
+{
+  "blend": "/home/user/First-Chair/art/source/EN_ConiferSlim/EN_ConiferSlim_master.blend",
+  "collections": [
+    "LOD0"
+  ],
+  "look": {
+    "notes": "Review stage only (style-notes 'Overall look': strong low sun, blue shadows, near-white lit snow). Game lighting is built in Unity.",
+    "sun_az": -50,
+    "sun_el": 16,
+    "sun_strength": 10.0,
+    "sun_colour": [
+      1.0,
+      0.88,
+      0.68
+    ],
+    "sky_light": [
+      0.2,
+      0.3,
+      0.55
+    ],
+    "sky_view": [
+      0.72,
+      0.82,
+      0.95
+    ],
+    "ground": [
+      0.9,
+      0.91,
+      0.93
+    ],
+    "skier_proxy_xy": [
+      1.6,
+      -1.4
+    ]
+  },
+  "shots": {
+    "threequarter": {
+      "dist_m": 18.22,
+      "camera": [
+        10.251,
+        -14.64,
+        10.789
+      ],
+      "lens": 50.0,
+      "ortho_scale": null,
+      "res": [
+        1200,
+        1600
+      ],
+      "tree_box": {
+        "height_px": 1375.2,
+        "width_px": 324.4,
+        "in_frame": true,
+        "top_y_frac": 0.946,
+        "bottom_y_frac": 0.087
+      }
+    },
+    "front": {
+      "dist_m": 29.11,
+      "camera": [
+        0.027,
+        -29.145,
+        7.0
+      ],
+      "lens": 0,
+      "ortho_scale": 9.799999237060547,
+      "res": [
+        1000,
+        1600
+      ],
+      "tree_box": {
+        "height_px": 1428.6,
+        "width_px": 248.3,
+        "in_frame": true,
+        "top_y_frac": 0.946,
+        "bottom_y_frac": 0.054
+      }
+    },
+    "top": {
+      "dist_m": 11.87,
+      "camera": [
+        0.027,
+        -0.039,
+        18.867
+      ],
+      "lens": 0,
+      "ortho_scale": 2.7983977794647217,
+      "res": [
+        1200,
+        1200
+      ],
+      "tree_box": {
+        "height_px": 949.2,
+        "width_px": 1043.5,
+        "in_frame": true,
+        "top_y_frac": 0.895,
+        "bottom_y_frac": 0.105
+      }
+    },
+    "game": {
+      "aim": "follow camera on the skier proxy at (1.60, -1.40, 0.875), 18.0 m",
+      "camera": [
+        7.964,
+        -12.423,
+        13.603
+      ],
+      "lens": 35.0,
+      "ortho_scale": null,
+      "res": [
+        1920,
+        1080
+      ],
+      "tree_box": {
+        "height_px": 2016.4,
+        "width_px": 600.0,
+        "in_frame": false,
+        "top_y_frac": 2.336,
+        "bottom_y_frac": 0.469
+      },
+      "aimed_at_tree_mid_height": {
+        "height_px": 1317.5,
+        "width_px": 461.1,
+        "in_frame": false,
+        "top_y_frac": 1.237,
+        "bottom_y_frac": 0.017
+      }
+    },
+    "cluster_game": {
+      "dist_m": 49.59,
+      "camera": [
+        18.022,
+        -31.489,
+        43.064
+      ],
+      "lens": 35.0,
+      "ortho_scale": null,
+      "res": [
+        1920,
+        1080
+      ],
+      "tree_box": {
+        "height_px": 738.5,
+        "width_px": 635.2,
+        "in_frame": true,
+        "top_y_frac": 0.793,
+        "bottom_y_frac": 0.109
+      },
+      "instances": [
+        {
+          "xy": [
+            0.0,
+            0.0
+          ],
+          "scale": 1.143,
+          "rot_z_deg": 347.3
+        },
+        {
+          "xy": [
+            6.79,
+            -0.55
+          ],
+          "scale": 1.012,
+          "rot_z_deg": 221.6
+        },
+        {
+          "xy": [
+            -5.05,
+            0.19
+          ],
+          "scale": 0.813,
+          "rot_z_deg": 5.4
+        },
+        {
+          "xy": [
+            2.08,
+            4.69
+          ],
+          "scale": 0.961,
+          "rot_z_deg": 21.4
+        },
+        {
+          "xy": [
+            -6.49,
+            -3.15
+          ],
+          "scale": 0.826,
+          "rot_z_deg": 87.1
+        },
+        {
+          "xy": [
+            3.1,
+            -7.33
+          ],
+          "scale": 0.762,
+          "rot_z_deg": 167.0
+        }
+      ]
+    },
+    "cluster_low": {
+      "dist_m": 44.23,
+      "camera": [
+        22.486,
+        -39.221,
+        12.624
+      ],
+      "lens": 35.0,
+      "ortho_scale": null,
+      "res": [
+        1920,
+        1080
+      ],
+      "tree_box": {
+        "height_px": 785.0,
+        "width_px": 675.7,
+        "in_frame": true,
+        "top_y_frac": 0.819,
+        "bottom_y_frac": 0.092
+      },
+      "instances": [
+        {
+          "xy": [
+            0.0,
+            0.0
+          ],
+          "scale": 1.143,
+          "rot_z_deg": 347.3
+        },
+        {
+          "xy": [
+            6.79,
+            -0.55
+          ],
+          "scale": 1.012,
+          "rot_z_deg": 221.6
+        },
+        {
+          "xy": [
+            -5.05,
+            0.19
+          ],
+          "scale": 0.813,
+          "rot_z_deg": 5.4
+        },
+        {
+          "xy": [
+            2.08,
+            4.69
+          ],
+          "scale": 0.961,
+          "rot_z_deg": 21.4
+        },
+        {
+          "xy": [
+            -6.49,
+            -3.15
+          ],
+          "scale": 0.826,
+          "rot_z_deg": 87.1
+        },
+        {
+          "xy": [
+            3.1,
+            -7.33
+          ],
+          "scale": 0.762,
+          "rot_z_deg": 167.0
+        }
+      ]
+    }
+  }
+}

@@ -27,6 +27,8 @@ LODS       Budgets below the spruce's, for a tree a third its height: LOD0 506 t
            billboard: two crossed quads.
 GATES      PASS. IoU against the profiles: front 0.987, side 0.985, top 0.997 (minimum 0.90); LOD1 front 0.757, top
            0.878 (minimum 0.70). Proportions within 2 percent, base on the ground, trunk on the axis, identity transforms.
+BILLBOARD  Two 192 x 352 px cells of 2.67 x 4.89 m (72 texels a metre), a 384 x 352 atlas; IoU 0.985 front, 0.986 side
+           against LOD0 (minimum 0.90), nothing reaching a cell edge.
 INFERRED   All colours, the shape values and the smaller budgets: design choices, provisional until the look review.
 TARGET     Unity 6.3 LTS URP, FBX, Assets/Art/Environment/EN_ConiferYoung/. The forest's mix gives it 7 percent of the
            trees (TestSlopeLook.TreeVariants). Not verified in the editor.
@@ -43,3 +45,10 @@ bash art/source/EN_ConiferYoung/build/phases.sh all          # phases 1 to 5, th
 
 Change the tree by changing its entry in `make_variant_params.py` (or the params) and rerunning. Never edit the mesh or
 the FBX by hand.
+
+## Status
+
+- 2026-10-27: exported (tree-kit Phase 6) to `Assets/Art/Environment/EN_ConiferYoung/`: `EN_ConiferYoung.fbx` (Git LFS)
+  with `EN_ConiferYoung_LOD0` and `EN_ConiferYoung_LOD1`, `asset-manifest.json`, `animation-contract.json` and the billboard atlas
+  and layout. Export check PASS (30 of 30), round trip height 4.5 m. The evidence is in `review/final/`. Not verified in the Unity
+  editor.

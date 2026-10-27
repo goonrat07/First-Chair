@@ -1,0 +1,16 @@
+{
+  "iou_min": 0.9,
+  "views": {
+    "front": {
+      "iou": 0.9867,
+      "coverage": 0.1192,
+      "clipped": false
+    },
+    "side": {
+      "iou": 0.9852,
+      "coverage": 0.1137,
+      "clipped": false
+    }
+  },
+  "verdict": "PASS"
+}

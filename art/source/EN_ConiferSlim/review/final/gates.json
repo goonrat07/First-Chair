@@ -1,0 +1,342 @@
+{
+  "blend": "/home/user/First-Chair/art/source/EN_ConiferSlim/EN_ConiferSlim_master.blend",
+  "params": "/home/user/First-Chair/art/source/EN_ConiferSlim/EN_ConiferSlim_params.json",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "lod": "LOD0",
+      "check": "tris in budget",
+      "verdict": "PASS",
+      "value": 1205,
+      "target": "300 to 1500",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "tris equal layout",
+      "verdict": "PASS",
+      "value": 1205,
+      "target": 1205,
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "transform identity EN_ConiferSlim_LOD0",
+      "verdict": "PASS",
+      "value": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ]
+      ],
+      "target": "loc 0, rot 0, scale 1, no parent",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "base on ground",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "|z| <= 0.005 m",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "trunk base on axis",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "<= 0.005 m",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "height_m",
+      "verdict": "PASS",
+      "value": 14.0,
+      "target": "14.0000 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "lowest_crown_z_m",
+      "verdict": "PASS",
+      "value": 2.9893,
+      "target": "2.9893 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "crown_width_m",
+      "verdict": "PASS",
+      "value": 2.4882,
+      "target": "2.4882 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "trunk_base_diameter_m",
+      "verdict": "PASS",
+      "value": 0.3,
+      "target": "0.3000 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "height_to_crown_width",
+      "verdict": "PASS",
+      "value": 5.6266,
+      "target": "5.6266 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "clear_trunk_frac",
+      "verdict": "PASS",
+      "value": 0.2135,
+      "target": "0.2135 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "height_to_trunk_diameter",
+      "verdict": "PASS",
+      "value": 46.6667,
+      "target": "46.6667 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "height vs params",
+      "verdict": "PASS",
+      "value": 14.0,
+      "target": "14.0000 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD0",
+      "check": "top IoU vs LOD0 profile",
+      "verdict": "PASS",
+      "value": 0.996,
+      "target": ">= 0.90",
+      "note": "ref_only 0.3%, render_only 0.1%"
+    },
+    {
+      "lod": "LOD0",
+      "check": "front IoU vs profile",
+      "verdict": "PASS",
+      "value": 0.9898,
+      "target": ">= 0.90",
+      "note": "world_gate.py gate_front.json; ref_only 0.5%, render_only 0.5%"
+    },
+    {
+      "lod": "LOD0",
+      "check": "side IoU vs profile",
+      "verdict": "PASS",
+      "value": 0.99,
+      "target": ">= 0.90",
+      "note": "world_gate.py gate_side.json; ref_only 0.3%, render_only 0.7%"
+    },
+    {
+      "lod": "LOD1",
+      "check": "tris in budget",
+      "verdict": "PASS",
+      "value": 336,
+      "target": "100 to 400",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "tris equal layout",
+      "verdict": "PASS",
+      "value": 336,
+      "target": 336,
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "transform identity EN_ConiferSlim_LOD1",
+      "verdict": "PASS",
+      "value": [
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          1.0,
+          1.0,
+          1.0
+        ]
+      ],
+      "target": "loc 0, rot 0, scale 1, no parent",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "base on ground",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "|z| <= 0.005 m",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "trunk base on axis",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "<= 0.005 m",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "height_m",
+      "verdict": "PASS",
+      "value": 14.0,
+      "target": "14.0000 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "lowest_crown_z_m",
+      "verdict": "PASS",
+      "value": 3.0055,
+      "target": "3.0055 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "crown_width_m",
+      "verdict": "PASS",
+      "value": 2.4882,
+      "target": "2.4882 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "trunk_base_diameter_m",
+      "verdict": "PASS",
+      "value": 0.3,
+      "target": "0.3000 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "height_to_crown_width",
+      "verdict": "PASS",
+      "value": 5.6266,
+      "target": "5.6266 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "clear_trunk_frac",
+      "verdict": "PASS",
+      "value": 0.2147,
+      "target": "0.2147 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "height_to_trunk_diameter",
+      "verdict": "PASS",
+      "value": 46.6667,
+      "target": "46.6667 +/- 2%",
+      "note": ""
+    },
+    {
+      "lod": "LOD1",
+      "check": "top IoU vs LOD0 profile",
+      "verdict": "PASS",
+      "value": 0.8578,
+      "target": ">= 0.70",
+      "note": "ref_only 12.4%, render_only 2.2%"
+    },
+    {
+      "lod": "LOD1",
+      "check": "front IoU vs LOD0 profile",
+      "verdict": "PASS",
+      "value": 0.7488,
+      "target": ">= 0.70",
+      "note": "world_gate.py gate_front_lod1.json; ref_only 23.9%, render_only 1.6%"
+    }
+  ],
+  "measured": {
+    "LOD0": {
+      "tris": 1205,
+      "mesh": {
+        "height_m": 14.0,
+        "min_z_m": 0.0,
+        "lowest_crown_z_m": 2.9892959594726562,
+        "crown_width_m": 2.4881870764622205,
+        "trunk_base_diameter_m": 0.30000001192092896,
+        "ratios": {
+          "height_to_crown_width": 5.626586574794699,
+          "clear_trunk_frac": 0.2135211399623326,
+          "height_to_trunk_diameter": 46.66666481230001
+        }
+      },
+      "layout": {
+        "height_m": 14.0,
+        "min_z_m": 0.0,
+        "lowest_crown_z_m": 2.989295912256779,
+        "crown_width_m": 2.488187047831052,
+        "trunk_base_diameter_m": 0.3,
+        "ratios": {
+          "height_to_crown_width": 5.626586639538926,
+          "clear_trunk_frac": 0.21352113658976993,
+          "height_to_trunk_diameter": 46.66666666666667
+        },
+        "spike_frac": 0.16,
+        "tris": 1205,
+        "branches": 99
+      }
+    },
+    "LOD1": {
+      "tris": 336,
+      "mesh": {
+        "height_m": 14.0,
+        "min_z_m": 0.0,
+        "lowest_crown_z_m": 3.0054914951324463,
+        "crown_width_m": 2.4881870764622205,
+        "trunk_base_diameter_m": 0.30000001192092896,
+        "ratios": {
+          "height_to_crown_width": 5.626586574794699,
+          "clear_trunk_frac": 0.21467796393803187,
+          "height_to_trunk_diameter": 46.66666481230001
+        }
+      },
+      "layout": {
+        "height_m": 14.0,
+        "min_z_m": 0.0,
+        "lowest_crown_z_m": 3.0054913830115115,
+        "crown_width_m": 2.488187047831052,
+        "trunk_base_diameter_m": 0.3,
+        "ratios": {
+          "height_to_crown_width": 5.626586639538926,
+          "clear_trunk_frac": 0.21467795592939368,
+          "height_to_trunk_diameter": 46.66666666666667
+        },
+        "spike_frac": 0.16,
+        "tris": 336,
+        "branches": 54
+      }
+    }
+  },
+  "not_assessed": []
+}

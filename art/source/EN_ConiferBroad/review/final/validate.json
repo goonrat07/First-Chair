@@ -1,0 +1,62 @@
+{
+  "blend": "/home/user/First-Chair/art/source/EN_ConiferBroad/EN_ConiferBroad_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 1193,
+      "1": 372
+    },
+    "fail": [],
+    "warn": [
+      "EN_ConiferBroad_LOD0: no UV layer",
+      "EN_ConiferBroad_LOD1: no UV layer"
+    ]
+  },
+  "objects": [
+    {
+      "name": "EN_ConiferBroad_LOD0",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 1193,
+        "verts_evaluated": 900,
+        "verts": 900,
+        "faces": 795,
+        "boundary_edges": 409,
+        "nonmanifold_edges": 0,
+        "islands": 100,
+        "materials": [
+          "M_ConiferBroad_Bark",
+          "M_ConiferBroad_Needle",
+          "M_ConiferBroad_Snow"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "EN_ConiferBroad_LOD1",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 372,
+        "verts_evaluated": 313,
+        "verts": 313,
+        "faces": 368,
+        "boundary_edges": 12,
+        "nonmanifold_edges": 0,
+        "islands": 62,
+        "materials": [
+          "M_ConiferBroad_Bark",
+          "M_ConiferBroad_Needle",
+          "M_ConiferBroad_Snow"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}

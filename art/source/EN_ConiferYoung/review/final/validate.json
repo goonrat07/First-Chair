@@ -1,0 +1,62 @@
+{
+  "blend": "/home/user/First-Chair/art/source/EN_ConiferYoung/EN_ConiferYoung_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 506,
+      "1": 216
+    },
+    "fail": [],
+    "warn": [
+      "EN_ConiferYoung_LOD0: no UV layer",
+      "EN_ConiferYoung_LOD1: no UV layer"
+    ]
+  },
+  "objects": [
+    {
+      "name": "EN_ConiferYoung_LOD0",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 506,
+        "verts_evaluated": 384,
+        "verts": 384,
+        "faces": 337,
+        "boundary_edges": 178,
+        "nonmanifold_edges": 0,
+        "islands": 43,
+        "materials": [
+          "M_ConiferYoung_Bark",
+          "M_ConiferYoung_Needle",
+          "M_ConiferYoung_Snow"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "EN_ConiferYoung_LOD1",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 216,
+        "verts_evaluated": 183,
+        "verts": 183,
+        "faces": 212,
+        "boundary_edges": 12,
+        "nonmanifold_edges": 0,
+        "islands": 36,
+        "materials": [
+          "M_ConiferYoung_Bark",
+          "M_ConiferYoung_Needle",
+          "M_ConiferYoung_Snow"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}

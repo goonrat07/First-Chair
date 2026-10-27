@@ -1,0 +1,62 @@
+{
+  "blend": "/home/user/First-Chair/art/source/EN_Snag/EN_Snag_master.blend",
+  "summary": {
+    "tris_by_lod": {
+      "0": 232,
+      "1": 120
+    },
+    "fail": [],
+    "warn": [
+      "EN_Snag_LOD0: no UV layer",
+      "EN_Snag_LOD1: no UV layer"
+    ]
+  },
+  "objects": [
+    {
+      "name": "EN_Snag_LOD0",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 232,
+        "verts_evaluated": 179,
+        "verts": 179,
+        "faces": 154,
+        "boundary_edges": 88,
+        "nonmanifold_edges": 0,
+        "islands": 20,
+        "materials": [
+          "M_Snag_Bark",
+          "M_Snag_Needle",
+          "M_Snag_Snow"
+        ],
+        "modifiers": []
+      }
+    },
+    {
+      "name": "EN_Snag_LOD1",
+      "type": "MESH",
+      "warn": [
+        "no UV layer"
+      ],
+      "fail": [],
+      "info": {
+        "tris_evaluated": 120,
+        "verts_evaluated": 103,
+        "verts": 103,
+        "faces": 116,
+        "boundary_edges": 12,
+        "nonmanifold_edges": 0,
+        "islands": 20,
+        "materials": [
+          "M_Snag_Bark",
+          "M_Snag_Needle",
+          "M_Snag_Snow"
+        ],
+        "modifiers": []
+      }
+    }
+  ]
+}

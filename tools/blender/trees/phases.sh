@@ -80,6 +80,7 @@ billboard() {
   local R="$A/review/05_billboard"
   "$B" --background --python "$T/billboard.py" -- --master "$M" --out "$R" | grep -E "^BILLBOARD"
   python3 "$T/billboard_atlas.py" --renders "$R" --params "$P" --out "$X"
+  mkdir -p "$A/review/final"; cp "$R/gate_billboard.json" "$A/review/final/"
 }
 
 case "$PHASE" in

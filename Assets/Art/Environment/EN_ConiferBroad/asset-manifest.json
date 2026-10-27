@@ -1,0 +1,165 @@
+{
+  "asset": "EN_ConiferBroad",
+  "generated": "2026-10-27T20:56:30",
+  "blender": "5.2.2 LTS",
+  "source": "/home/user/First-Chair/art/source/EN_ConiferBroad/EN_ConiferBroad_master.blend",
+  "target_engine": "unity",
+  "units": {
+    "system": "METRIC",
+    "scale_length": 1.0,
+    "authoring_up": "Z",
+    "authoring_forward": "-Y",
+    "export_up": "Y",
+    "export_forward": "+Z",
+    "fbx_bake_space_transform": true,
+    "note": "Z up becomes Y up; a subject facing -Y in Blender faces +Z in the exported scene (glTF and FBX alike, measured for FBX on Blender 5.2.2)"
+  },
+  "target_height_m": 11.0,
+  "bounds_m": {
+    "min": [
+      -2.2169,
+      -2.2175,
+      0.0
+    ],
+    "max": [
+      2.1261,
+      2.2137,
+      11.0
+    ],
+    "size": [
+      4.343,
+      4.4312,
+      11.0
+    ]
+  },
+  "files": {
+    "all": "/home/user/First-Chair/Assets/Art/Environment/EN_ConiferBroad/EN_ConiferBroad.fbx"
+  },
+  "lods": [
+    {
+      "level": 0,
+      "objects": [
+        "EN_ConiferBroad_LOD0"
+      ],
+      "tris": 1193,
+      "budget_tris": [
+        300,
+        1500
+      ]
+    },
+    {
+      "level": 1,
+      "objects": [
+        "EN_ConiferBroad_LOD1"
+      ],
+      "tris": 372,
+      "budget_tris": [
+        100,
+        400
+      ]
+    }
+  ],
+  "materials": [
+    "M_ConiferBroad_Bark",
+    "M_ConiferBroad_Needle",
+    "M_ConiferBroad_Snow"
+  ],
+  "textures": [],
+  "texture_contract": {
+    "basecolor": "sRGB",
+    "normal": "Non-Color, tangent space, OpenGL +Y",
+    "roughness": "Non-Color",
+    "metallic": "Non-Color",
+    "ao": "Non-Color",
+    "packed_channels": "none by default; document any ORM packing here"
+  },
+  "skeleton": [],
+  "sockets": [],
+  "colliders": [],
+  "animation_contract": "animation-contract.json",
+  "inferred_from_no_reference": [
+    "all colours and the shape values (design choices",
+    "provisional until the look review)"
+  ],
+  "dependencies": [],
+  "tree": {
+    "kind": "conifer",
+    "variant": "snowy_spruce",
+    "version": 1,
+    "status": "built; provisional until the look review",
+    "height_m": 11.0,
+    "trunk_base_radius_m": 0.2,
+    "crown_width_m": 4.5094,
+    "origin": "trunk base, on the ground",
+    "per_lod": {
+      "LOD0": {
+        "object": "EN_ConiferBroad_LOD0",
+        "tris": 1193,
+        "height_m": 11.0,
+        "base_z_m": 0.0,
+        "trunk_base_radius_m": 0.2,
+        "crown_width_m": 4.5094
+      },
+      "LOD1": {
+        "object": "EN_ConiferBroad_LOD1",
+        "tris": 372,
+        "height_m": 11.0,
+        "base_z_m": 0.0,
+        "trunk_base_radius_m": 0.2,
+        "crown_width_m": 4.5094
+      }
+    },
+    "in_game_scale": [
+      0.7,
+      1.1
+    ],
+    "note": "the kit's cluster renders scale it [0.7, 1.1] of the 11.0 m base; in the game the forest fits its crown to the layout's branch radius, no taller than 16.5 m (TestSlopeLook)"
+  },
+  "material_colours": {
+    "M_ConiferBroad_Bark": {
+      "role": "bark",
+      "base_colour_linear": [
+        0.09,
+        0.07,
+        0.06
+      ],
+      "base_colour_srgb_hex": "#554B45",
+      "roughness": 0.9,
+      "carried_as": "FBX DiffuseColor, linear RGB; no textures, no UVs"
+    },
+    "M_ConiferBroad_Needle": {
+      "role": "needle",
+      "base_colour_linear": [
+        0.01,
+        0.03,
+        0.018
+      ],
+      "base_colour_srgb_hex": "#193024",
+      "roughness": 0.85,
+      "carried_as": "FBX DiffuseColor, linear RGB; no textures, no UVs"
+    },
+    "M_ConiferBroad_Snow": {
+      "role": "snow",
+      "base_colour_linear": [
+        0.8,
+        0.87,
+        0.96
+      ],
+      "base_colour_srgb_hex": "#E7F0FA",
+      "roughness": 0.7,
+      "carried_as": "FBX DiffuseColor, linear RGB; no textures, no UVs"
+    }
+  },
+  "provenance": {
+    "params": "art/source/EN_ConiferBroad/EN_ConiferBroad_params.json",
+    "blend": "art/source/EN_ConiferBroad/EN_ConiferBroad_master.blend",
+    "generator": "tree-kit build_tree.py (procedural)",
+    "style_reference": "art/reference/style-notes-gma2.md (our notes; no third-party images in the repo)",
+    "licence": "ours: First Chair's own procedural mesh and colours; no third-party meshes, images or textures"
+  },
+  "unity": {
+    "lod_group": "the importer builds it from the _LOD0/_LOD1 name suffixes (not verified in the editor)",
+    "gpu_instancing": "turn on for the three materials (not verified in the editor)",
+    "billboard_lod2": "crossed quads the scene builder makes from <asset>_Billboard.png and .json (TestSlopeLook.TreeBillboard; not verified in the editor)"
+  }
+}

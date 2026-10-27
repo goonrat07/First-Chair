@@ -84,13 +84,17 @@ absolute `source` path (export_delivery's convention, the same as PR_Ski).
 
 Built 2026-10-24 (sleep mode) by `tools/blender/trees/billboard.py` (Blender: LOD0 alone, orthographic, Workbench flat light in its
 material colours, Standard view transform, front and side at 4x) and `tools/blender/trees/billboard_atlas.py` (Pillow: a
-premultiplied box downsample into a 512 x 1024 RGBA atlas, two 256 x 1024 cells of 3.6 x 14.4 m, colour bled into the
-clear texels). `phases.sh billboard` runs both. The atlas and its layout are
-`Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.png` and `.json`. Texture memory: 2 MiB as RGBA8,
-about 512 KiB at BC7 or BC3, plus mipmaps.
+premultiplied box downsample into a side-by-side RGBA atlas, colour bled into the clear texels). `phases.sh billboard`
+runs both. The atlas and its layout are `Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.png` and `.json`.
+
+Rebuilt 2026-10-27 (story 016): the first build's fixed cells (two of 256 x 1024 px over 3.6 x 14.4 m) cut the side
+view's widest tiers off at the cell's right edge, and a broader tree overflowed them on both sides. Each cell is now
+sized to the tree's LOD0 plus a margin at 72 texels a metre: for this tree two 288 x 896 px cells of 4.0 x 12.44 m, a
+576 x 896 atlas (2 MiB as RGBA8, about 500 KiB at BC7 or BC3, plus mipmaps).
 
 Gate: each cell's alpha mask against LOD0's silhouette from the same view, rendered at 4x and reduced by
-majority: IoU 0.993 front and side (minimum 0.9). Crossed quads (4 tris) rather than a camera-facing quad, which
+majority: IoU 0.994 front and side (minimum 0.9); and no cell's alpha may reach its left, right or top edge, which
+the IoU can't see (`review/final/gate_billboard.json`). Crossed quads (4 tris) rather than a camera-facing quad, which
 would need a custom vertex shader. Unity's scene builder makes the quads (`BillboardQuads`), an alpha-clip URP Lit
 material with up-facing normals so it lights like the snow, and adds them as each tree's last LOD (switch heights
 0.25, 0.08 and 0.0125 of the screen). Not verified in the editor. The scripts live in `tools/blender/trees/`

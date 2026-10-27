@@ -6,6 +6,8 @@ named <asset>_Billboard after the params' "asset".
 
 Gate (tree-kit SKILL.md Phase 5): each cell's alpha mask against the LOD0 silhouette from the same view, here the
 render's own mask at RENDER_SCALE times the resolution reduced by majority; IoU at or above the params' gates.iou_min.
+That comparison can't see a tree cut off by its cell, since the render is cut alike, so the gate also fails a cell whose
+alpha reaches its left, right or top edge (story 016: the broad spruce overflowed a fixed 3.6 m cell).
 
   python3 tools/blender/trees/billboard_atlas.py --renders art/source/EN_Conifer/review/05_billboard \
     --params art/source/EN_Conifer/EN_Conifer_params.json --out Assets/Art/Environment/EN_Conifer
@@ -61,7 +63,10 @@ def main(a):
         lo_mask = lo_px[..., 3] >= ALPHA_CUTOFF
         union = np.logical_or(lo_mask, majority).sum()
         iou = float(np.logical_and(lo_mask, majority).sum() / union) if union else 0.0
-        gates[name] = {"iou": round(iou, 4), "coverage": round(float(lo_mask.mean()), 4)}
+        # Any covered pixel on the cell's border (but the bottom, where the trunk stands) means the cell cut the tree off.
+        hi_alpha = np.asarray(hi)[..., 3] > 0
+        clipped = bool(hi_alpha[:, 0].any() or hi_alpha[:, -1].any() or hi_alpha[0, :].any())
+        gates[name] = {"iou": round(iou, 4), "coverage": round(float(lo_mask.mean()), 4), "clipped": clipped}
         cells.append(bleed(lo_px))
     atlas = np.concatenate(cells, axis=1)
     os.makedirs(a.out, exist_ok=True)
@@ -72,7 +77,7 @@ def main(a):
     with open(os.path.join(a.out, atlas_name + ".json"), "w") as f:
         json.dump(quad, f, indent=2)
         f.write("\n")
-    passed = all(g["iou"] >= iou_min for g in gates.values())
+    passed = all(g["iou"] >= iou_min and not g["clipped"] for g in gates.values())
     report = {"iou_min": iou_min, "views": gates, "verdict": "PASS" if passed else "FAIL"}
     with open(os.path.join(a.renders, "gate_billboard.json"), "w") as f:
         json.dump(report, f, indent=2)

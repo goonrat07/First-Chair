@@ -1,0 +1,59 @@
+{
+  "file": "/home/user/First-Chair/Assets/Art/Environment/EN_ConiferBroad/EN_ConiferBroad.fbx",
+  "errors": [],
+  "meshes": [
+    {
+      "name": "EN_ConiferBroad_LOD0",
+      "tris": 1193,
+      "verts": 900,
+      "uv": false,
+      "materials": [
+        "M_ConiferBroad_Bark",
+        "M_ConiferBroad_Needle",
+        "M_ConiferBroad_Snow"
+      ],
+      "skinned": false,
+      "shape_keys": 0
+    },
+    {
+      "name": "EN_ConiferBroad_LOD1",
+      "tris": 372,
+      "verts": 313,
+      "uv": false,
+      "materials": [
+        "M_ConiferBroad_Bark",
+        "M_ConiferBroad_Needle",
+        "M_ConiferBroad_Snow"
+      ],
+      "skinned": false,
+      "shape_keys": 0
+    }
+  ],
+  "armatures": [],
+  "clips": [],
+  "materials": [
+    "M_ConiferBroad_Bark",
+    "M_ConiferBroad_Needle",
+    "M_ConiferBroad_Snow"
+  ],
+  "images": [],
+  "bounds_m": {
+    "min": [
+      -2.2169,
+      -2.2175,
+      -0.0
+    ],
+    "max": [
+      2.1261,
+      2.2137,
+      11.0
+    ],
+    "size": [
+      4.343,
+      4.4312,
+      11.0
+    ]
+  },
+  "height_m": 11.0,
+  "render": "/home/user/First-Chair/art/source/EN_ConiferBroad/review/export/roundtrip_clay_threequarter.png"
+}

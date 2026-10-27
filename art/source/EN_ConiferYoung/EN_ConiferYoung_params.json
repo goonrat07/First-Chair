@@ -167,7 +167,7 @@
     ],
     "min_spacing_m": 2.0,
     "radius_m": 5.0,
-    "notes": "scale [0.8, 1.2] of the 4.5 m base"
+    "notes": "the kit's cluster renders scale it [0.8, 1.2] of the 4.5 m base; in the game the forest fits its crown to the layout's branch radius, no taller than 16.5 m (TestSlopeLook)"
   },
   "profile": {
     "m_per_px": 0.01,

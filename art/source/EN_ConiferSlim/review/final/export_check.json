@@ -1,0 +1,457 @@
+{
+  "fbx": "/home/user/First-Chair/Assets/Art/Environment/EN_ConiferSlim/EN_ConiferSlim.fbx",
+  "manifest": "/home/user/First-Chair/Assets/Art/Environment/EN_ConiferSlim/asset-manifest.json",
+  "verdict": "PASS",
+  "checks": [
+    {
+      "check": "up axis is +Y",
+      "verdict": "PASS",
+      "value": {
+        "UpAxis": 1,
+        "UpAxisSign": 1,
+        "FrontAxis": 2,
+        "FrontAxisSign": 1,
+        "CoordAxis": 0,
+        "CoordAxisSign": 1
+      },
+      "target": "UpAxis 1, UpAxisSign 1"
+    },
+    {
+      "check": "no models beyond the LOD meshes",
+      "verdict": "PASS",
+      "value": [],
+      "target": "none"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 present as a Mesh model",
+      "verdict": "PASS",
+      "value": "Mesh",
+      "target": "Mesh"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 parent",
+      "verdict": "PASS",
+      "value": "scene root",
+      "target": "scene root"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 name suffix",
+      "verdict": "PASS",
+      "value": "EN_ConiferSlim_LOD0",
+      "target": "ends in _LOD0"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 local transform identity",
+      "verdict": "PASS",
+      "value": {
+        "t": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "r_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "s": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "target": "t 0, r 0, s 1"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 tris (raw FBX)",
+      "verdict": "PASS",
+      "value": 1205,
+      "target": 1205
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 height m (raw FBX, unit-scaled)",
+      "verdict": "PASS",
+      "value": 14.0,
+      "target": "14.00 +/- 1%"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 base on y = 0",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "|y| <= 0.005"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 trunk base on the up axis",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "<= 0.005 m"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 materials",
+      "verdict": "PASS",
+      "value": [
+        "M_ConiferSlim_Bark",
+        "M_ConiferSlim_Needle",
+        "M_ConiferSlim_Snow"
+      ],
+      "target": [
+        "M_ConiferSlim_Bark",
+        "M_ConiferSlim_Needle",
+        "M_ConiferSlim_Snow"
+      ]
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 present as a Mesh model",
+      "verdict": "PASS",
+      "value": "Mesh",
+      "target": "Mesh"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 parent",
+      "verdict": "PASS",
+      "value": "scene root",
+      "target": "scene root"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 name suffix",
+      "verdict": "PASS",
+      "value": "EN_ConiferSlim_LOD1",
+      "target": "ends in _LOD1"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 local transform identity",
+      "verdict": "PASS",
+      "value": {
+        "t": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "r_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "s": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "target": "t 0, r 0, s 1"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 tris (raw FBX)",
+      "verdict": "PASS",
+      "value": 336,
+      "target": 336
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 height m (raw FBX, unit-scaled)",
+      "verdict": "PASS",
+      "value": 14.0,
+      "target": "14.00 +/- 1%"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 base on y = 0",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "|y| <= 0.005"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 trunk base on the up axis",
+      "verdict": "PASS",
+      "value": 0.0,
+      "target": "<= 0.005 m"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 materials",
+      "verdict": "PASS",
+      "value": [
+        "M_ConiferSlim_Bark",
+        "M_ConiferSlim_Needle",
+        "M_ConiferSlim_Snow"
+      ],
+      "target": [
+        "M_ConiferSlim_Bark",
+        "M_ConiferSlim_Needle",
+        "M_ConiferSlim_Snow"
+      ]
+    },
+    {
+      "check": "M_ConiferSlim_Bark DiffuseColor (raw FBX) = params bark colour",
+      "verdict": "PASS",
+      "value": [
+        0.09,
+        0.07,
+        0.06
+      ],
+      "target": [
+        0.09,
+        0.07,
+        0.06
+      ]
+    },
+    {
+      "check": "M_ConiferSlim_Needle DiffuseColor (raw FBX) = params needle colour",
+      "verdict": "PASS",
+      "value": [
+        0.01,
+        0.03,
+        0.018
+      ],
+      "target": [
+        0.01,
+        0.03,
+        0.018
+      ]
+    },
+    {
+      "check": "M_ConiferSlim_Snow DiffuseColor (raw FBX) = params snow colour",
+      "verdict": "PASS",
+      "value": [
+        0.8,
+        0.87,
+        0.96
+      ],
+      "target": [
+        0.8,
+        0.87,
+        0.96
+      ]
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 tris (reimport)",
+      "verdict": "PASS",
+      "value": 1205,
+      "target": 1205
+    },
+    {
+      "check": "EN_ConiferSlim_LOD0 height m (reimport)",
+      "verdict": "PASS",
+      "value": 14.0,
+      "target": "14.00 +/- 1%"
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 tris (reimport)",
+      "verdict": "PASS",
+      "value": 336,
+      "target": 336
+    },
+    {
+      "check": "EN_ConiferSlim_LOD1 height m (reimport)",
+      "verdict": "PASS",
+      "value": 14.0,
+      "target": "14.00 +/- 1%"
+    },
+    {
+      "check": "M_ConiferSlim_Bark base colour (reimport)",
+      "verdict": "PASS",
+      "value": [
+        0.09,
+        0.07,
+        0.06
+      ],
+      "target": [
+        0.09,
+        0.07,
+        0.06
+      ]
+    },
+    {
+      "check": "M_ConiferSlim_Needle base colour (reimport)",
+      "verdict": "PASS",
+      "value": [
+        0.01,
+        0.03,
+        0.018
+      ],
+      "target": [
+        0.01,
+        0.03,
+        0.018
+      ]
+    },
+    {
+      "check": "M_ConiferSlim_Snow base colour (reimport)",
+      "verdict": "PASS",
+      "value": [
+        0.8,
+        0.87,
+        0.96
+      ],
+      "target": [
+        0.8,
+        0.87,
+        0.96
+      ]
+    }
+  ],
+  "raw_fbx": {
+    "fbx_version": 7400,
+    "axes": {
+      "UpAxis": 1,
+      "UpAxisSign": 1,
+      "FrontAxis": 2,
+      "FrontAxisSign": 1,
+      "CoordAxis": 0,
+      "CoordAxisSign": 1
+    },
+    "unit_scale_factor": 100.0,
+    "models": {
+      "EN_ConiferSlim_LOD0": {
+        "type": "Mesh",
+        "parent": "scene root",
+        "lcl_translation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "lcl_rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "lcl_scaling": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "materials": [
+          "M_ConiferSlim_Bark",
+          "M_ConiferSlim_Needle",
+          "M_ConiferSlim_Snow"
+        ],
+        "tris": 1205,
+        "verts": 909,
+        "base_m": 0.0,
+        "height_m": 14.0,
+        "base_centre_offset_m": 0.0,
+        "trunk_base_radius_m": 0.15,
+        "crown_width_m": 2.4882
+      },
+      "EN_ConiferSlim_LOD1": {
+        "type": "Mesh",
+        "parent": "scene root",
+        "lcl_translation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "lcl_rotation_deg": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "lcl_scaling": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "materials": [
+          "M_ConiferSlim_Bark",
+          "M_ConiferSlim_Needle",
+          "M_ConiferSlim_Snow"
+        ],
+        "tris": 336,
+        "verts": 283,
+        "base_m": 0.0,
+        "height_m": 14.0,
+        "base_centre_offset_m": 0.0,
+        "trunk_base_radius_m": 0.15,
+        "crown_width_m": 2.4882
+      }
+    },
+    "materials": {
+      "M_ConiferSlim_Bark": {
+        "DiffuseColor": [
+          0.09,
+          0.07,
+          0.06
+        ]
+      },
+      "M_ConiferSlim_Needle": {
+        "DiffuseColor": [
+          0.01,
+          0.03,
+          0.018
+        ]
+      },
+      "M_ConiferSlim_Snow": {
+        "DiffuseColor": [
+          0.8,
+          0.87,
+          0.96
+        ]
+      }
+    }
+  },
+  "reimport": {
+    "meshes": {
+      "EN_ConiferSlim_LOD0": {
+        "tris": 1205,
+        "height_m": 14.0,
+        "base_z_m": -0.0,
+        "blender_rotation_deg": [
+          90.0,
+          -0.0,
+          0.0
+        ],
+        "uv": false,
+        "materials": [
+          "M_ConiferSlim_Bark",
+          "M_ConiferSlim_Needle",
+          "M_ConiferSlim_Snow"
+        ]
+      },
+      "EN_ConiferSlim_LOD1": {
+        "tris": 336,
+        "height_m": 14.0,
+        "base_z_m": -0.0,
+        "blender_rotation_deg": [
+          90.0,
+          -0.0,
+          0.0
+        ],
+        "uv": false,
+        "materials": [
+          "M_ConiferSlim_Bark",
+          "M_ConiferSlim_Needle",
+          "M_ConiferSlim_Snow"
+        ]
+      }
+    },
+    "materials": {
+      "M_ConiferSlim_Bark": {
+        "base_colour_linear": [
+          0.09,
+          0.07,
+          0.06
+        ]
+      },
+      "M_ConiferSlim_Needle": {
+        "base_colour_linear": [
+          0.01,
+          0.03,
+          0.018
+        ]
+      },
+      "M_ConiferSlim_Snow": {
+        "base_colour_linear": [
+          0.8,
+          0.87,
+          0.96
+        ]
+      }
+    },
+    "other_objects": []
+  },
+  "renders": {
+    "clay": "/home/user/First-Chair/art/source/EN_ConiferSlim/review/export/export_clay.png",
+    "colour": "/home/user/First-Chair/art/source/EN_ConiferSlim/review/export/export_colour.png"
+  },
+  "render_order_left_to_right": [
+    "EN_ConiferSlim_LOD0",
+    "EN_ConiferSlim_LOD1"
+  ]
+}
