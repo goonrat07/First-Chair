@@ -48,7 +48,7 @@ TARGET     Unity 6.3 LTS URP, FBX, Assets/Art/Environment/EN_Conifer/ (exported 
   and `animation-contract.json` (no clips: a static asset). Shape and colours are unchanged from v2.
 - One FBX holds both LODs (no `--split-lods`), so Unity gets one model and builds its LODGroup from the
   `_LOD0` and `_LOD1` suffixes.
-- Export check PASS (30 of 30, `build/export_check.py`). In the raw FBX: Y up, both meshes at the scene
+- Export check PASS (30 of 30, `tools/blender/trees/export_check.py`). In the raw FBX: Y up, both meshes at the scene
   root with identity local transforms, 1,169 and 396 tris, height 12.00 m after the unit scale, trunk base
   at the origin, DiffuseColor equal to the params colours. Reimported into a blank Blender scene: the same
   tris, height 12.00 m and base colours. `roundtrip.py`: no errors, height 12.0 m. The evidence is in
@@ -71,10 +71,10 @@ bash art/source/EN_Conifer/build/phases.sh 6     # the export only, from the cur
 Phase 6 runs these steps in order:
 
 1. `export_delivery.py --engine unity --format FBX --collections LOW --no-animation`
-2. `build/manifest_extras.py`, which adds the tree fields to the manifest: height, trunk base radius,
+2. `tools/blender/trees/manifest_extras.py`, which adds the tree fields to the manifest: height, trunk base radius,
    crown width, the colours of each material, the variant, the source and the licence
 3. `roundtrip.py --expect-height 12`
-4. `build/export_check.py`
+4. `tools/blender/trees/export_check.py`
 
 It then copies the check evidence into `review/final/`. To change the tree, change the params and rerun.
 Never edit the mesh or the FBX by hand. Each export rewrites the manifest's `generated` time and
@@ -82,8 +82,8 @@ absolute `source` path (export_delivery's convention, the same as PR_Ski).
 
 ## Billboard (LOD2)
 
-Built 2026-10-24 (sleep mode) by `build/billboard.py` (Blender: LOD0 alone, orthographic, Workbench flat light in its
-material colours, Standard view transform, front and side at 4x) and `build/billboard_atlas.py` (Pillow: a
+Built 2026-10-24 (sleep mode) by `tools/blender/trees/billboard.py` (Blender: LOD0 alone, orthographic, Workbench flat light in its
+material colours, Standard view transform, front and side at 4x) and `tools/blender/trees/billboard_atlas.py` (Pillow: a
 premultiplied box downsample into a 512 x 1024 RGBA atlas, two 256 x 1024 cells of 3.6 x 14.4 m, colour bled into the
 clear texels). `phases.sh billboard` runs both. The atlas and its layout are
 `Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.png` and `.json`. Texture memory: 2 MiB as RGBA8,
@@ -93,5 +93,6 @@ Gate: each cell's alpha mask against LOD0's silhouette from the same view, rende
 majority: IoU 0.993 front and side (minimum 0.9). Crossed quads (4 tris) rather than a camera-facing quad, which
 would need a custom vertex shader. Unity's scene builder makes the quads (`BillboardQuads`), an alpha-clip URP Lit
 material with up-facing normals so it lights like the snow, and adds them as each tree's last LOD (switch heights
-0.25, 0.08 and 0.0125 of the screen). Not verified in the editor. The scripts live here because tree-kit has no
-billboard script yet; they move into the skill when it is next edited.
+0.25, 0.08 and 0.0125 of the screen). Not verified in the editor. The scripts live in `tools/blender/trees/`
+(shared by every tree asset since story 016) because tree-kit has no billboard script yet; they move into the skill
+when it is next edited.

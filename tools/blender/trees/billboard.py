@@ -1,4 +1,4 @@
-"""EN_Conifer billboard renders (tree-kit Phase 5, the far LOD; story 007). LOD0 alone, orthographic, flat-lit in its
+"""A tree's billboard renders (tree-kit Phase 5, the far LOD; story 007, shared since story 016). LOD0 alone, orthographic, flat-lit in its
 own material colours (Workbench FLAT, Standard view transform: the pixels are the albedo, and Unity lights the quads),
 from the front (looking +Y) and the side (looking -X), at RENDER_SCALE times the atlas cell, on a transparent film.
 build/billboard_atlas.py (system python3 with Pillow) downsamples them into the atlas and runs the gate.
@@ -6,7 +6,7 @@ build/billboard_atlas.py (system python3 with Pillow) downsamples them into the 
 Lives with the asset because the tree-kit skill's billboard script isn't written yet (.claude/skills/tree-kit/SKILL.md,
 Phase 5); move both scripts there when the skill is next edited.
 
-  $BLENDER_BIN -b --python art/source/EN_Conifer/build/billboard.py -- --master art/source/EN_Conifer/EN_Conifer_master.blend \
+  $BLENDER_BIN -b --python tools/blender/trees/billboard.py -- --master art/source/EN_Conifer/EN_Conifer_master.blend \
     --out art/source/EN_Conifer/review/05_billboard
 """
 import argparse

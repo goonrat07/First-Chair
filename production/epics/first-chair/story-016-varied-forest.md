@@ -1,7 +1,7 @@
 # Story 016: A varied forest (procedural tree shapes from the tree kit)
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Presentation
 > **Type**: Visual/Feel (tree assets, the forest in a build) + Logic (the variant choice)
 > **Estimate**: M

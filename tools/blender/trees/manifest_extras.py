@@ -1,12 +1,12 @@
 """
-MANIFEST EXTRAS (EN_Conifer, tree-kit Phase 6)
+MANIFEST EXTRAS (tree assets, tree-kit Phase 6; EN_Conifer first, shared since story 016)
 Adds the tree's own fields to the asset-manifest.json that export_delivery.py wrote next to the FBX:
 height, trunk base radius and crown width per LOD (measured on the master .blend's LOD meshes, metres,
 Z up, origin at the trunk base), each material's role, linear base colour (what the FBX carries as
 DiffuseColor), sRGB hex and roughness, the variant and version, the per-LOD tri budgets, and the
 source and licence. Run it after export_delivery.py; it only adds keys.
 
-blender --background --python art/source/EN_Conifer/build/manifest_extras.py -- \
+blender --background --python tools/blender/trees/manifest_extras.py -- \
   --blend art/source/EN_Conifer/EN_Conifer_master.blend --params art/source/EN_Conifer/EN_Conifer_params.json \
   --manifest Assets/Art/Environment/EN_Conifer/asset-manifest.json --variant snowy_spruce --root .
 """
@@ -83,14 +83,15 @@ def main(a):
                    "height_m": lod0["height_m"], "trunk_base_radius_m": lod0["trunk_base_radius_m"],
                    "crown_width_m": lod0["crown_width_m"], "origin": "trunk base, on the ground",
                    "per_lod": per_lod, "in_game_scale": params["cluster"]["scale"],
-                   "note": "12 m base tree; instances scaled 0.667 to 1.167 give 8 to 14 m trees (user decision 2026-10-20)"}
+                   "note": params["cluster"]["notes"]}
     man["material_colours"] = mats
     man["provenance"] = {"params": rel(a.params), "blend": rel(a.blend), "generator": "tree-kit build_tree.py (procedural)",
                          "style_reference": "art/reference/style-notes-gma2.md (our notes; no third-party images in the repo)",
                          "licence": "ours: First Chair's own procedural mesh and colours; no third-party meshes, images or textures"}
     man["unity"] = {"lod_group": "the importer builds it from the _LOD0/_LOD1 name suffixes (not verified in the editor)",
                     "gpu_instancing": "turn on for the three materials (not verified in the editor)",
-                    "billboard_lod2": "not built: tree-kit has no billboard script yet (asset-brief.md)"}
+                    "billboard_lod2": "crossed quads the scene builder makes from <asset>_Billboard.png and .json "
+                                      "(TestSlopeLook.TreeBillboard; not verified in the editor)"}
     with open(a.manifest, "w") as f:
         json.dump(man, f, indent=2)
     print("MANIFEST", a.manifest)

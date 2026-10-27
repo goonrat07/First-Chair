@@ -1,0 +1,54 @@
+{
+  "asset": "EN_ConiferBroad",
+  "variant": "snowy_spruce",
+  "lod": 0,
+  "params": "EN_ConiferBroad_params.json",
+  "drawn_by": "tree-kit make_profiles.py from the parameters (our own drawing)",
+  "measures": {
+    "height_m": 11.0,
+    "min_z_m": 0.0,
+    "lowest_crown_z_m": 0.13135726590038443,
+    "crown_width_m": 4.509364039857771,
+    "trunk_base_diameter_m": 0.4,
+    "ratios": {
+      "height_to_crown_width": 2.4393683683047573,
+      "clear_trunk_frac": 0.011941569627307675,
+      "height_to_trunk_diameter": 27.5
+    },
+    "spike_frac": 0.12000000000000002,
+    "tris": 1193,
+    "branches": 98
+  },
+  "front": {
+    "file": "front_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      504,
+      1160
+    ],
+    "az": 0,
+    "axis_col": 252.0,
+    "ground_row": 1130.0
+  },
+  "side": {
+    "file": "side_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      504,
+      1160
+    ],
+    "az": 90,
+    "axis_col": 252.0,
+    "ground_row": 1130.0
+  },
+  "top": {
+    "file": "top_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      504,
+      504
+    ],
+    "x0": -2.52,
+    "y1": 2.52
+  }
+}

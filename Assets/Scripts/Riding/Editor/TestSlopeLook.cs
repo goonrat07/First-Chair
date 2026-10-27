@@ -32,16 +32,31 @@ namespace FirstChair.Riding.Editor
         private const int TextureSize = 512;
         private const int AlphamapResolution = 1024;
         private const int SnowBlurTexels = 2;
-        private const string TreeModelPath = "Assets/Art/Environment/EN_Conifer/EN_Conifer.fbx";
+        private const string TreeFolder = "Assets/Art/Environment";
 
-        // EN_Conifer asset-manifest.json: crown width 3.6958 m at LOD0.
-        private const float TreeCrownRadius = 1.848f;
+        // The forest's tree models (story 016), each a tree-kit asset in TreeFolder/<asset>/: its share of the forest,
+        // per cent, and the crown radius it is scaled from, metres (0: half its manifest's crown width). Each tree picks
+        // one from a hash of its position (TreeVariantPicker). The snag has stubs, not a crown, so it is scaled as the
+        // spruce is rather than blown up to the layout's branch radius.
+        private static readonly (string Asset, int Share, float ScaleRadius)[] TreeVariants =
+        {
+            ("EN_Conifer", 45, 0f),
+            ("EN_ConiferSlim", 25, 0f),
+            ("EN_ConiferBroad", 20, 0f),
+            ("EN_ConiferYoung", 7, 0f),
+            ("EN_Snag", 3, 1.848f),
+        };
 
-        // The tree's far LOD (story 007): crossed quads from art/source/EN_Conifer/build/billboard_atlas.py. The 12 m tree
+        // No tree stands taller than this, metres: a little above the tallest spruce the test slope grows (12 m at its
+        // 2.5 m branch radius: 16.2 m), so no spruce changes. A tree is scaled so its crown matches the sim's branch
+        // radius, which would make the slim fir 28 m tall there; above this height it is scaled down instead, and its
+        // crown falls short of the branch circle (its lowest tiers are 3 m up, over a passing rider's head).
+        private const float MaxTreeHeightMetres = 16.5f;
+
+        // A tree's far LOD (story 007): crossed quads from tools/blender/trees/billboard_atlas.py. The 12 m spruce
         // fills about 25 / d of the follow camera's screen height at d metres, so LOD0 shows to about 100 m, LOD1 to
-        // about 300 m and the billboard out to the 2 km far clip.
-        private const string BillboardAtlasPath = "Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.png";
-        private const string BillboardLayoutPath = "Assets/Art/Environment/EN_Conifer/EN_Conifer_Billboard.json";
+        // about 300 m and the billboard out to the 2 km far clip; the switch heights are fractions of each tree's own
+        // size on screen, so they hold for every variant.
         private static readonly float[] TreeLodHeights = { 0.25f, 0.08f, 0.0125f };
 
         // Old tracks (story 003 decisions, 2026-10-24): on the groomer and in the bowl, each ski's line 10 cm wide, 2 cm off
@@ -312,47 +327,89 @@ namespace FirstChair.Riding.Editor
         }
 
         /// <summary>
-        /// Places the spruce (<c>EN_Conifer.fbx</c>) at every tree in the slope layout, scaled so its crown matches the
-        /// sim's branch radius. Without the model, a simple cone stands in. The sim, not these objects, decides collisions.
+        /// Places a tree model at every tree in the slope layout (story 016: each picks one of <see cref="TreeVariants"/>
+        /// from a hash of its position), scaled so its crown matches the sim's branch radius but no taller than
+        /// <see cref="MaxTreeHeightMetres"/>. A variant whose files are missing drops out of the mix; with none, a simple
+        /// cone stands in. The sim, not these objects, decides collisions.
         /// </summary>
         /// <param name="parent">Parent for the trees.</param>
         /// <param name="slope">The slope.</param>
         public static void Trees(Transform parent, TestSlopeData slope)
         {
-            var model = AssetDatabase.LoadAssetAtPath<GameObject>(TreeModelPath);
-            Material fallback = model == null ? LitMaterial("TreeFallback", "Universal Render Pipeline/Lit", new Color(0.12f, 0.22f, 0.16f), 0.1f, false) : null;
-            Mesh billboardMesh = null;
-            Material billboardMaterial = null;
-            bool billboard = model != null && TreeBillboard(out billboardMesh, out billboardMaterial);
+            int count = TreeVariants.Length;
+            var models = new GameObject[count];
+            var radii = new float[count];
+            var heights = new float[count];
+            var shares = new int[count];
+            var billboardMeshes = new Mesh[count];
+            var billboardMaterials = new Material[count];
+            bool anyVariant = false;
+            for (int v = 0; v < count; v++)
+            {
+                (string asset, int share, float scaleRadius) = TreeVariants[v];
+                models[v] = AssetDatabase.LoadAssetAtPath<GameObject>(TreeFolder + "/" + asset + "/" + asset + ".fbx");
+                TreeFields size = TreeSize(asset);
+                radii[v] = scaleRadius > 0f ? scaleRadius : 0.5f * size.crown_width_m;
+                heights[v] = size.height_m;
+                shares[v] = models[v] != null && radii[v] > 0f ? share : 0;
+                if (shares[v] > 0)
+                {
+                    anyVariant = true;
+                    TreeBillboard(asset, out billboardMeshes[v], out billboardMaterials[v]);
+                }
+                else
+                {
+                    Debug.LogWarning("TestSlopeLook: tree variant " + asset + " is missing its model or manifest; left out of the forest.");
+                }
+            }
+
+            Material fallback = anyVariant
+                ? null
+                : LitMaterial("TreeFallback", "Universal Render Pipeline/Lit", new Color(0.12f, 0.22f, 0.16f), 0.1f, false);
             for (int i = 0; i < slope.Layout.Trees.Count; i++)
             {
                 SlopeTree tree = slope.Layout.Trees[i];
                 slope.Heightmap.Sample(tree.X, tree.Z, out Fix64 height, out _);
-                float scale = Mathf.Clamp(SimCoordinates.ToFloat(tree.BranchRadius) / TreeCrownRadius, 0.5f, 2f);
-                GameObject instance = model != null ? (GameObject)PrefabUtility.InstantiatePrefab(model) : FallbackTree(fallback);
+                int v = TreeVariantPicker.Pick(tree.XMm, tree.ZMm, shares);
+                GameObject instance = v >= 0 ? (GameObject)PrefabUtility.InstantiatePrefab(models[v]) : FallbackTree(fallback);
+                float scale = v >= 0
+                    ? TreeVariantPicker.Scale(SimCoordinates.ToFloat(tree.BranchRadius), radii[v], heights[v], MaxTreeHeightMetres)
+                    : 1f;
                 instance.name = "Tree_" + i;
                 instance.transform.SetParent(parent, false);
                 instance.transform.SetPositionAndRotation(
                     new Vector3(SimCoordinates.ToFloat(tree.X), SimCoordinates.ToFloat(height), SimCoordinates.ToFloat(tree.Z)),
                     Quaternion.Euler(0f, i * 137.508f % 360f, 0f));
                 instance.transform.localScale = Vector3.one * scale;
-                if (billboard)
+                if (v >= 0 && billboardMeshes[v] != null)
                 {
-                    AddBillboardLod(instance, billboardMesh, billboardMaterial);
+                    AddBillboardLod(instance, billboardMeshes[v], billboardMaterials[v], TreeVariants[v].Asset + "_Billboard");
                 }
             }
         }
 
-        /// <summary>The billboard's mesh and alpha-clipped material, made in <see cref="Folder"/>; false if its files are missing.</summary>
-        private static bool TreeBillboard(out Mesh mesh, out Material material)
+        /// <summary>A tree asset's LOD0 crown width and height, metres, from its <c>asset-manifest.json</c>; zeros if it has none.</summary>
+        private static TreeFields TreeSize(string asset)
+        {
+            var text = AssetDatabase.LoadAssetAtPath<TextAsset>(TreeFolder + "/" + asset + "/asset-manifest.json");
+            return text != null ? JsonUtility.FromJson<TreeManifest>(text.text).tree : new TreeFields();
+        }
+
+        /// <summary>
+        /// A tree asset's billboard mesh and alpha-clipped material, made in <see cref="Folder"/> from its
+        /// <c>&lt;asset&gt;_Billboard</c> atlas and layout; false (and nulls) if those files are missing.
+        /// </summary>
+        private static bool TreeBillboard(string asset, out Mesh mesh, out Material material)
         {
             mesh = null;
             material = null;
-            var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(BillboardAtlasPath);
-            var layoutText = AssetDatabase.LoadAssetAtPath<TextAsset>(BillboardLayoutPath);
+            string name = asset + "_Billboard";
+            string atlasPath = TreeFolder + "/" + asset + "/" + name + ".png";
+            var atlas = AssetDatabase.LoadAssetAtPath<Texture2D>(atlasPath);
+            var layoutText = AssetDatabase.LoadAssetAtPath<TextAsset>(TreeFolder + "/" + asset + "/" + name + ".json");
             if (atlas == null || layoutText == null)
             {
-                Debug.LogWarning("TestSlopeLook: no tree billboard (" + BillboardAtlasPath + "); trees keep two LODs.");
+                Debug.LogWarning("TestSlopeLook: no tree billboard (" + atlasPath + "); " + asset + " keeps two LODs.");
                 return false;
             }
 
@@ -369,13 +426,13 @@ namespace FirstChair.Riding.Editor
                 normals[v] = Vector3.up;  // lit like the snow from above, the same on every side and from both faces
             }
 
-            mesh = new Mesh { name = "EN_Conifer_Billboard", vertices = vertices, uv = texcoords, normals = normals, triangles = triangles };
+            mesh = new Mesh { name = name, vertices = vertices, uv = texcoords, normals = normals, triangles = triangles };
             mesh.RecalculateBounds();
-            string meshPath = Folder + "/EN_Conifer_Billboard.asset";
+            string meshPath = Folder + "/" + name + ".asset";
             AssetDatabase.DeleteAsset(meshPath);
             AssetDatabase.CreateAsset(mesh, meshPath);
 
-            material = LitMaterial("ConiferBillboard", "Universal Render Pipeline/Lit", Color.white, 0f, true);
+            material = LitMaterial(asset == "EN_Conifer" ? "ConiferBillboard" : asset + "Billboard", "Universal Render Pipeline/Lit", Color.white, 0f, true);
             material.SetTexture("_BaseMap", atlas);
             material.SetFloat("_AlphaClip", 1f);
             material.SetFloat("_Cutoff", layout.alphaCutoff);
@@ -389,7 +446,7 @@ namespace FirstChair.Riding.Editor
         }
 
         /// <summary>Adds the billboard as the tree's last LOD and sets the LOD switch heights.</summary>
-        private static void AddBillboardLod(GameObject tree, Mesh mesh, Material material)
+        private static void AddBillboardLod(GameObject tree, Mesh mesh, Material material, string name)
         {
             var group = tree.GetComponent<LODGroup>();
             if (group == null)
@@ -398,7 +455,7 @@ namespace FirstChair.Riding.Editor
                 return;
             }
 
-            var quads = new GameObject("EN_Conifer_Billboard");
+            var quads = new GameObject(name);
             quads.transform.SetParent(tree.transform, false);
             quads.AddComponent<MeshFilter>().sharedMesh = mesh;
             var renderer = quads.AddComponent<MeshRenderer>();
@@ -415,7 +472,7 @@ namespace FirstChair.Riding.Editor
             group.RecalculateBounds();
         }
 
-        /// <summary><c>EN_Conifer_Billboard.json</c>, written by billboard_atlas.py.</summary>
+        /// <summary><c>&lt;asset&gt;_Billboard.json</c>, written by billboard_atlas.py.</summary>
         [System.Serializable]
         private sealed class BillboardLayout
         {
@@ -424,6 +481,21 @@ namespace FirstChair.Riding.Editor
             public float cellHeightMetres = 14.4f;
             public float bottomMetres = -0.1f;
             public float alphaCutoff = 0.5f;
+        }
+
+        /// <summary>The part of a tree asset's <c>asset-manifest.json</c> the forest reads (manifest_extras.py writes it).</summary>
+        [System.Serializable]
+        private sealed class TreeManifest
+        {
+            public TreeFields tree = new TreeFields();
+        }
+
+        /// <summary>The manifest's <c>tree</c> object.</summary>
+        [System.Serializable]
+        private sealed class TreeFields
+        {
+            public float crown_width_m;
+            public float height_m;
         }
 
         /// <summary>

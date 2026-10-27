@@ -1,5 +1,5 @@
 """
-EXPORT CHECK (EN_Conifer, tree-kit Phase 6)
+EXPORT CHECK (tree assets, tree-kit Phase 6; EN_Conifer first, shared since story 016)
 Reads the exported FBX two ways and compares it with asset-manifest.json and the params:
 1. raw: Blender's FBX parser reads the file's own nodes, as Unity's importer receives them: global
    axes and unit scale, each model's name, parent and local transform, each geometry's vertices and
@@ -10,7 +10,7 @@ Then renders LOD0 (left) and LOD1 (right) side by side with Workbench: clay and 
 Writes export_check.json, export_clay.png and export_colour.png to --out, prints CHECK lines and a
 VERDICT, and exits 1 on any FAIL.
 
-blender --background --python art/source/EN_Conifer/build/export_check.py -- \
+blender --background --python tools/blender/trees/export_check.py -- \
   --fbx Assets/Art/Environment/EN_Conifer/EN_Conifer.fbx --manifest Assets/Art/Environment/EN_Conifer/asset-manifest.json \
   --params art/source/EN_Conifer/EN_Conifer_params.json --variant snowy_spruce --out art/source/EN_Conifer/review/export
 """

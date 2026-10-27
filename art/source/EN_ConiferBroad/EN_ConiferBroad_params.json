@@ -1,0 +1,176 @@
+{
+  "asset": "EN_ConiferBroad",
+  "kind": "conifer",
+  "seed": 23,
+  "variant": "snowy_spruce",
+  "notes": "A broad spruce: wider and lower, branches nearly to the ground, heavier drooping tiers. Made from EN_Conifer's params by tools/blender/trees/make_variant_params.py (story 016): only the shape, budgets and variant differ; values are provisional until the user's look review.",
+  "shape": {
+    "height_m": 11.0,
+    "trunk": {
+      "base_radius_m": 0.2,
+      "top_radius_m": 0.035,
+      "top_frac": 0.92,
+      "sides": 6
+    },
+    "crown": {
+      "base_frac": 0.08,
+      "top_tier_frac": 0.88,
+      "radius_max_m": 2.4,
+      "taper_power": 1.15,
+      "base_radius_frac": 0.9,
+      "base_swell": 0.2
+    },
+    "tiers": {
+      "count": 15,
+      "spacing_power": 1.15,
+      "branches": 9,
+      "branches_top": 4,
+      "az_jitter_deg": 10,
+      "length_jitter": 0.14,
+      "z_jitter_frac": 0.15
+    },
+    "branch": {
+      "root_rise_m": 0.1,
+      "droop_frac": 0.42,
+      "droop_power": 2.0,
+      "mid_frac": 0.5,
+      "root_width_m": 0.2,
+      "mid_width_frac": 0.5,
+      "max_mid_width_m": 1.2,
+      "thickness_m": 0.14,
+      "snow_width_frac": 0.88,
+      "roll_jitter_deg": 6
+    },
+    "spike": {
+      "base_radius_m": 0.16,
+      "sides": 5
+    }
+  },
+  "lods": [
+    {
+      "level": 0,
+      "budget_tris": [
+        300,
+        1500
+      ],
+      "overrides": {}
+    },
+    {
+      "level": 1,
+      "budget_tris": [
+        100,
+        400
+      ],
+      "select": {
+        "max_branches_per_tier": 4,
+        "tier_stride": 1
+      },
+      "overrides": {
+        "branch.section": "tent",
+        "branch.stations": "mid_only",
+        "branch.mid_width_frac": 0.55,
+        "trunk.sides": 4,
+        "spike.sides": 4
+      }
+    },
+    {
+      "level": 2,
+      "kind": "billboard",
+      "budget_tris": [
+        2,
+        4
+      ],
+      "status": "built",
+      "notes": "Flat far version: two crossed quads on an alpha atlas from tools/blender/trees/billboard.py and billboard_atlas.py."
+    }
+  ],
+  "variants": {
+    "snowy_spruce": {
+      "status": "built",
+      "snow_cover": 0.98,
+      "colours_linear": {
+        "bark": [
+          0.09,
+          0.07,
+          0.06
+        ],
+        "needle": [
+          0.01,
+          0.03,
+          0.018
+        ],
+        "snow": [
+          0.8,
+          0.87,
+          0.96
+        ]
+      },
+      "roughness": {
+        "bark": 0.9,
+        "needle": 0.85,
+        "snow": 0.7
+      }
+    }
+  },
+  "gates": {
+    "iou_min": 0.9,
+    "lod_iou_min": 0.7,
+    "proportion_tol_frac": 0.02,
+    "origin_tol_m": 0.005
+  },
+  "camera": {
+    "game": {
+      "az": 30,
+      "el": 45,
+      "lens": 35,
+      "dist_m": 18.0,
+      "skier_target_z_m": 0.875,
+      "source": "REF_game_camera in art/source/CH_Skier/CH_Skier_master.blend at (6.364, -11.023, 13.603), 35 mm: 18.0 m from (0, 0, 0.875) at az 30, el 45. Still the FIRST-CHAIR.md estimate; the Unity camera is not built."
+    }
+  },
+  "look": {
+    "notes": "Review stage only (style-notes 'Overall look': strong low sun, blue shadows, near-white lit snow). Game lighting is built in Unity.",
+    "sun_az": -50,
+    "sun_el": 16,
+    "sun_strength": 10.0,
+    "sun_colour": [
+      1.0,
+      0.88,
+      0.68
+    ],
+    "sky_light": [
+      0.2,
+      0.3,
+      0.55
+    ],
+    "sky_view": [
+      0.72,
+      0.82,
+      0.95
+    ],
+    "ground": [
+      0.9,
+      0.91,
+      0.93
+    ],
+    "skier_proxy_xy": [
+      1.6,
+      -1.4
+    ]
+  },
+  "cluster": {
+    "count": 6,
+    "seed": 11,
+    "scale": [
+      0.7,
+      1.1
+    ],
+    "min_spacing_m": 3.5,
+    "radius_m": 8.0,
+    "notes": "scale [0.7, 1.1] of the 11.0 m base"
+  },
+  "profile": {
+    "m_per_px": 0.01,
+    "margin_m": 0.3
+  }
+}

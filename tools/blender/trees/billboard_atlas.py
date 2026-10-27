@@ -1,11 +1,13 @@
-"""EN_Conifer billboard atlas and gate (tree-kit Phase 5, the far LOD; story 007). Reads build/billboard.py's renders,
+"""A tree's billboard atlas and gate (tree-kit Phase 5, the far LOD; story 007, shared since story 016). Reads
+billboard.py's renders,
 downsamples each (premultiplied box filter) into one cell of a side-by-side atlas, bleeds colour into the transparent
-texels so mipmaps don't darken the edges, and writes the atlas PNG and its layout JSON for the Unity scene builder.
+texels so mipmaps don't darken the edges, and writes the atlas PNG and its layout JSON for the Unity scene builder,
+named <asset>_Billboard after the params' "asset".
 
 Gate (tree-kit SKILL.md Phase 5): each cell's alpha mask against the LOD0 silhouette from the same view, here the
 render's own mask at RENDER_SCALE times the resolution reduced by majority; IoU at or above the params' gates.iou_min.
 
-  python3 art/source/EN_Conifer/build/billboard_atlas.py --renders art/source/EN_Conifer/review/05_billboard \
+  python3 tools/blender/trees/billboard_atlas.py --renders art/source/EN_Conifer/review/05_billboard \
     --params art/source/EN_Conifer/EN_Conifer_params.json --out Assets/Art/Environment/EN_Conifer
 """
 import argparse
@@ -16,7 +18,6 @@ import sys
 import numpy as np
 from PIL import Image
 
-ATLAS_NAME = "EN_Conifer_Billboard"
 ALPHA_CUTOFF = 128  # Unity's material clips at 0.5
 BLEED_PASSES = 16
 
@@ -45,7 +46,9 @@ def bleed(rgba):
 
 def main(a):
     layout = json.load(open(os.path.join(a.renders, "render_layout.json")))
-    iou_min = json.load(open(a.params))["gates"]["iou_min"]
+    params = json.load(open(a.params))
+    iou_min = params["gates"]["iou_min"]
+    atlas_name = params["asset"] + "_Billboard"
     cell_w, cell_h = layout["cell_px"]
     scale = layout["render_scale"]
     cells, gates = [], {}
@@ -62,11 +65,11 @@ def main(a):
         cells.append(bleed(lo_px))
     atlas = np.concatenate(cells, axis=1)
     os.makedirs(a.out, exist_ok=True)
-    Image.fromarray(atlas, "RGBA").save(os.path.join(a.out, ATLAS_NAME + ".png"))
-    quad = {"atlas": ATLAS_NAME + ".png", "cells": len(cells), "cellWidthMetres": layout["cell_m"][0],
+    Image.fromarray(atlas, "RGBA").save(os.path.join(a.out, atlas_name + ".png"))
+    quad = {"atlas": atlas_name + ".png", "cells": len(cells), "cellWidthMetres": layout["cell_m"][0],
             "cellHeightMetres": layout["cell_m"][1], "bottomMetres": layout["bottom_m"], "alphaCutoff": ALPHA_CUTOFF / 255.0,
-            "views": layout["cells"], "source": "art/source/EN_Conifer/build/billboard.py and billboard_atlas.py"}
-    with open(os.path.join(a.out, ATLAS_NAME + ".json"), "w") as f:
+            "views": layout["cells"], "source": "tools/blender/trees/billboard.py and billboard_atlas.py"}
+    with open(os.path.join(a.out, atlas_name + ".json"), "w") as f:
         json.dump(quad, f, indent=2)
         f.write("\n")
     passed = all(g["iou"] >= iou_min for g in gates.values())

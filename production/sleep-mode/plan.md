@@ -16,7 +16,7 @@ scheduled after the weekly reset as well.
 | 2 | story-013-procedural-animation (new): leg IK on the snow, lean and angulation, springs and follow-through, pole plants, layered over the 16 key poses | create the story, then dev-story | done (In Review) | 361ea91, bf20bd7, c875a57, ee60523, b90eccf, 76df2f5 |
 | 3 | story-014-procedural-snow-shader (new): sparkle, blue-tinted shade, ski trails read as bump and detail, procedural surface detail; covers story 007's two open snow criteria | create the story, then dev-story | done (In Review) | 38cefda, 938e312, cadd45d, f3347e0, and this evidence commit |
 | 4 | story-015-mountain-design-tool (new): a mountain data format and scripts that build the terrain, snow map, runs, trees and features from it (the game brief's "mountain-making tool"), for Claude now and the user later | create the story, then dev-story | done (In Review) | 6d02c24, a399708, and this evidence commit |
-| 5 | story-016-varied-forest (new): the brief's next item, procedural trees: shape variants from the tree kit (slim fir, broad spruce, young tree, snag) chosen per tree by a hash in the view | create the story, then dev-story | queued (story written) | |
+| 5 | story-016-varied-forest (new): the brief's next item, procedural trees: shape variants from the tree kit (slim fir, broad spruce, young tree, snag) chosen per tree by a hash in the view | create the story, then dev-story | running | 76df2f5, and this commit |
 
 ## Left for the PC
 - story-008, 009, 010 and 011: In Review, waiting on the user's playtest and sign-off.

@@ -1,0 +1,54 @@
+{
+  "asset": "EN_ConiferSlim",
+  "variant": "snowy_fir",
+  "lod": 0,
+  "params": "EN_ConiferSlim_params.json",
+  "drawn_by": "tree-kit make_profiles.py from the parameters (our own drawing)",
+  "measures": {
+    "height_m": 14.0,
+    "min_z_m": 0.0,
+    "lowest_crown_z_m": 2.989295912256779,
+    "crown_width_m": 2.488187047831052,
+    "trunk_base_diameter_m": 0.3,
+    "ratios": {
+      "height_to_crown_width": 5.626586639538926,
+      "clear_trunk_frac": 0.21352113658976993,
+      "height_to_trunk_diameter": 46.66666666666667
+    },
+    "spike_frac": 0.16,
+    "tris": 1205,
+    "branches": 99
+  },
+  "front": {
+    "file": "front_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      310,
+      1460
+    ],
+    "az": 0,
+    "axis_col": 155.0,
+    "ground_row": 1430.0
+  },
+  "side": {
+    "file": "side_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      290,
+      1460
+    ],
+    "az": 90,
+    "axis_col": 145.0,
+    "ground_row": 1430.0
+  },
+  "top": {
+    "file": "top_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      310,
+      310
+    ],
+    "x0": -1.55,
+    "y1": 1.55
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "asset": "EN_Snag",
+  "variant": "weathered",
+  "lod": 0,
+  "params": "EN_Snag_params.json",
+  "drawn_by": "tree-kit make_profiles.py from the parameters (our own drawing)",
+  "measures": {
+    "height_m": 9.0,
+    "min_z_m": 0.0,
+    "lowest_crown_z_m": 3.035347767595491,
+    "crown_width_m": 1.8863887280925171,
+    "trunk_base_diameter_m": 0.4,
+    "ratios": {
+      "height_to_crown_width": 4.771020874950118,
+      "clear_trunk_frac": 0.33726086306616565,
+      "height_to_trunk_diameter": 22.5
+    },
+    "spike_frac": 0.19999999999999987,
+    "tris": 232,
+    "branches": 18
+  },
+  "front": {
+    "file": "front_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      238,
+      960
+    ],
+    "az": 0,
+    "axis_col": 119.0,
+    "ground_row": 930.0
+  },
+  "side": {
+    "file": "side_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      242,
+      960
+    ],
+    "az": 90,
+    "axis_col": 121.0,
+    "ground_row": 930.0
+  },
+  "top": {
+    "file": "top_matte.png",
+    "m_per_px": 0.01,
+    "image_px": [
+      242,
+      242
+    ],
+    "x0": -1.21,
+    "y1": 1.21
+  }
+}
