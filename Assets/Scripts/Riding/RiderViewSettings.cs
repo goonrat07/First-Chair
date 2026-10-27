@@ -2,7 +2,10 @@ using UnityEngine;
 
 namespace FirstChair.Riding
 {
-    /// <summary>Proportions, attachments, pose easing, ski tracks and snow spray for the skier views. Presentation only.</summary>
+    /// <summary>
+    /// Proportions, attachments, pose easing, ski tracks, snow spray and the skier's procedural animation (Story 013) for
+    /// the skier views. Presentation only.
+    /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Rider View Settings", fileName = "RiderViewSettings")]
     public sealed class RiderViewSettings : ScriptableObject
     {
@@ -102,6 +105,87 @@ namespace FirstChair.Riding
         [Tooltip("The most flakes alive at once.")]
         [SerializeField, Min(1)] private int sprayMaxParticles = 600;
 
+        [Header("Procedural animation (Story 013): lean with the turn")]
+        [Tooltip("0 to 1: how much of the turn's physical lean the skier adds over the carve clips' own; 0 turns it off.")]
+        [SerializeField, Range(0f, 1f)] private float leanWeight = 1f;
+        [Tooltip("The most the body leans into a turn, degrees.")]
+        [SerializeField, Range(0f, 80f)] private float leanMaxDegrees = 55f;
+        [Tooltip("The most it adds over (or takes back from) the carve clips' lean, degrees.")]
+        [SerializeField, Range(0f, 60f)] private float leanMaxExtraDegrees = 25f;
+        [Tooltip("How far a full carve clip already leans the body, degrees (CH_Skier's CarveLeft rolls the hips 22).")]
+        [SerializeField, Range(0f, 60f)] private float leanCarveClipDegrees = 22f;
+        [Tooltip("How far a full race-carve clip already leans the body, degrees (RaceCarveLeft: 26).")]
+        [SerializeField, Range(0f, 60f)] private float leanRaceClipDegrees = 26f;
+        [Tooltip("How quickly the extra lean follows the turn, Hz (critically damped).")]
+        [SerializeField, Range(0.1f, 10f)] private float leanFrequency = 1.8f;
+        [Tooltip("0 to 1: the share of the extra lean the chest takes back, so the upper body stays quieter than the legs.")]
+        [SerializeField, Range(0f, 1f)] private float angulation = 0.35f;
+        [Tooltip("0 to 1: the share the head takes back on top of the chest, keeping the eyes nearer level.")]
+        [SerializeField, Range(0f, 1f)] private float headLevel = 0.3f;
+
+        [Header("Procedural animation: springs from the body's acceleration")]
+        [Tooltip("0 to 1 on all three springs; 0 turns them off.")]
+        [SerializeField, Range(0f, 1f)] private float springWeight = 1f;
+        [Tooltip("The hips drop this many metres per m/s² of upward acceleration, held; a landing or a bump kicks them by the "
+            + "same measure (the springs take each change of speed whole, so they move alike at any frame rate).")]
+        [SerializeField, Range(0f, 0.02f)] private float compressionGain = 0.004f;
+        [Tooltip("The most the hips drop, metres.")]
+        [SerializeField, Range(0f, 0.3f)] private float compressionMax = 0.12f;
+        [Tooltip("The compression spring's frequency, Hz.")]
+        [SerializeField, Range(0.1f, 10f)] private float compressionFrequency = 2.2f;
+        [Tooltip("The compression spring's damping ratio: 1 is critical, lower bounces.")]
+        [SerializeField, Range(0f, 2f)] private float compressionDamping = 0.55f;
+        [Tooltip("The upper body pitches forward this many degrees per m/s² of slowing down (back when speeding up).")]
+        [SerializeField, Range(0f, 5f)] private float pitchGain = 1.2f;
+        [Tooltip("The most it pitches, degrees.")]
+        [SerializeField, Range(0f, 30f)] private float pitchMaxDegrees = 10f;
+        [Tooltip("The pitch spring's frequency, Hz.")]
+        [SerializeField, Range(0.1f, 10f)] private float pitchFrequency = 1.6f;
+        [Tooltip("The pitch spring's damping ratio.")]
+        [SerializeField, Range(0f, 2f)] private float pitchDamping = 0.7f;
+        [Tooltip("0 to 1: the share by which the upper body lags the body's roll, so it swings across in an edge change.")]
+        [SerializeField, Range(0f, 1f)] private float swayGain = 0.5f;
+        [Tooltip("The most it sways, degrees.")]
+        [SerializeField, Range(0f, 30f)] private float swayMaxDegrees = 8f;
+        [Tooltip("The sway spring's frequency, Hz.")]
+        [SerializeField, Range(0.1f, 10f)] private float swayFrequency = 1.4f;
+        [Tooltip("The sway spring's damping ratio.")]
+        [SerializeField, Range(0f, 2f)] private float swayDamping = 0.6f;
+        [Tooltip("A change of speed past this in one frame, m/s, is ignored (a reset or a snap is not a landing).")]
+        [SerializeField, Range(1f, 50f)] private float speedChangeLimit = 15f;
+
+        [Header("Procedural animation: legs on the snow")]
+        [Tooltip("0 to 1: how far each boot moves onto the snow under it; 0 turns it off.")]
+        [SerializeField, Range(0f, 1f)] private float legWeight = 1f;
+        [Tooltip("The most a boot moves up or down to meet the snow, metres.")]
+        [SerializeField, Range(0f, 0.6f)] private float footMaxShift = 0.25f;
+        [Tooltip("The most the hips come down so a boot can reach lower snow, metres.")]
+        [SerializeField, Range(0f, 0.4f)] private float hipMaxDrop = 0.15f;
+        [Tooltip("The share of the leg's full length it reaches to: just short of straight, so the knee keeps its bend.")]
+        [SerializeField, Range(0.9f, 1f)] private float legStraightness = 0.985f;
+        [Tooltip("0 to 1: how far each ski pitches to the snow along its length (rollers, kicker lips).")]
+        [SerializeField, Range(0f, 1f)] private float skiPitchWeight = 1f;
+        [Tooltip("The snow is sampled this far in front of and behind the boot to pitch the ski, metres.")]
+        [SerializeField, Range(0.1f, 1f)] private float skiPitchReach = 0.6f;
+
+        [Header("Procedural animation: pole plants")]
+        [Tooltip("0 to 1: how far the arm follows the plant; 0 turns plants off.")]
+        [SerializeField, Range(0f, 1f)] private float plantWeight = 1f;
+        [Tooltip("The slowest a plant starts at, m/s.")]
+        [SerializeField, Range(0f, 30f)] private float plantMinSpeed = 4f;
+        [Tooltip("How far onto the new edges the skis tip before it counts as a new turn, degrees.")]
+        [SerializeField, Range(1f, 30f)] private float plantEdgeDegrees = 7f;
+        [Tooltip("The swing forward to the snow, seconds.")]
+        [SerializeField, Range(0.02f, 1f)] private float plantReachSeconds = 0.15f;
+        [Tooltip("The tip on the snow, seconds: the skier passes it meanwhile.")]
+        [SerializeField, Range(0f, 1f)] private float plantHoldSeconds = 0.1f;
+        [Tooltip("The swing back into the clip, seconds.")]
+        [SerializeField, Range(0.02f, 1f)] private float plantReleaseSeconds = 0.3f;
+        [Tooltip("The tip goes in this far ahead of the boot, metres.")]
+        [SerializeField, Range(0f, 1.5f)] private float plantForward = 0.6f;
+        [Tooltip("And this far out to the side, metres.")]
+        [SerializeField, Range(0f, 1f)] private float plantOut = 0.35f;
+
         /// <summary>Distance between the two skis' centres.</summary>
         public float StanceWidth => stanceWidth;
         /// <summary>Hip height above the snow.</summary>
@@ -196,5 +280,77 @@ namespace FirstChair.Riding
         public float SprayRise => sprayRise;
         /// <summary>The most flakes alive at once.</summary>
         public int SprayMaxParticles => sprayMaxParticles;
+        /// <summary>Weight of the lean-with-the-turn layer, 0 to 1.</summary>
+        public float LeanWeight => leanWeight;
+        /// <summary>The most the body leans, degrees.</summary>
+        public float LeanMaxDegrees => leanMaxDegrees;
+        /// <summary>The most lean added over the clips, degrees.</summary>
+        public float LeanMaxExtraDegrees => leanMaxExtraDegrees;
+        /// <summary>A full carve clip's own lean, degrees.</summary>
+        public float LeanCarveClipDegrees => leanCarveClipDegrees;
+        /// <summary>A full race-carve clip's own lean, degrees.</summary>
+        public float LeanRaceClipDegrees => leanRaceClipDegrees;
+        /// <summary>The extra lean's spring frequency, Hz.</summary>
+        public float LeanFrequency => leanFrequency;
+        /// <summary>The chest's share of the extra lean taken back, 0 to 1.</summary>
+        public float Angulation => angulation;
+        /// <summary>The head's further share taken back, 0 to 1.</summary>
+        public float HeadLevel => headLevel;
+        /// <summary>Weight of the spring layer, 0 to 1.</summary>
+        public float SpringWeight => springWeight;
+        /// <summary>Hip drop per m/s² of upward acceleration, metres.</summary>
+        public float CompressionGain => compressionGain;
+        /// <summary>The most the hips drop, metres.</summary>
+        public float CompressionMax => compressionMax;
+        /// <summary>Compression spring frequency, Hz.</summary>
+        public float CompressionFrequency => compressionFrequency;
+        /// <summary>Compression spring damping ratio.</summary>
+        public float CompressionDamping => compressionDamping;
+        /// <summary>Upper body pitch per m/s² of slowing, degrees.</summary>
+        public float PitchGain => pitchGain;
+        /// <summary>The most the upper body pitches, degrees.</summary>
+        public float PitchMaxDegrees => pitchMaxDegrees;
+        /// <summary>Pitch spring frequency, Hz.</summary>
+        public float PitchFrequency => pitchFrequency;
+        /// <summary>Pitch spring damping ratio.</summary>
+        public float PitchDamping => pitchDamping;
+        /// <summary>The share by which the upper body lags the body's roll, 0 to 1.</summary>
+        public float SwayGain => swayGain;
+        /// <summary>The most the upper body sways, degrees.</summary>
+        public float SwayMaxDegrees => swayMaxDegrees;
+        /// <summary>Sway spring frequency, Hz.</summary>
+        public float SwayFrequency => swayFrequency;
+        /// <summary>Sway spring damping ratio.</summary>
+        public float SwayDamping => swayDamping;
+        /// <summary>The largest change of speed in one frame the springs take, m/s.</summary>
+        public float SpeedChangeLimit => speedChangeLimit;
+        /// <summary>Weight of the legs-on-the-snow layer, 0 to 1.</summary>
+        public float LegWeight => legWeight;
+        /// <summary>The most a boot moves to meet the snow, metres.</summary>
+        public float FootMaxShift => footMaxShift;
+        /// <summary>The most the hips come down, metres.</summary>
+        public float HipMaxDrop => hipMaxDrop;
+        /// <summary>The share of the leg's length it reaches to.</summary>
+        public float LegStraightness => legStraightness;
+        /// <summary>How far each ski pitches to the snow, 0 to 1.</summary>
+        public float SkiPitchWeight => skiPitchWeight;
+        /// <summary>How far ahead and behind the boot the snow is sampled for the ski's pitch, metres.</summary>
+        public float SkiPitchReach => skiPitchReach;
+        /// <summary>Weight of the pole plant layer, 0 to 1.</summary>
+        public float PlantWeight => plantWeight;
+        /// <summary>The slowest a plant starts at, m/s.</summary>
+        public float PlantMinSpeed => plantMinSpeed;
+        /// <summary>The edge change that starts a plant, degrees.</summary>
+        public float PlantEdgeDegrees => plantEdgeDegrees;
+        /// <summary>The plant's reach, seconds.</summary>
+        public float PlantReachSeconds => plantReachSeconds;
+        /// <summary>The plant's hold, seconds.</summary>
+        public float PlantHoldSeconds => plantHoldSeconds;
+        /// <summary>The plant's release, seconds.</summary>
+        public float PlantReleaseSeconds => plantReleaseSeconds;
+        /// <summary>How far ahead of the boot the tip goes in, metres.</summary>
+        public float PlantForward => plantForward;
+        /// <summary>How far out to the side the tip goes in, metres.</summary>
+        public float PlantOut => plantOut;
     }
 }

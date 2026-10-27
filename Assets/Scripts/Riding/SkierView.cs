@@ -9,8 +9,9 @@ namespace FirstChair.Riding
     /// The real skier (<c>CH_Skier.fbx</c>) wearing <c>PR_Ski</c> and holding <c>PR_SkiPole</c> at its sockets. Each frame
     /// it follows the sim's interpolated position and heading on the snow's slope, and blends its pose clips (stance,
     /// carves, tuck, crouch, air, brake, pole, crash) by weights from <see cref="SkierPoseWeights"/>, so the skier
-    /// angulates into turns, tucks, loads a pop and falls. It leaves ski tracks while on the snow. Read only: it never
-    /// writes rider state.
+    /// angulates into turns, tucks, loads a pop and falls. Procedural layers then lean it with the turn, spring it on
+    /// landings and edge changes, stand its skis on the snow and plant its poles (<see cref="SkierProceduralPose"/>, Story
+    /// 013). It leaves ski tracks while on the snow. Read only: it never writes rider state.
     /// </summary>
     /// <remarks>
     /// The clips are played through a manual <see cref="PlayableGraph"/>: one <see cref="AnimationMixerPlayable"/> input
@@ -50,6 +51,7 @@ namespace FirstChair.Riding
         private SkiTrack _trackRight;
         private RideSession _paintedSession;
         private float _clock;
+        private SkierProceduralPose _procedural;
 
         private void Awake()
         {
@@ -88,8 +90,9 @@ namespace FirstChair.Riding
             _skiRight = AttachSki(skier.transform, settings.SkierSkiSocketRight, skierRotation, out Quaternion rightFrame);
             _trackLeft = _skiLeft != null ? new SkiTrack("Ski track L", trackMaterial, settings) : null;
             _trackRight = _skiRight != null ? new SkiTrack("Ski track R", trackMaterial, settings) : null;
-            AttachPole(skier.transform, settings.SkierHandSocketLeft, leftFrame);
-            AttachPole(skier.transform, settings.SkierHandSocketRight, rightFrame);
+            Transform poleLeft = AttachPole(skier.transform, settings.SkierHandSocketLeft, leftFrame);
+            Transform poleRight = AttachPole(skier.transform, settings.SkierHandSocketRight, rightFrame);
+            _procedural = new SkierProceduralPose(skier.transform, settings, poleLeft, poleRight, this);
         }
 
         private void OnDestroy()
@@ -142,6 +145,9 @@ namespace FirstChair.Riding
 
                 _graph.Evaluate(0f);
             }
+
+            // Story 013: lean, springs, legs on the snow and pole plants, over the pose the clips just wrote
+            _procedural?.Apply(session, _shown, driver.Paused, Time.deltaTime);
 
             // The tracks break across a reset or a new run, so no ribbon is drawn between the two spots.
             bool onSnow = !current.Airborne && !current.Crashed && !driver.Paused;
@@ -242,23 +248,24 @@ namespace FirstChair.Riding
             return ski;
         }
 
-        private void AttachPole(Transform skier, string socketName, Quaternion socketFrame)
+        private Transform AttachPole(Transform skier, string socketName, Quaternion socketFrame)
         {
             Transform socket = ViewHelpers.FindSocket(skier, socketName);
             if (socket == null)
             {
                 Debug.LogWarning("SkierView: CH_Skier has no " + socketName + " socket; no pole there.", this);
-                return;
+                return null;
             }
 
             if (poleModel == null)
             {
-                return;
+                return null;
             }
 
             Transform pole = Instantiate(poleModel, socket, false).transform;
             ReadSocket(pole, settings.PoleSocket, settings.PoleSocketFallback, out Vector3 gripPosition, out Quaternion gripRotation);
             Place(pole, socketFrame * Quaternion.Inverse(gripRotation), gripPosition);
+            return pole;
         }
 
         // A prop's own socket (SOCKET_boot, SOCKET_grip) in its model space; the manifest fallback if the node is missing.
