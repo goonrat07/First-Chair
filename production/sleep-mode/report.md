@@ -129,3 +129,33 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
   data change; Pine Bowl's layout (runs, features, lift) is a first design for the user to change.
 - Not verified: the Unity editor; riding Pine Bowl's runs top to bottom (the cloud's slow motion covers a few
   metres); the look sign-off is yours, on the PC.
+
+## story-016-varied-forest (In Review)
+- Changed:
+  - `art/source/EN_ConiferSlim/`, `EN_ConiferBroad/`, `EN_ConiferYoung/`, `EN_Snag/` (new): a slim fir, a broad
+    spruce, a young spruce and a snag, built, gated and exported by the tree kit (55ad865, 81380ac), exported to
+    `Assets/Art/Environment/<ASSET>/` with billboards
+  - `tools/blender/trees/` (new): the tree driver `phases.sh` and `make_variant_params.py`; the billboard, export
+    check and manifest scripts moved here from EN_Conifer's `build/`; the billboard now sized to each tree, with a gate
+    for a tree cut off by its cell
+  - `Assets/Scripts/Riding/Core/TreeVariantPicker.cs` (new, 11 EditMode tests) and `Editor/TestSlopeLook.cs`: each
+    layout tree picks a shape from a hash of its position and is fitted to the sim's branch radius, no taller than
+    16.5 m
+  - `production/qa/evidence/story-016-varied-forest/`: the shapes, the billboards, the forest before and after
+- Tests: CI run 40582924145 (81380ac): EditMode 249/249, both players build, every variant imports; the Core tests
+  locally 237/237; `dotnet test sim/` 435 passed; `pytest tools/mountain tools/terrain` 66 passed (the mountains
+  rebuild byte for byte). The mix on the test slope's 938 trees: 410 spruce, 243 slim fir, 194 broad, 61 young, 30
+  snags.
+- Found and fixed on the way: the billboard script's fixed 3.6 x 14.4 m cell cut the broad spruce's crown off on both
+  sides and touched EN_Conifer's own side view, unseen by the gate; cells are now sized to each tree, the gate fails a
+  cut-off tree (watched fail on the old renders), and EN_Conifer's billboard is rebuilt.
+- Decisions made for you:
+  - Each shape is its own tree-kit asset, its params written from EN_Conifer's, rather than variants inside EN_Conifer
+    (the kit builds one shape per params file).
+  - The snag is made from conifer parameters (short, stiff, grey stubs), since the kit's skill can't take a new kind
+    in sleep mode; the young tree and the snag have smaller triangle budgets than the spruce.
+  - The mix: spruce 45, slim fir 25, broad 20, young 7, snag 3 per cent; a table in `TestSlopeLook`.
+  - No tree taller than 16.5 m: fitting each crown to the sim's branch radius alone would grow 28 m slim firs on the
+    test slope (its tallest spruce is 16.2 m). Change `MaxTreeHeightMetres` in `TestSlopeLook` to taste.
+- Not verified: the Unity editor; the forest in motion; the look sign-off is yours, on the PC, above all whether the
+  slim fir reads too sparse (EN_Conifer's brief: its first version "read too sparse, like a fishbone").

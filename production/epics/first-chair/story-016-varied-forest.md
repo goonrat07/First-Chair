@@ -1,7 +1,7 @@
 # Story 016: A varied forest (procedural tree shapes from the tree kit)
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review
 > **Layer**: Presentation
 > **Type**: Visual/Feel (tree assets, the forest in a build) + Logic (the variant choice)
 > **Estimate**: M
@@ -69,19 +69,26 @@ Written by Claude in sleep mode; the design choices are logged under Decisions a
 - **Unity:** `TestSlopeLook` places a model per tree from the mix with its own billboard LOD; a variant whose files are
   missing drops out with a warning (seen in CI run 40579929851, before the exports), and with none the cone stands in.
   The mix is a table in `TestSlopeLook`. Not verified in the editor.
+- **Evidence:** `production/qa/evidence/story-016-varied-forest/evidence.md`: CI run 40582924145 (EditMode 249/249,
+  both players), the forest before and after from the chase camera, and the mix on every layout. The look sign-off is
+  the user's, on the PC: whether the slim fir reads too sparse, and the mix's shares.
 
 ## Acceptance Criteria
 
-- [ ] Each new variant passes the tree kit's gates: front, side and top IoU at or above 0.90 against its profile,
+- [x] Each new variant passes the tree kit's gates: front, side and top IoU at or above 0.90 against its profile,
   triangles per LOD in budget, origin and proportions within tolerance; the evidence in
   `art/source/EN_Conifer/review/final/`.
-- [ ] Each variant exports with its LODs and a billboard, and its FBX round trip keeps height, tris and materials.
-- [ ] The variant choice is pure C# with EditMode tests: deterministic for a position, every variant reachable, the
+  *Each variant is its own asset, so its evidence is in its own `art/source/<ASSET>/review/final/`; the young tree's
+  and the snag's budgets are smaller than the spruce's (As built).*
+- [x] Each variant exports with its LODs and a billboard, and its FBX round trip keeps height, tris and materials.
+- [x] The variant choice is pure C# with EditMode tests: deterministic for a position, every variant reachable, the
   mix's shares within a few percent over a large forest.
-- [ ] The Unity EditMode tests pass in CI and the Windows and Linux players build.
-- [ ] A cloud ride of the build, from the chase camera, retained in `production/qa/evidence/story-016-varied-forest/`:
+- [x] The Unity EditMode tests pass in CI and the Windows and Linux players build.
+- [x] A cloud ride of the build, from the chase camera, retained in `production/qa/evidence/story-016-varied-forest/`:
   a tree line along the groomer before and after.
-- [ ] No change to the sim or the layout format: `dotnet test sim/` passes and the mountains rebuild byte for byte.
+  *Pinned at the park's top, where tree lines run along the groomer and the park; the cloud draws under a frame a
+  second, so the forest in motion is for the PC.*
+- [x] No change to the sim or the layout format: `dotnet test sim/` passes and the mountains rebuild byte for byte.
 
 ## Out of Scope
 
