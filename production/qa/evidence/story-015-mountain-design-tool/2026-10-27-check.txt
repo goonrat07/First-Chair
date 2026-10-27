@@ -1,0 +1,19 @@
+$ python3 tools/mountain/mountain.py check design/mountains/pine-bowl.mountain.toml
+Pine Bowl (PineBowl): 512 m square, 1025 samples a side, heights 4.6 to 127.2 m
+run bowl-run (blue): 440 m long, drops 119 m, average 15.1 deg, steepest 23.7 deg, least 0.6 deg over 20 m, ends 25.0 m into the base area
+run spine (red): 525 m long, drops 119 m, average 12.8 deg, steepest 22.8 deg, least -0.7 deg over 20 m, ends 25.0 m into the base area
+run west-traverse (green): 806 m long, drops 119 m, average 8.4 deg, steepest 17.7 deg, least -0.0 deg over 20 m, ends 25.0 m into the base area
+lift pine-chair: 4 towers, tallest 14.0 m, cable at least 7.0 m above the snow between the stations' approaches
+snow: groomed 18.9%, powder 12.4%, crud 68.0%, ice 0.0%, slush 0.6%
+trees: 1816
+
+$ python3 tools/mountain/mountain.py check design/mountains/test-mountain.mountain.toml
+First Chair test mountain (TestMountain): 1024 m square, 2049 samples a side, heights 8.1 to 272.2 m
+run kettle-run (blue): 847 m long, drops 252 m, average 16.6 deg, steepest 26.9 deg, least 2.9 deg over 20 m, ends 25.0 m into the base area
+run ridge-run (red): 840 m long, drops 252 m, average 16.7 deg, steepest 27.0 deg, least -0.7 deg over 20 m, ends 25.0 m into the base area
+run the-chute (black): 383 m long, drops 134 m, average 19.3 deg, steepest 27.5 deg, least 5.1 deg over 20 m, ends outside the base area
+run kettle-park (park): 726 m long, drops 158 m, average 12.3 deg, steepest 29.2 deg, least -2.4 deg over 20 m, ends 30.0 m into the base area
+run meadow-way (green): 1814 m long, drops 252 m, average 7.9 deg, steepest 19.5 deg, least -1.6 deg over 20 m, ends 25.0 m into the base area
+lift kettle-chair: 8 towers, tallest 12.1 m, cable at least 7.0 m above the snow between the stations' approaches
+snow: groomed 19.7%, powder 20.5%, crud 59.3%, ice 0.2%, slush 0.3%
+trees: 5968

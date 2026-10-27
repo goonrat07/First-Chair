@@ -75,3 +75,26 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
     carve clips are taken to lean 30 degrees and the race clips 34.
 - Not verified: the landing's compression, a roller with both skis on the snow, and every layer's motion (the cloud's
   frame rate); the Unity editor; the feel sign-off is yours, on the PC.
+
+## story-015-mountain-design-tool (In Review)
+- Changed:
+  - `tools/mountain/` (new): `mountain.py` (`build`, `preview`, `check`, `new`), `README.md` (the format, field by
+    field), `test_mountain.py` (31 tests)
+  - `design/mountains/`: the test mountain in the format (`test-mountain.mountain.toml`) and Pine Bowl
+    (`pine-bowl.mountain.toml`), built into `Assets/Terrain/PineBowl/`
+  - `tools/terrain/make_test_mountain.py`: a thin wrapper over the tool, so story 010's tests still run
+  - Unity: `Editor/MountainCatalog.cs` (new), the scene builder makes a scene per mountain folder, the CI build carries
+    them all and copies their files, the Feel Lab's places are the build's scenes
+  - `sim/FirstChair.Sim.Tests/`: `MountainRider.cs` (shared), `EveryMountainTests.cs` (new): every mountain loads and
+    every run is ridden to the base area
+  - `production/qa/evidence/story-015-mountain-design-tool/`: the previews, `check` output, the Feel Lab's places, the
+    Pine Bowl ride, evidence and stamp
+- Tests: pytest `tools/mountain` and `tools/terrain`, 66 passed; `dotnet test sim/`, 435 passed; CI run 40510043401
+  (a399708): EditMode 238/238, both players build, Pine Bowl in StreamingAssets, listed in the Feel Lab and ridden.
+- Found and fixed on the way: the new sim test rode Pine Bowl's green to a stop at the base area's edge; its runs
+  ended 1 to 3 m inside it, so they now end 25 m in, and `check` reports how far into the base area every run ends.
+- Decisions made for you: TOML for the format (comments, Python reads it with no extra package); the test mountain's
+  algorithm kept and checked byte for byte rather than rewritten; mountains found by folder, so a new mountain is a
+  data change; Pine Bowl's layout (runs, features, lift) is a first design for the user to change.
+- Not verified: the Unity editor; riding Pine Bowl's runs top to bottom (the cloud's slow motion covers a few
+  metres); the look sign-off is yours, on the PC.

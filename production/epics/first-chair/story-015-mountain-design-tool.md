@@ -1,7 +1,7 @@
 # Story 015: A mountain design tool (a mountain as a text file, and the scripts that build it)
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review
 > **Layer**: Tools
 > **Type**: Logic (format, builder, checks) + Visual/Feel (previews, the new mountain in a build)
 > **Estimate**: L
@@ -66,19 +66,43 @@ game for players).
 5. **A second mountain made only with the tool**, smaller and different in shape, to prove the format: built,
    checked, previewed and ridden in a cloud build.
 
+## As built (2026-10-27)
+
+- **The tool** (a399708): `tools/mountain/mountain.py` with `build`, `preview`, `check` and `new`, the format field by
+  field in `tools/mountain/README.md`, and 31 pytest tests in `tools/mountain/test_mountain.py`: reading the format
+  and its defaults, the four feature kinds, the errors `check` raises, two builds byte for byte, the committed
+  mountains rebuilt byte for byte.
+- **The test mountain** is `design/mountains/test-mountain.mountain.toml` and builds byte for byte as story 010's
+  generator did. `tools/terrain/make_test_mountain.py` is now a thin wrapper, so story 010's 20 tests still run. Only
+  the layout's first comment line changed: it names the tool and the file.
+- **Pine Bowl** (`design/mountains/pine-bowl.mountain.toml`), made only with the format: 512 m square, a blue down
+  the middle, a red along the east spine, a green cat track switching back across the west face past a gully, a knoll
+  with a powder stash, a level lookout pad, slush where riders queue, and a chairlift climbing at an angle from the
+  base's west side to the summit (4 towers, the cable at least 7 m above the snow), with 1,816 trees.
+- **Found by the sim tests.** `EveryMountainTests` rides every run of every mountain with the scripted rider, and
+  Pine Bowl's green stopped at the base area's edge: its runs ended 1 to 3 m inside it (the test mountain's end 25 to
+  30 m in), and the slow cat track arrived with no speed to carry it the 10 m in that the test rides. The runs now
+  end 25 m in, and `check` reports how far into the base area each run ends.
+- **Unity.** `MountainCatalog` lists each folder under `Assets/Terrain/` that holds a mountain's three files. The CI
+  build makes a scene for each (`TestSlopeSceneBuilder.BuildMountainScenes`), carries them all and copies their files
+  into StreamingAssets, and the Feel Lab's places are the build's scenes. CI run 40510043401 built both players with
+  Pine Bowl in StreamingAssets. Not verified in the editor.
+
 ## Acceptance Criteria
 
-- [ ] The format is documented field by field, with units and defaults (`tools/mountain/README.md`), and the test
+- [x] The format is documented field by field, with units and defaults (`tools/mountain/README.md`), and the test
   mountain is its worked example.
-- [ ] `build` on `design/mountains/test-mountain.mountain.toml` writes files byte-identical to the committed
+- [x] `build` on `design/mountains/test-mountain.mountain.toml` writes files byte-identical to the committed
   `Assets/Terrain/TestMountain/` ones (a test), and the existing test-mountain tests still pass.
-- [ ] Tests (pytest) cover reading the format and its defaults, each feature kind, the errors `check` reports, and
+- [x] Tests (pytest) cover reading the format and its defaults, each feature kind, the errors `check` reports, and
   determinism (two builds, identical bytes).
-- [ ] A second mountain, made only with the format, builds, passes `check`, and its preview is retained in
+- [x] A second mountain, made only with the format, builds, passes `check`, and its preview is retained in
   `production/qa/evidence/story-015-mountain-design-tool/`.
-- [ ] In a cloud build, the Feel Lab lists the new mountain with no code naming it, and it is ridden from the chase
+- [x] In a cloud build, the Feel Lab lists the new mountain with no code naming it, and it is ridden from the chase
   camera (a retained screenshot).
-- [ ] `dotnet test sim/` passes; no change to the sim's riding or the layout format.
+  *Met on the summit plateau only: the cloud draws about 0.75 frames a second, so the ride covers a few metres;
+  riding the runs down is for the PC.*
+- [x] `dotnet test sim/` passes; no change to the sim's riding or the layout format.
 
 ## Out of Scope
 
