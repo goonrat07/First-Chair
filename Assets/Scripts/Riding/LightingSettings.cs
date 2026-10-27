@@ -5,14 +5,14 @@ namespace FirstChair.Riding
 {
     /// <summary>
     /// The scene's light, as data (story 007's lighting pass): the sun's height, direction, strength and warmth, the
-    /// shadows, the ambient light, the snow shader's glints, shade, soft light and wind ripples (story 014), and the
-    /// camera's exposure, contrast and saturation. <see cref="LightingRig"/> applies them every frame, so the Feel Lab's
+    /// shadows, the ambient light, the snow shader's glints, shade, soft light and wind ripples (story 014) and ski
+    /// grooves (story 017), and the camera's exposure, contrast and saturation. <see cref="LightingRig"/> applies them every frame, so the Feel Lab's
     /// Light tab changes them live. The light's defaults come from the pass (2026-10-26): a warm sun behind and to the
     /// right of a camera looking down the fall line, 35 degrees up, so steeper snow faces further from it and reads
     /// darker, with the shadows reaching ahead and to the left. Measured on the test slope's rollers from one held view,
     /// the rows' brightness range rose from 12 to 26 levels of 255 with the snow as bright (203 against 207); the earlier
-    /// sun, ahead and to the right, lit steep and flat snow nearly alike. The snow's defaults are story 014's first
-    /// pass, to be tuned against the user's look.
+    /// sun, ahead and to the right, lit steep and flat snow nearly alike. The snow's defaults are story 014's and story
+    /// 017's first pass, to be tuned against the user's look.
     /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Lighting Settings", fileName = "LightingSettings")]
     public sealed class LightingSettings : ScriptableObject
@@ -78,6 +78,26 @@ namespace FirstChair.Riding
         [Tooltip("Wind ripples fade out by this distance from the camera, metres.")]
         [SerializeField, Range(1f, 200f)] private float snowRippleFadeMetres = 30f;
 
+        [Header("Ski grooves (story 017: the tracks cut into First Chair/Snow Terrain)")]
+        [Tooltip("Scales every groove's depth; 0 turns the grooves off and the snow looks as it did before them.")]
+        [SerializeField, Range(0f, 3f)] private float snowGrooveStrength = 1f;
+        [Tooltip("How deep a ski cuts into groomed snow, metres: a shallow cut in the corduroy.")]
+        [SerializeField, Range(0f, 0.3f)] private float snowGrooveGroomed = 0.015f;
+        [Tooltip("How deep a ski sinks into powder, metres.")]
+        [SerializeField, Range(0f, 0.3f)] private float snowGroovePowder = 0.08f;
+        [Tooltip("How deep a ski cuts into crud, metres.")]
+        [SerializeField, Range(0f, 0.3f)] private float snowGrooveCrud = 0.05f;
+        [Tooltip("How deep a ski cuts into ice, metres: none, it only scrapes.")]
+        [SerializeField, Range(0f, 0.3f)] private float snowGrooveIce = 0f;
+        [Tooltip("How deep a ski cuts into slush, metres.")]
+        [SerializeField, Range(0f, 0.3f)] private float snowGrooveSlush = 0.04f;
+        [Tooltip("How much darker a groove's floor is once it is 5 cm deep or more (packed snow, less sky), 0 to 1; a "
+            + "shallower groove darkens by its share.")]
+        [SerializeField, Range(0f, 1f)] private float snowGrooveDarkening = 0.12f;
+        [Tooltip("Grooves fade out by this distance from the camera, metres. They also end at the edge of the window "
+            + "TrackGrooves stamps (32 m, mostly ahead of the camera); past it the tracks are ribbons only.")]
+        [SerializeField, Range(1f, 200f)] private float snowGrooveFadeMetres = 24f;
+
         [Header("Camera grade")]
         [Tooltip("Exposure, in stops. Lower keeps lit snow out of the tonemapper's shoulder, where its shading flattens.")]
         [SerializeField, Range(-3f, 3f)] private float postExposure = 0.3f;
@@ -142,6 +162,30 @@ namespace FirstChair.Riding
 
         /// <summary>The distance ripples fade out by, metres.</summary>
         public float SnowRippleFadeMetres => snowRippleFadeMetres;
+
+        /// <summary>Scales every ski groove's depth; 0 is off.</summary>
+        public float SnowGrooveStrength => snowGrooveStrength;
+
+        /// <summary>How much darker a groove's floor is at full depth, 0 to 1.</summary>
+        public float SnowGrooveDarkening => snowGrooveDarkening;
+
+        /// <summary>The distance grooves fade out by, metres.</summary>
+        public float SnowGrooveFadeMetres => snowGrooveFadeMetres;
+
+        /// <summary>How deep a ski cuts into a kind of snow, metres, before the strength scales it.</summary>
+        /// <param name="kind">The kind of snow.</param>
+        public float SnowGrooveDepth(SnowType kind)
+        {
+            switch (kind)
+            {
+                case SnowType.Groomed: return snowGrooveGroomed;
+                case SnowType.Powder: return snowGroovePowder;
+                case SnowType.Crud: return snowGrooveCrud;
+                case SnowType.Ice: return snowGrooveIce;
+                case SnowType.Slush: return snowGrooveSlush;
+                default: return 0f;
+            }
+        }
 
         /// <summary>How many glint cells of a kind of snow hold a crystal, 0 to 1.</summary>
         /// <param name="kind">The kind of snow.</param>

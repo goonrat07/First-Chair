@@ -182,6 +182,17 @@ namespace FirstChair.Riding.Editor
             Set(follow, "settings", cameraSettings);
             TestSlopeLook.PostProcessing(camera);
 
+            // Story 017: the ski tracks cut into the snow as grooves, stamped in a window ahead of the camera.
+            Shader grooveStamp = Shader.Find(TrackGrooves.StampShaderName);
+            if (grooveStamp != null)
+            {
+                Set(camera.gameObject.AddComponent<TrackGrooves>(), "stampShader", grooveStamp);
+            }
+            else
+            {
+                Debug.LogWarning("TestSlopeSceneBuilder: no shader " + TrackGrooves.StampShaderName + "; the tracks stay ribbons only.");
+            }
+
             var hud = new GameObject("HUD").AddComponent<RiderHud>();
             Set(hud, "driver", driver);
 

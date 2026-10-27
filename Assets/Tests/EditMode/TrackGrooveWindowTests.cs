@@ -7,8 +7,8 @@ namespace FirstChair.Riding.Tests
     /// <summary>The square of snow the ski grooves are stamped into (Story 017): a window ahead of the camera, texel-snapped.</summary>
     public sealed class TrackGrooveWindowTests
     {
-        // The story's window: 64 m at 2,048 texels (3 cm a texel), its centre a 0.375 of its side ahead of the camera.
-        private const float Size = 64f;
+        // The story's window: 32 m at 2,048 texels (1.6 cm a texel), its centre 0.375 of its side ahead of the camera.
+        private const float Size = 32f;
         private const int Texels = 2048;
         private const float Ahead = 0.375f;
         private const float TexelSize = Size / Texels;

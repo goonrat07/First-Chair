@@ -1,14 +1,18 @@
 // SH_Env_SnowEffects.hlsl
 // First Chair, written by Claude for Story 014 (production/epics/first-chair/story-014-procedural-snow-shader.md).
 // Purpose: the procedural snow terms SH_Env_SnowTerrain adds to URP's terrain lighting: wind ripples in the normal, a
-// soft terminator, blue shade and sun glints. All in world space, so nothing repeats with a texture's tile.
-// Target: URP 17.3 (Unity 6.3 LTS), Forward and Forward+, desktop (Windows, Linux). Cost: no texture samples; about
-// 150 ALU instructions a pixel on top of URP's terrain (the glints read two grids of cells, three hashes and a pow
-// each, blended; the ripples one value noise).
+// soft terminator, blue shade and sun glints, all in world space so nothing repeats with a texture's tile; and since
+// Story 017 (production/epics/first-chair/story-017-ski-grooves.md) the ski grooves, read from the texture TrackGrooves
+// stamps the tracks into.
+// Target: URP 17.3 (Unity 6.3 LTS), Forward and Forward+, desktop (Windows, Linux). Cost: about 180 ALU instructions a
+// pixel on top of URP's terrain (the glints read two grids of cells, three hashes and a pow each, blended; the ripples
+// one value noise; the grooves about 30) and 4 bilinear samples of one R8 texture (the grooves), through the terrain's
+// own splatmap sampler, so no sampler is added.
 // Variants: none added; every term runs always and a weight of 0 turns it off.
 //
-// Every value is a global that LightingRig sets each frame from LightingSettings (the Feel Lab's Light tab). Unset,
-// every global is zero and every term is off: the snow is URP's stock terrain.
+// Every value is a global that LightingRig (or, for the grooves' window and texture, TrackGrooves) sets each frame from
+// LightingSettings (the Feel Lab's Light tab). Unset, every global is zero and every term is off: the snow is URP's
+// stock terrain.
 #ifndef FIRST_CHAIR_SNOW_EFFECTS_INCLUDED
 #define FIRST_CHAIR_SNOW_EFFECTS_INCLUDED
 
@@ -22,6 +26,11 @@ float4 _FCSnowWrap;             // x how far the lit side wraps past the termina
 float4 _FCSnowRipple;           // x strength (the ripples' steepest slope), y wavelength (m), z wind heading (rad), w fade distance (m)
 float4 _FCSnowRippleLayers0;    // ripples per layer, 0 to 1, layers 0 to 3
 float4 _FCSnowRippleLayers1;    // layers 4 to 7
+float4 _FCSnowGroove;           // x strength (scales every depth), y how much darker a groove's floor is at full depth, z fade distance (m)
+float4 _FCSnowGrooveLayers0;    // a ski groove's depth per layer (m), layers 0 to 3
+float4 _FCSnowGrooveLayers1;    // layers 4 to 7
+float4 _FCTrackGrooveWindow;    // TrackGrooves: x, y the window's least X and Z (m), z its side (m; 0 while nothing stamps), w a texel's side (m)
+TEXTURE2D(_FCTrackGrooves);     // TrackGrooves: the tracks stamped from above, 1 on a groove's centre line, 0 off the tracks
 
 // --- Shape constants: how the effects look at a weight of 1. Their strengths and sizes are the globals above.
 static const float FC_TWO_PI = 6.2831853;
@@ -44,6 +53,15 @@ static const float FC_RIPPLE_WANDER_SCALE = 7.0;
 static const float FC_RIPPLE_WANDER = 1.2;
 // Ripples: a ripple is sin(x) + a sin(2x), steeper on its lee side; its slope's peak is 1 + 2a.
 static const float FC_RIPPLE_SKEW = 0.3;
+// Grooves: the outer tenth of the stamped window fades out, so its edge never shows.
+static const float FC_GROOVE_EDGE_FADE = 0.1;
+// Grooves: about a ski track's width (RiderViewSettings.TrackWidth, 9 cm). Once a pixel is that wide a groove could only
+// shimmer, so they fade out from half of it.
+static const float FC_GROOVE_WIDTH = 0.09;
+// Grooves: a floor this deep (m) or deeper takes the full darkening; a shallower one takes its share.
+static const float FC_GROOVE_DARKEN_DEPTH = 0.05;
+// Grooves: a window side below this (m) means nothing stamps, and the grooves are off.
+static const float FC_GROOVE_MIN_WINDOW = 1e-3;
 
 // The terrain draws layers 0 to 3 in its first pass and 4 to 7 in the add pass; each pass picks its own four.
 float4 FCSnowLayerVector(float4 firstPass, float4 addPass)
@@ -125,6 +143,39 @@ half3 SnowRipples(half3 normalWS, float3 positionWS, half4 layers)
     float2 gradient = wind * (slope * amount * fade);
     // A height field's normal leans against its gradient.
     return normalize(normalWS - half3((half)gradient.x, 0.0h, (half)gradient.y));
+}
+
+// Ski grooves (Story 017): the tracks TrackGrooves stamps into _FCTrackGrooves, as relief. A groove dips depth x h,
+// where h is the stamped profile (1 on its centre line) and depth is the layers' depth times the strength; its slope
+// bends the normal, so one wall catches the sun and the other falls into shade, and its floor darkens with depth
+// (compressed snow, less sky). Four taps around the pixel give the slope by central differences; their reach is a texel,
+// or the pixel's footprint where that is larger, so a far groove is averaged rather than aliased. Grooves fade out at
+// the window's edge, with distance and once a pixel is as wide as a groove, and are off while nothing stamps. The
+// texture is read through the terrain's splatmap sampler (bilinear, clamped), so the grooves add no sampler.
+half3 SnowGrooves(half3 normalWS, float3 positionWS, half4 layers, inout half3 albedo)
+{
+    float side = max(_FCTrackGrooveWindow.z, FC_GROOVE_MIN_WINDOW);
+    float2 uv = (positionWS.xz - _FCTrackGrooveWindow.xy) / side;
+    float reach = max(_FCTrackGrooveWindow.w, FCFootprint(positionWS));
+    float2 du = float2(reach / side, 0.0);
+    half west = SAMPLE_TEXTURE2D_LOD(_FCTrackGrooves, sampler_Control, uv - du.xy, 0).r;
+    half east = SAMPLE_TEXTURE2D_LOD(_FCTrackGrooves, sampler_Control, uv + du.xy, 0).r;
+    half south = SAMPLE_TEXTURE2D_LOD(_FCTrackGrooves, sampler_Control, uv - du.yx, 0).r;
+    half north = SAMPLE_TEXTURE2D_LOD(_FCTrackGrooves, sampler_Control, uv + du.yx, 0).r;
+    float2 slope = float2(east - west, north - south) / (2.0 * reach);     // the profile's gradient, per metre
+    float profile = 0.25 * (west + east + south + north);
+
+    float2 edge = min(uv, 1.0 - uv);
+    float fade = saturate(min(edge.x, edge.y) / FC_GROOVE_EDGE_FADE)
+        * step(FC_GROOVE_MIN_WINDOW, _FCTrackGrooveWindow.z)
+        * FCDistanceFade(positionWS, _FCSnowGroove.z)
+        * FCFootprintFade(positionWS, FC_GROOVE_WIDTH);
+    float depth = dot((float4)layers, FCSnowLayerVector(_FCSnowGrooveLayers0, _FCSnowGrooveLayers1)) * _FCSnowGroove.x * fade;
+
+    albedo *= (half)(1.0 - _FCSnowGroove.y * saturate(depth * profile / FC_GROOVE_DARKEN_DEPTH));
+    // The dip's height field is -depth x h, and a normal leans against its height field's gradient.
+    float2 lean = slope * depth;
+    return normalize(normalWS + half3((half)lean.x, 0.0h, (half)lean.y));
 }
 
 // The crystals of one grid of cells cellSize metres wide (see SnowGlint): each cell holds one crystal as often as the

@@ -3,8 +3,8 @@
 // Purpose: the snow terrain's forward fragment. Everything else comes unchanged from URP 17.3's own terrain passes,
 // included below; only SplatmapFragment is replaced, by URP's own forward fragment (Unity's Graphics repository,
 // branch 6000.3/staging, Shaders/Terrain/TerrainLitPasses.hlsl, under the Unity Companion License) with the snow terms
-// of SH_Env_SnowEffects.hlsl added: the ripples before the lighting reads the normal, the rest after URP's lighting
-// and before the layer weight and fog, so the first pass and the add pass weigh them alike.
+// of SH_Env_SnowEffects.hlsl added: the ripples and the ski grooves (Story 017) before the lighting reads the normal,
+// the rest after URP's lighting and before the layer weight and fog, so the first pass and the add pass weigh them alike.
 // Target: URP Forward and Forward+, desktop. The fork has no deferred (GBuffer) pass; the renderer is Forward.
 #ifndef FIRST_CHAIR_SNOW_TERRAIN_FORWARD_INCLUDED
 #define FIRST_CHAIR_SNOW_TERRAIN_FORWARD_INCLUDED
@@ -71,8 +71,10 @@ void SplatmapFragment(
     InitializeInputData(IN, normalTS, inputData);
     SetupTerrainDebugTextureData(inputData, IN.uvMainAndLM.xy);
 
-    // First Chair: the wind ripples bend the normal before anything lights it.
+    // First Chair: the wind ripples and the ski grooves (Story 017) bend the normal before anything lights it, and a
+    // groove's floor darkens.
     inputData.normalWS = SnowRipples(inputData.normalWS, inputData.positionWS, splatControl);
+    inputData.normalWS = SnowGrooves(inputData.normalWS, inputData.positionWS, splatControl, albedo);
 
 #if defined(_DBUFFER)
     half3 specular = half3(0.0h, 0.0h, 0.0h);

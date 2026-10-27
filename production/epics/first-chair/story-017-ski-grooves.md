@@ -71,5 +71,10 @@ Decisions and are the user's to change.
 
 - The ribbons are the stamp: they already record every track, across runs, with their width, so the grooves need no
   second record of where skis went, and every ribbon in the window grooves the snow, old tracks included.
-- A window ahead of the camera (64 m at 2,048 texels, 3 cm a texel) rather than the whole mountain, which at that detail
-  would need tens of thousands of texels a side; past the window the ribbons carry on alone.
+- A window ahead of the camera (32 m at 2,048 texels, 1.6 cm a texel) rather than the whole mountain, which at that
+  detail would need tens of thousands of texels a side; past the window the ribbons carry on alone. The chase camera
+  sits about 5 m from the rider (story 011), where a pixel covers under a centimetre of snow, so a 9 cm track needs about
+  six texels across to read as a rounded groove; at 64 m (3 cm a texel) it would get three. The window reaches about
+  28 m ahead of the camera, past which a groove is a pixel or two wide and fades out anyway.
+- Depths per snow type (first pass, the user's to tune in the Light tab): powder 8 cm, crud 5 cm, slush 4 cm, groomed
+  1.5 cm, ice none; a groove's floor darkens up to 12 percent with depth.

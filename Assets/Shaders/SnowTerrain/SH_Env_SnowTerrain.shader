@@ -3,7 +3,8 @@
 // Purpose: the snow terrain. URP 17.3's "Universal Render Pipeline/Terrain/Lit" (Unity's Graphics repository, branch
 // 6000.3/staging, Shaders/Terrain/TerrainLit.shader, under the Unity Companion License) with its forward pass
 // drawing First Chair's snow (SH_Env_SnowTerrainForward.hlsl): wind ripples, a soft terminator, blue shade and sun
-// glints, tuned live from LightingSettings. Every other pass, and the base-map shaders, are URP's own.
+// glints, and since Story 017 the ski grooves TrackGrooves stamps, tuned live from LightingSettings. Every other pass,
+// and the base-map shaders, are URP's own.
 // Target: URP Forward and Forward+, desktop (Windows, Linux). Keywords and variants: URP's, none added.
 // Deferred: URP's GBuffer pass is left out; First Chair's renderer is Forward (FirstChair_Renderer.asset).
 // Fallback: with every LightingSettings snow weight at 0 it draws exactly as URP's stock terrain.

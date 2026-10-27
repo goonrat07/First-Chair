@@ -589,6 +589,9 @@ namespace FirstChair.Riding.Editor
             var renderer = tracks.AddComponent<MeshRenderer>();
             renderer.sharedMaterial = material;
             renderer.shadowCastingMode = ShadowCastingMode.Off;
+
+            // Story 017: near the camera, TrackGrooves cuts the old tracks into the snow as grooves too.
+            tracks.AddComponent<GrooveSource>();
         }
 
         private static bool NearTree(TestSlopeData slope, double x, double z)
@@ -606,15 +609,22 @@ namespace FirstChair.Riding.Editor
             return false;
         }
 
-        /// <summary>One ribbon per line, <see cref="OldTrackWidth"/> wide, lifted off the snow so it never sinks into it.</summary>
+        /// <summary>
+        /// One ribbon per line, <see cref="OldTrackWidth"/> wide, lifted off the snow so it never sinks into it. Its u runs
+        /// across the track (0 on one edge, 1 on the other) and its v along it in track widths, as a live track's do, so
+        /// TrackGrooves can stamp it (Story 017); the old track material has no texture, so they don't change its look.
+        /// </summary>
         private static Mesh TrackRibbons(TestSlopeData slope, System.Collections.Generic.List<OldTrackLine> lines, string name)
         {
             var vertices = new System.Collections.Generic.List<Vector3>();
             var normals = new System.Collections.Generic.List<Vector3>();
+            var uvs = new System.Collections.Generic.List<Vector2>();
             var triangles = new System.Collections.Generic.List<int>();
             foreach (OldTrackLine line in lines)
             {
                 int first = vertices.Count;
+                float travelled = 0f;
+                Vector3 previous = Vector3.zero;
                 for (int i = 0; i < line.Count; i++)
                 {
                     int a = Mathf.Max(0, i - 1), b = Mathf.Min(line.Count - 1, i + 1);
@@ -630,15 +640,21 @@ namespace FirstChair.Riding.Editor
                     normals.Add(up);
                     if (i > 0)
                     {
+                        travelled += Vector3.Distance(centre, previous);
                         int v = first + 2 * i;
                         triangles.AddRange(new[] { v - 2, v, v - 1, v - 1, v, v + 1 });
                     }
+
+                    previous = centre;
+                    uvs.Add(new Vector2(0f, travelled / OldTrackWidth));
+                    uvs.Add(new Vector2(1f, travelled / OldTrackWidth));
                 }
             }
 
             var mesh = new Mesh { name = name, indexFormat = IndexFormat.UInt32 };
             mesh.SetVertices(vertices);
             mesh.SetNormals(normals);
+            mesh.SetUVs(0, uvs);
             mesh.SetTriangles(triangles, 0);
             mesh.RecalculateBounds();
             return mesh;

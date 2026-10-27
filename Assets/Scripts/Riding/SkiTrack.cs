@@ -17,7 +17,8 @@ namespace FirstChair.Riding
     /// meshes sit under one scene object of their own, not under the ski, so they stay where they were laid. The ribbon
     /// runs up to the ski's trailing end (<see cref="SkiTrailingEnd"/>), its tail riding forward and its tip riding
     /// switch: it sits a little off the snow, above most of the ski's thickness, so laid from under the boot it showed
-    /// through the back half of the ski.
+    /// through the back half of the ski. Each stretch is also a <see cref="GrooveSource"/>, so near the camera the snow
+    /// under it is cut into a groove (Story 017, <see cref="TrackGrooves"/>).
     /// </remarks>
     /// <example>
     /// <code>
@@ -154,6 +155,8 @@ namespace FirstChair.Riding
                 renderer.sharedMaterial = _material;
             }
 
+            // Story 017: TrackGrooves stamps the stretch into the snow as a groove; its u already runs across the track.
+            stretch.AddComponent<GrooveSource>();
             return mesh;
         }
 
