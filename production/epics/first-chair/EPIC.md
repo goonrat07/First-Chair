@@ -35,3 +35,4 @@ mountain with one chairlift on 2026-10-26 (story 010); the full mountain stays o
 | 011 | [A Steep-style chase camera](story-011-steep-chase-camera.md) | Logic + Visual/Feel | In Review | N/A (minimal) |
 | 012 | [A skier detail pass for the chase camera](story-012-skier-detail-pass.md) | Visual/Feel | In Progress | N/A (minimal) |
 | 013 | [Procedural animation on top of the key poses](story-013-procedural-animation.md) | Logic + Visual/Feel | In Progress | N/A (minimal) |
+| 014 | [A procedural snow shader](story-014-procedural-snow-shader.md) | Visual/Feel | Ready | N/A (minimal) |
