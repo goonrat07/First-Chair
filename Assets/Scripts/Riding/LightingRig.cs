@@ -18,6 +18,7 @@ namespace FirstChair.Riding
 
         // The snow terrain shader's globals (SH_Env_SnowEffects.hlsl names and documents each one).
         private static readonly int SnowGlintId = Shader.PropertyToID("_FCSnowGlint");
+        private static readonly int SnowGlintShapeId = Shader.PropertyToID("_FCSnowGlintShape");
         private static readonly int SnowGlintLayers0Id = Shader.PropertyToID("_FCSnowGlintLayers0");
         private static readonly int SnowGlintLayers1Id = Shader.PropertyToID("_FCSnowGlintLayers1");
         private static readonly int SnowShadeId = Shader.PropertyToID("_FCSnowShade");
@@ -91,6 +92,7 @@ namespace FirstChair.Riding
 
             Shader.SetGlobalVector(SnowGlintId, new Vector4(
                 settings.SnowGlintStrength, settings.SnowGlintCellMetres, settings.SnowGlintSharpness, settings.SnowGlintFadeMetres));
+            Shader.SetGlobalVector(SnowGlintShapeId, new Vector4(settings.SnowGlintFacetSpread, settings.SnowGlintMinCellPixels, 0f, 0f));
             Shader.SetGlobalVector(SnowGlintLayers0Id, Layers(_glintByLayer, 0));
             Shader.SetGlobalVector(SnowGlintLayers1Id, Layers(_glintByLayer, 4));
             Shader.SetGlobalVector(SnowShadeId, new Vector4(settings.SnowShadeStrength, 0f, 0f, 0f));

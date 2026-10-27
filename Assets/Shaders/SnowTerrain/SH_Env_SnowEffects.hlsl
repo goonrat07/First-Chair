@@ -3,7 +3,8 @@
 // Purpose: the procedural snow terms SH_Env_SnowTerrain adds to URP's terrain lighting: wind ripples in the normal, a
 // soft terminator, blue shade and sun glints. All in world space, so nothing repeats with a texture's tile.
 // Target: URP 17.3 (Unity 6.3 LTS), Forward and Forward+, desktop (Windows, Linux). Cost: no texture samples; about
-// a hundred ALU instructions a pixel on top of URP's terrain (four hashes, one value noise, two pow).
+// 150 ALU instructions a pixel on top of URP's terrain (the glints read two grids of cells, three hashes and a pow
+// each, blended; the ripples one value noise).
 // Variants: none added; every term runs always and a weight of 0 turns it off.
 //
 // Every value is a global that LightingRig sets each frame from LightingSettings (the Feel Lab's Light tab). Unset,
@@ -11,7 +12,8 @@
 #ifndef FIRST_CHAIR_SNOW_EFFECTS_INCLUDED
 #define FIRST_CHAIR_SNOW_EFFECTS_INCLUDED
 
-float4 _FCSnowGlint;            // x strength, y cell size (m), z sharpness (the mirror lobe's exponent), w fade distance (m)
+float4 _FCSnowGlint;            // x strength, y cell size near the camera (m), z sharpness (the mirror lobe's exponent), w fade distance (m)
+float4 _FCSnowGlintShape;       // x facet spread (an offset added to the normal: 0.6 is about 30 degrees), y fewest pixels a cell spans
 float4 _FCSnowGlintLayers0;     // crystals per cell, 0 to 1, for the terrain layers 0 to 3 (the first pass)
 float4 _FCSnowGlintLayers1;     // the same for layers 4 to 7 (the add pass)
 float4 _FCSnowShade;            // x how far shade takes on the tint, 0 to 1
@@ -23,8 +25,6 @@ float4 _FCSnowRippleLayers1;    // layers 4 to 7
 
 // --- Shape constants: how the effects look at a weight of 1. Their strengths and sizes are the globals above.
 static const float FC_TWO_PI = 6.2831853;
-// Glints: a crystal's facet leans up to this far off the snow's normal (a unit-vector offset, about 31 degrees).
-static const float FC_GLINT_FACET_TILT = 0.6;
 // Glints: a crystal's radius, as a fraction of its cell, is this plus up to the spread; with its centre kept in the
 // cell's middle 40 percent, the disc never crosses the cell's edge.
 static const float FC_GLINT_RADIUS_MIN = 0.12;
@@ -127,24 +127,37 @@ half3 SnowRipples(half3 normalWS, float3 positionWS, half4 layers)
     return normalize(normalWS - half3((half)gradient.x, 0.0h, (half)gradient.y));
 }
 
-// A snow crystal in each small cell of the surface (as many cells as the layers' density says), with its own facet,
-// size and brightness. It flashes when its facet mirrors the sun into the camera, so the sparkle moves as the camera
-// does. Cells are laid out over the ground plane, so every crystal lies on the snow.
-half SnowGlint(float3 positionWS, half3 normalWS, half3 halfDir, half density)
+// The crystals of one grid of cells cellSize metres wide (see SnowGlint): each cell holds one crystal as often as the
+// layers' density says, with its own place, facet, size and brightness.
+half SnowGlintCells(float3 positionWS, half3 normalWS, half3 halfDir, half density, float cellSize)
 {
-    float cellSize = max(_FCSnowGlint.y, 1e-3);
     float2 p = positionWS.xz / cellSize;
     float2 cell = floor(p);
     float2 f = p - cell;
     float3 dice = FCHash32(cell);                       // x: is there a crystal, y: its size, z: its brightness
     float2 centre = FC_GLINT_CENTRE_MARGIN + (1.0 - 2.0 * FC_GLINT_CENTRE_MARGIN) * FCHash22(cell + FC_HASH_CENTRE);
     float3 tilt = FCHash32(cell + FC_HASH_FACET) * 2.0 - 1.0;
-    half3 facet = normalize(normalWS + (half3)tilt * (half)FC_GLINT_FACET_TILT);
+    half3 facet = normalize(normalWS + (half3)tilt * (half)_FCSnowGlintShape.x);
     float radius = FC_GLINT_RADIUS_MIN + FC_GLINT_RADIUS_SPREAD * dice.y;
     float crystal = saturate((radius - length(f - centre)) / (radius * 0.5)) * step(dice.x, density);
     float mirror = pow(saturate((float)dot(facet, halfDir)), max(_FCSnowGlint.z, 1.0));
-    float fade = FCFootprintFade(positionWS, cellSize) * FCDistanceFade(positionWS, _FCSnowGlint.w);
-    return (half)(crystal * mirror * (FC_GLINT_BRIGHTNESS_MIN + dice.z) * fade);
+    return (half)(crystal * mirror * (FC_GLINT_BRIGHTNESS_MIN + dice.z));
+}
+
+// Snow crystals that flash when a facet mirrors the sun into the camera, so the sparkle moves as the camera does. The
+// cells are _FCSnowGlint.y wide near the camera and double in size with distance as often as it takes to span at least
+// _FCSnowGlintShape.y pixels (a 2 cm cell is under a pixel from the chase camera, where it could only shimmer); each
+// doubling is blended in, so no band shows where the size steps. Cells lie over the ground plane, so every crystal
+// is on the snow.
+half SnowGlint(float3 positionWS, half3 normalWS, half3 halfDir, half density)
+{
+    float baseCell = max(_FCSnowGlint.y, 1e-3);
+    float level = max(0.0, log2(max(_FCSnowGlintShape.y * FCFootprint(positionWS), 1e-6) / baseCell));
+    float whole = floor(level);
+    float cellSize = baseCell * exp2(whole);
+    half nearCells = SnowGlintCells(positionWS, normalWS, halfDir, density, cellSize);
+    half farCells = SnowGlintCells(positionWS, normalWS, halfDir, density, 2.0 * cellSize);
+    return lerp(nearCells, farCells, (half)(level - whole)) * (half)FCDistanceFade(positionWS, _FCSnowGlint.w);
 }
 
 // After URP's lighting: the soft terminator (snow scatters light under its surface, so the lit side wraps past 90

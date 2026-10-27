@@ -38,11 +38,17 @@ namespace FirstChair.Riding
         [Header("Snow (story 014: First Chair/Snow Terrain)")]
         [Tooltip("How bright the sun's glints off snow crystals are; 0 turns them off.")]
         [SerializeField, Range(0f, 20f)] private float snowGlintStrength = 6f;
-        [Tooltip("The size of the cells that each hold at most one crystal, metres. Smaller is finer sparkle, which also "
-            + "fades out nearer the camera.")]
+        [Tooltip("The size of the cells that each hold at most one crystal near the camera, metres. Farther away the cells "
+            + "double in size as often as it takes to stay a few pixels wide.")]
         [SerializeField, Range(0.005f, 0.1f)] private float snowGlintCellMetres = 0.02f;
+        [Tooltip("The fewest pixels a glint cell spans. A 2 cm cell is under a pixel from the chase camera, so cells grow "
+            + "with distance to keep to this.")]
+        [SerializeField, Range(1f, 8f)] private float snowGlintMinCellPixels = 2.5f;
         [Tooltip("How exactly a crystal must mirror the sun into the camera to flash; higher makes fewer, briefer glints.")]
-        [SerializeField, Range(10f, 5000f)] private float snowGlintSharpness = 800f;
+        [SerializeField, Range(10f, 5000f)] private float snowGlintSharpness = 150f;
+        [Tooltip("How far a crystal's facet can lean off the snow's surface: 0.6 is about 30 degrees, which only sparkles "
+            + "toward the sun; 1.5 reaches most directions, so some crystals flash wherever the sun and camera are.")]
+        [SerializeField, Range(0f, 3f)] private float snowGlintFacetSpread = 1.5f;
         [Tooltip("Glints fade out by this distance from the camera, metres.")]
         [SerializeField, Range(1f, 200f)] private float snowGlintFadeMetres = 40f;
         [Tooltip("How many cells of groomed snow hold a crystal, 0 to 1.")]
@@ -60,8 +66,8 @@ namespace FirstChair.Riding
         [Tooltip("What shaded snow's colour is multiplied toward, as linear values: the sky's blue.")]
         [SerializeField] private Color snowShadeTint = new Color(0.80f, 0.89f, 1.06f, 1f);
         [Tooltip("How far the sunlit side of the snow wraps past its edge, softening the light over rollers, 0 to 1; 0 is "
-            + "URP's hard edge.")]
-        [SerializeField, Range(0f, 1f)] private float snowWrap = 0.35f;
+            + "URP's hard edge. It also lifts snow turned partly from the sun and flattens the corduroy by 1 / (1 + this).")]
+        [SerializeField, Range(0f, 1f)] private float snowWrap = 0.15f;
         [Tooltip("How steep the wind ripples in powder are, as their steepest slope; 0 turns them off.")]
         [SerializeField, Range(0f, 1f)] private float snowRippleStrength = 0.25f;
         [Tooltip("The wind ripples' wavelength, metres.")]
@@ -104,8 +110,14 @@ namespace FirstChair.Riding
         /// <summary>The glint cell size, metres.</summary>
         public float SnowGlintCellMetres => snowGlintCellMetres;
 
+        /// <summary>The fewest pixels a glint cell spans; cells double in size with distance to keep to it.</summary>
+        public float SnowGlintMinCellPixels => snowGlintMinCellPixels;
+
         /// <summary>The glint's mirror sharpness (the lobe's exponent).</summary>
         public float SnowGlintSharpness => snowGlintSharpness;
+
+        /// <summary>How far a crystal's facet leans off the snow, as an offset added to the normal (0.6 is about 30 degrees).</summary>
+        public float SnowGlintFacetSpread => snowGlintFacetSpread;
 
         /// <summary>The distance glints fade out by, metres.</summary>
         public float SnowGlintFadeMetres => snowGlintFadeMetres;
