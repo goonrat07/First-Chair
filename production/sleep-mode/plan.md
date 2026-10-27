@@ -1,21 +1,24 @@
 # Sleep mode plan
 
-Started: 2026-10-26T01:32:33Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 6ad33d0cdb87fc17cf3f3c85cb73d942d979ce02
-Finished: 2026-10-26T11:13:38Z · Reason: done
+Started: 2026-10-27T02:58:57Z · Until: none · Branch: claude/beautiful-gates-8blqmk · Start commit: 0d2953f4ba57a32baa5020e3b65714971aaf9017
 
-The user (2026-10-26, before sleeping): finish story 009, then keep working on more items, "maybe visual changes like
-the snow shaders or like starting on a small test mountain with a lift, runs, trees, park, etc."; resume after the
-5-hour usage resets and always have something in progress. Items 2 to 4 are queued on that instruction. Their
-Unity-side work is built and ridden in CI and reported as not verified in the editor.
+The user (2026-10-27, starting this run): no stop time; carry on after usage resets, the weekly one too, and don't stop
+for a weekly usage warning; continue what was in progress, then the next thing, and when the queue runs out keep
+working on something else; stop only at the user's next message. Named work: procedural animation, custom snow
+shaders with procedural aspects, and the mountain design tool. So the skill's defaults change for this run: the
+Visual/Feel items below are queued (built, checked in CI and ridden here; their sign-off and the Unity editor check
+stay the user's), an empty queue is refilled from the game brief instead of ending the run, and a wake-up is
+scheduled after the weekly reset as well.
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
-| 1 | story-009-gma-style-riding-and-feel-lab: sim v8, Unity input/poses/spray, Feel Lab, speed cues, build + ride | dev-story, then story-done | done: In Review, your feel sign-off is open | 2c55dee b28a2b1 0863fed c838bb8 dad1dba, this commit |
-| 2 | story-007-first-art-pass: snow shader with tracks that build up and stay (the user's "snow shaders") | dev-story (that item) | done: tracks stay and build up; grooves in a snow shader left for the PC | 716391a, this commit |
-| 3 | story-010-test-mountain (new): a small test mountain with a lift, runs, trees and a park (the user's request) | create the story, then dev-story | done: In Review, the look and the lift ride are yours to judge | a22387e 1f60167 832ada8 76d14ad 03b8b04 17ef94b bb48b3b 2d3eafc 5e1d06b dbd2114 75eeeb4, this commit |
-| 4 | story-007-first-art-pass: the lighting pass, so the slope's shape reads | dev-story (that item) | done: new light defaults; the look is yours to judge | 86bc33a, this commit |
+| 1 | story-012-skier-detail-pass: ski bindings, pole grips and baskets; the player always drawn at LOD0; CI build, cloud ride, evidence | dev-story, then story-done | running | 0d2953f |
+| 2 | story-013-procedural-animation (new): leg IK on the snow, lean and angulation, springs and follow-through, pole plants, layered over the 16 key poses | create the story, then dev-story | queued | |
+| 3 | story-014-procedural-snow-shader (new): sparkle, blue-tinted shade, ski trails read as bump and detail, procedural surface detail; covers story 007's two open snow criteria | create the story, then dev-story | queued | |
+| 4 | story-015-mountain-design-tool (new): a mountain data format and scripts that build the terrain, snow map, runs, trees and features from it (the game brief's "mountain-making tool"), for Claude now and the user later | create the story, then dev-story | queued | |
+| 5 | next work, per the user: the next item from the game brief's "After a rough gameplay demo" list or the open look items, written as a story first | create the story, then dev-story | queued | |
 
 ## Left for the PC
-- story-003-test-slope-unity-view: the Windows playtest and the gamepad need the user's PC
-- story-008-turn-styles-and-speed: In Review; the user's playtest of the feel (now superseded by story 009's riding)
-- story-009's feel sign-off and GMA2-matched numbers: the user's playtest and the GMA2 clips they will record
+- story-008, 009, 010 and 011: In Review, waiting on the user's playtest and sign-off.
+- story-003-test-slope-unity-view: its last criterion is a playtest on the user's PC (Windows build, gamepad).
+- Every Visual/Feel item above ends In Review: the look sign-off and the Unity editor check are the user's.
