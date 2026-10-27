@@ -2,7 +2,7 @@
   "blend": "/home/user/First-Chair/art/source/PR_SkiPole/PR_SkiPole_master.blend",
   "summary": {
     "tris_by_lod": {
-      "0": 192
+      "0": 400
     },
     "fail": [],
     "warn": []
@@ -14,10 +14,10 @@
       "warn": [],
       "fail": [],
       "info": {
-        "tris_evaluated": 192,
-        "verts_evaluated": 98,
-        "verts": 98,
-        "faces": 192,
+        "tris_evaluated": 400,
+        "verts_evaluated": 202,
+        "verts": 202,
+        "faces": 400,
         "boundary_edges": 0,
         "nonmanifold_edges": 0,
         "islands": 1,

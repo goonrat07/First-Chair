@@ -18,11 +18,17 @@ SEGMENTS = 8   # round enough at ~55 px on screen; 16 doubles the tris for no vi
 # (radius, height above the tip) in metres, read off ref/front_matte.png (ref/refs.json)
 PROFILE = [
     (0.000, 0.000), (0.004, 0.000), (0.006, 0.020),     # carbide tip
-    (0.006, 0.074), (0.0325, 0.076), (0.0325, 0.084),   # basket
-    (0.007, 0.088),                                     # shaft bottom
-    (0.009, 1.000),                                     # shaft top
-    (0.016, 1.000), (0.018, 1.060), (0.017, 1.170),     # grip
-    (0.020, 1.185), (0.012, 1.200), (0.000, 1.200),     # grip top
+    (0.006, 0.070), (0.011, 0.072), (0.011, 0.077),     # ferrule up to the basket hub
+    (0.024, 0.078),                                     # basket disc, underside
+    (0.026, 0.074), (0.0325, 0.075), (0.0325, 0.086),   # its raised outer ring (story 012: a ringed basket)
+    (0.026, 0.088), (0.024, 0.083),                     #   ring top, back down to the disc
+    (0.011, 0.084), (0.009, 0.092),                     # hub top
+    (0.007, 0.094),                                     # shaft bottom (14 mm with the ferrule)
+    (0.009, 1.000),                                     # shaft top (18 mm)
+    (0.013, 1.000), (0.021, 1.022), (0.021, 1.030),     # grip: the finger ridge at its bottom (story 012),
+    (0.016, 1.036), (0.0175, 1.060), (0.0175, 1.150),   #   just under the mitten, then the grip in the fist
+    (0.019, 1.168), (0.021, 1.182), (0.019, 1.196),     # rounded knob, above the mitten
+    (0.010, 1.200), (0.000, 1.200),                     # grip top
 ]
 
 

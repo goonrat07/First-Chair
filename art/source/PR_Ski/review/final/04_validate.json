@@ -2,7 +2,7 @@
   "blend": "/home/user/First-Chair/art/source/PR_Ski/PR_Ski_master.blend",
   "summary": {
     "tris_by_lod": {
-      "0": 212
+      "0": 456
     },
     "fail": [],
     "warn": []
@@ -14,18 +14,19 @@
       "warn": [],
       "fail": [],
       "info": {
-        "tris_evaluated": 212,
-        "verts_evaluated": 112,
-        "verts": 112,
-        "faces": 212,
+        "tris_evaluated": 456,
+        "verts_evaluated": 256,
+        "verts": 256,
+        "faces": 456,
         "boundary_edges": 0,
         "nonmanifold_edges": 0,
-        "islands": 3,
+        "islands": 14,
         "uv_loops_outside_0_1": 0,
         "materials": [
           "M_Ski_Topsheet",
           "M_Ski_Base",
-          "M_Ski_Binding"
+          "M_Ski_Binding",
+          "M_Ski_BindingAccent"
         ],
         "modifiers": []
       }

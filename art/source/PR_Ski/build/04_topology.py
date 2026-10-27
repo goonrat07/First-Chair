@@ -24,13 +24,12 @@ def build(scene, args):
     # keep which part each face came from, for the material phase
     me = low.data
     attr = me.attributes.new("part", "INT", "FACE")
-    counts = []
-    for o in srcs:
-        counts.append(len(o.data.polygons))
+    accent = me.attributes.new("accent", "INT", "FACE")    # story 012: the bindings' light accent (material 1)
     i = 0
-    for part, n in enumerate(counts):
-        for _ in range(n):
+    for part, o in enumerate(srcs):
+        for poly in o.data.polygons:
             attr.data[i].value = part
+            accent.data[i].value = 1 if part > 0 and poly.material_index == 1 else 0
             i += 1
     bm = bmesh.new()
     bm.from_mesh(me)

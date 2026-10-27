@@ -1,21 +1,21 @@
 {
-  "view": "side",
-  "az": 90.0,
-  "matte": "/home/user/First-Chair/art/source/PR_Ski/ref/side_matte.png",
-  "m_per_px": 0.0008333333,
-  "iou": 0.9943,
-  "ref_only_pct": 0.27,
-  "render_only_pct": 0.3,
-  "band_width_diff": [
-    0.0,
-    0.0,
-    -0.0099,
-    0.0,
-    -0.0099,
-    0.0,
-    -0.0099,
-    0.0,
-    -0.0198,
-    -0.0297
-  ]
+ "view": "side",
+ "az": 90.0,
+ "matte": "art/source/PR_Ski/ref/side_matte.png",
+ "m_per_px": 0.0008333333333333334,
+ "iou": 0.9937,
+ "ref_only_pct": 0.31,
+ "render_only_pct": 0.32,
+ "band_width_diff": [
+  0.0,
+  0.0,
+  -0.0099,
+  -0.0099,
+  -0.0099,
+  0.0,
+  -0.0099,
+  0.0,
+  -0.0198,
+  -0.0297
+ ]
 }

@@ -16,7 +16,7 @@ import bpy  # noqa: E402
 T.PHASE = "05_materials"
 T.OWNER_TAG = "phase:" + T.PHASE
 
-TIP_TOP, BASKET_TOP, GRIP_BOTTOM = 0.020, 0.088, 1.000   # heights from ref/front_matte.png
+TIP_TOP, BASKET_TOP, GRIP_BOTTOM = 0.020, 0.094, 1.000   # heights from ref/front_matte.png (story 012 basket)
 
 
 def build(scene, args):
@@ -29,6 +29,9 @@ def build(scene, args):
     ]
     me.materials.clear()
     for m in mats:
+        bsdf = next((n for n in m.node_tree.nodes if n.type == "BSDF_PRINCIPLED"), None)
+        if bsdf:      # the viewport colour too, so Workbench reviews (pose sheets) show the real colours
+            m.diffuse_color = bsdf.inputs["Base Color"].default_value[:]
         me.materials.append(m)
     for poly in me.polygons:
         z = poly.center.z

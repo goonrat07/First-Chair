@@ -16,13 +16,21 @@ PROPORTIONS checked at blockout and forms:
            5 grip max diameter             0.040 m (knob at the top)
            6 tip length                    0.02 m
 PARTS      1 tip, 2 basket, 3 shaft, 4 grip: one lathed mesh (rigid), origin at the tip on the ground.
-           No strap.
-SILHOUETTE long thin shaft; disc basket near the bottom; thicker grip with a knob at the top
+           No strap. Story 012: the basket has a raised outer ring (r 0.026 to 0.0325, z 0.074 to 0.088) around a
+           thin disc and a hub; the grip has a finger ridge at its bottom (r 0.021, z 1.022 to 1.030, just under
+           the mitten) and a rounder knob (z 1.168 to 1.2, above the mitten); the fist hides the grip between.
+SILHOUETTE long thin shaft; ringed basket near the bottom; thicker grip with a finger ridge and a knob
 MATERIALS  shaft: brushed aluminium, light grey, roughness 0.35 (flat colour, no metal maps)
            grip and basket: black plastic, roughness 0.6; tip: dark grey steel
 ARTICULATION none. SOCKET_grip on the axis at 1.10 m: the hand holds it there, the shaft runs down
            the socket's -Z
-INFERRED   strap (omitted), grip shape (generic), colours (placeholder palette)
+INFERRED   strap (omitted), grip shape (generic, with the story 012 ridge and knob), basket ring, colours
+           (placeholder palette; graphite shaft, red grip and basket since story 007)
 TARGET     Unity 6.3 LTS, FBX, First Chair budget "skis, poles, boots": 100 to 600 tris, one LOD.
            Game camera estimate az 30, el 45, 18 m, 35 mm; on screen about 55 px tall.
+           Story 012: the chase camera shows the pole about 200 px tall. Built: 400 tris (was 192), 8 segments,
+           same 3 materials, size 0.065 x 0.065 x 1.2 m and SOCKET_grip at (0, 0, 1.1) unchanged. Front gate IoU
+           0.9739, bands 0.0008 (was 0.9824 and 0.0008: the 8-sided lathe against a round drawing, now with more
+           radius changes); validate 0 FAIL, 0 WARN; round trip height 1.2, 400 tris, SOCKET_grip on the mesh.
+           Not verified in the Unity editor.
 ```

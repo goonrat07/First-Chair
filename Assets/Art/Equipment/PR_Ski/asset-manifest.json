@@ -1,6 +1,6 @@
 {
   "asset": "PR_Ski",
-  "generated": "2026-10-19T23:32:10",
+  "generated": "2026-10-27T03:09:44",
   "blender": "5.2.2 LTS",
   "source": "/home/user/First-Chair/art/source/PR_Ski/PR_Ski_master.blend",
   "target_engine": "unity",
@@ -33,7 +33,7 @@
     ]
   },
   "files": {
-    "all": "/home/user/First-Chair/Assets/Art/Equipment/PR_Ski/PR_Ski.fbx"
+    "all": "Assets/Art/Equipment/PR_Ski/PR_Ski.fbx"
   },
   "lods": [
     {
@@ -41,12 +41,13 @@
       "objects": [
         "PR_Ski_LOD0"
       ],
-      "tris": 212
+      "tris": 456
     }
   ],
   "materials": [
     "M_Ski_Base",
     "M_Ski_Binding",
+    "M_Ski_BindingAccent",
     "M_Ski_Topsheet"
   ],
   "textures": [],
@@ -87,9 +88,8 @@
   "inferred_from_no_reference": [
     "camber left flat",
     "tail shape rounded",
-    "binding shape as blocks",
+    "binding shapes from generic alpine toe and heel pieces with brakes (story 012)",
     "boot sole height 0.045 m",
-    "no brakes",
     "placeholder colours"
   ],
   "dependencies": []

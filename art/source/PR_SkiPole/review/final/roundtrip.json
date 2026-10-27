@@ -1,53 +1,53 @@
 {
-  "file": "/home/user/First-Chair/Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx",
-  "errors": [],
-  "meshes": [
-    {
-      "name": "PR_SkiPole_LOD0",
-      "tris": 192,
-      "verts": 98,
-      "uv": true,
-      "materials": [
-        "M_Pole_Shaft",
-        "M_Pole_Plastic",
-        "M_Pole_Tip"
-      ],
-      "skinned": false,
-      "shape_keys": 0
-    }
-  ],
-  "armatures": [],
-  "clips": [],
-  "materials": [
-    "M_Pole_Plastic",
+ "file": "Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx",
+ "errors": [],
+ "meshes": [
+  {
+   "name": "PR_SkiPole_LOD0",
+   "tris": 400,
+   "verts": 202,
+   "uv": true,
+   "materials": [
     "M_Pole_Shaft",
+    "M_Pole_Plastic",
     "M_Pole_Tip"
+   ],
+   "skinned": false,
+   "shape_keys": 0
+  }
+ ],
+ "armatures": [],
+ "clips": [],
+ "materials": [
+  "M_Pole_Plastic",
+  "M_Pole_Shaft",
+  "M_Pole_Tip"
+ ],
+ "images": [],
+ "empties": [
+  {
+   "name": "SOCKET_grip",
+   "parent": "PR_SkiPole_LOD0",
+   "parent_bone": null
+  }
+ ],
+ "bounds_m": {
+  "min": [
+   -0.0325,
+   -0.0325,
+   -0.0
   ],
-  "images": [],
-  "empties": [
-    {
-      "name": "SOCKET_grip",
-      "parent": "PR_SkiPole_LOD0",
-      "parent_bone": null
-    }
+  "max": [
+   0.0325,
+   0.0325,
+   1.2
   ],
-  "bounds_m": {
-    "min": [
-      -0.0325,
-      -0.0325,
-      -0.0
-    ],
-    "max": [
-      0.0325,
-      0.0325,
-      1.2
-    ],
-    "size": [
-      0.065,
-      0.065,
-      1.2
-    ]
-  },
-  "height_m": 1.2,
-  "render": "/home/user/First-Chair/art/source/PR_SkiPole/review/09_roundtrip/roundtrip_clay_threequarter.png"
+  "size": [
+   0.065,
+   0.065,
+   1.2
+  ]
+ },
+ "height_m": 1.2,
+ "render": "art/source/PR_SkiPole/review/09_roundtrip/roundtrip_clay_threequarter.png"
 }

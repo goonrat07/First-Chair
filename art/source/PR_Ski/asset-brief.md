@@ -18,19 +18,29 @@ PROPORTIONS checked at blockout and forms:
            6 rocker length / length      0.169 (0.30 m)
            7 tail kick height / length   0.0169 (0.030 m)
            8 thickness underfoot          0.017 m (at the ends 0.007 m)
-           9 toe piece: s 0.75 to 0.84 m from the tip, 0.062 m tall
-          10 heel piece: s 1.09 to 1.20 m from the tip, 0.085 m tall
+           9 toe piece: s 0.742 to 0.852 m from the tip (plate), housing 0.062 m tall; story 012: sloped nose from
+             s 0.748, jaw wings at s 0.796 to 0.818 beside the boot toe (s 0.805)
+          10 heel piece: s 1.10 to 1.222 m from the tip (plate), housing 0.085 m tall; story 012: step-in lever to
+             s 1.238, brake arms along both edges to s 1.285, standing 7 to 11 mm past the edges
 PARTS      1 ski body (topsheet, base and edges as material roles): rigid, origin = base under boot centre
-           2 binding toe piece: rigid, sits on the topsheet
-           3 binding heel piece: rigid, sits on the topsheet
-           All three join into one delivery mesh (static prop, one renderer). No brakes.
-SILHOUETTE long thin plank; upturned rounded tip; hourglass sidecut from above; two binding blocks
+           2 binding toe piece: base plate, housing with a sloped nose, jaw wings; rigid, on the topsheet
+           3 binding heel piece: base plate, housing, step-in lever, brake arms and pads; rigid, on the topsheet
+           All three join into one delivery mesh (static prop, one renderer). The binding parts are data in
+           ref/make_refs.py BINDINGS (refs.json "bindings"): the mattes are drawn and 03_forms builds from it.
+SILHOUETTE long thin plank; upturned rounded tip; hourglass sidecut from above; shaped bindings, the heel piece
+           and brake arms showing behind the boot from the chase camera (story 012; were two blocks)
 MATERIALS  topsheet: painted laminate, warm orange, roughness 0.4 (placeholder until the art bible)
            base and edges: black P-tex, roughness 0.3
-           binding: dark grey plastic, roughness 0.5, with a light-grey accent on the heel
+           binding: dark grey plastic, roughness 0.5; light-grey accent #AEB6C2 (the skier's buckle colour,
+             roughness 0.45) on the toe's top cap and the heel lever
 ARTICULATION none. SOCKET_boot at the boot sole (0, 0, 0.045), its +Y pointing along the ski's front (-Y world)
-INFERRED   ski camber (left flat), tail shape (rounded), binding shape (blocks), boot sole height 0.045 m,
-           no brakes, no edge bevel, colours (placeholder palette)
+INFERRED   ski camber (left flat), tail shape (rounded), binding shapes (generic alpine toe and heel pieces with
+           brakes, story 012), boot sole height 0.045 m, no edge bevel, colours (placeholder palette)
 TARGET     Unity 6.3 LTS, FBX, First Chair budget "skis, poles, boots": 100 to 600 tris per piece,
            one LOD. Game camera estimate az 30, el 45, 18 m, 35 mm; on screen about 80 px long.
+           Story 012: the chase camera (CH_Skier asset brief) shows the skis behind the boots. Built: 456 tris
+           (was 212), 4 materials (M_Ski_BindingAccent added), size 0.133 x 1.768 x 0.085 m and SOCKET_boot at
+           (0, 0, 0.045) unchanged. Side gate IoU 0.9937, bands 0.0297 (was 0.9943 and 0.0297: the last band is
+           one pixel of a thin view); top compare IoU 0.920 (was 0.901); validate 0 FAIL, 0 WARN; round trip
+           height 0.085, 456 tris, SOCKET_boot on the mesh. Not verified in the Unity editor.
 ```

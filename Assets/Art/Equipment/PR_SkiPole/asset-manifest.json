@@ -1,6 +1,6 @@
 {
   "asset": "PR_SkiPole",
-  "generated": "2026-10-24T03:30:33",
+  "generated": "2026-10-27T03:09:45",
   "blender": "5.2.2 LTS",
   "source": "/home/user/First-Chair/art/source/PR_SkiPole/PR_SkiPole_master.blend",
   "target_engine": "unity",
@@ -33,7 +33,7 @@
     ]
   },
   "files": {
-    "all": "/home/user/First-Chair/Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx"
+    "all": "Assets/Art/Equipment/PR_SkiPole/PR_SkiPole.fbx"
   },
   "lods": [
     {
@@ -41,7 +41,7 @@
       "objects": [
         "PR_SkiPole_LOD0"
       ],
-      "tris": 192
+      "tris": 400
     }
   ],
   "materials": [
@@ -86,7 +86,8 @@
   "animation_contract": "animation-contract.json",
   "inferred_from_no_reference": [
     "strap omitted",
-    "grip shape generic"
+    "grip shape generic (finger ridge and knob",
+    "story 012)"
   ],
   "dependencies": []
 }
