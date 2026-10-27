@@ -33,3 +33,4 @@ mountain with one chairlift on 2026-10-26 (story 010); the full mountain stays o
 | 009 | [GMA-style riding, the Feel Lab and speed cues](story-009-gma-style-riding-and-feel-lab.md) | Logic + Visual/Feel | In Review | N/A (minimal) |
 | 010 | [A small test mountain with a chairlift, runs, trees and a park](story-010-test-mountain.md) | Logic + Visual/Feel | In Review | N/A (minimal) |
 | 011 | [A Steep-style chase camera](story-011-steep-chase-camera.md) | Logic + Visual/Feel | In Review | N/A (minimal) |
+| 012 | [A skier detail pass for the chase camera](story-012-skier-detail-pass.md) | Visual/Feel | In Progress | N/A (minimal) |
