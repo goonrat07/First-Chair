@@ -61,8 +61,9 @@ namespace FirstChair.Riding
             bool onSnow = !pose.Airborne && !pose.Crashed && !driver.Paused;
             bool jumped = driver.Session.SnappedThisFrame || driver.Session != _paintedSession;
             _paintedSession = driver.Session;
-            Paint(_trackLeft, _skiLeft, position, normal, onSnow, jumped);
-            Paint(_trackRight, _skiRight, position, normal, onSnow, jumped);
+            Vector3 velocity = SimCoordinatesUnity.ToVector3(driver.Session.Current.Velocity);
+            Paint(_trackLeft, _skiLeft, velocity, position, normal, onSnow, jumped);
+            Paint(_trackRight, _skiRight, velocity, position, normal, onSnow, jumped);
         }
 
         private void OnDestroy()
@@ -71,11 +72,12 @@ namespace FirstChair.Riding
             _trackRight?.Dispose();
         }
 
-        private static void Paint(SkiTrack track, Transform ski, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
+        private static void Paint(
+            SkiTrack track, Transform ski, Vector3 velocity, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
         {
             if (track != null && ski != null)
             {
-                track.Paint(ski.position, snowPoint, snowNormal, onSnow, jumped);
+                track.Paint(ski.position, ski.forward, velocity, snowPoint, snowNormal, onSnow, jumped);
             }
         }
 
@@ -96,7 +98,8 @@ namespace FirstChair.Riding
                     ski.name = side < 0 ? "Ski_L" : "Ski_R";
                     ski.localPosition = skiOrigin;
                     ski.localRotation = Quaternion.identity;
-                    var track = new SkiTrack(side < 0 ? "Ski track L" : "Ski track R", trackMaterial, settings);
+                    ViewHelpers.SkiEnds(ski, out float tailBehind, out float tipAhead);
+                    var track = new SkiTrack(side < 0 ? "Ski track L" : "Ski track R", trackMaterial, settings, tailBehind, tipAhead);
                     if (side < 0)
                     {
                         _skiLeft = ski;

@@ -88,8 +88,8 @@ namespace FirstChair.Riding
             Quaternion skierRotation = skier.transform.rotation;
             _skiLeft = AttachSki(skier.transform, settings.SkierSkiSocketLeft, skierRotation, out Quaternion leftFrame);
             _skiRight = AttachSki(skier.transform, settings.SkierSkiSocketRight, skierRotation, out Quaternion rightFrame);
-            _trackLeft = _skiLeft != null ? new SkiTrack("Ski track L", trackMaterial, settings) : null;
-            _trackRight = _skiRight != null ? new SkiTrack("Ski track R", trackMaterial, settings) : null;
+            _trackLeft = _skiLeft != null ? NewTrack("Ski track L", _skiLeft) : null;
+            _trackRight = _skiRight != null ? NewTrack("Ski track R", _skiRight) : null;
             Transform poleLeft = AttachPole(skier.transform, settings.SkierHandSocketLeft, leftFrame);
             Transform poleRight = AttachPole(skier.transform, settings.SkierHandSocketRight, rightFrame);
             _procedural = new SkierProceduralPose(skier.transform, settings, poleLeft, poleRight, this);
@@ -153,8 +153,9 @@ namespace FirstChair.Riding
             bool onSnow = !current.Airborne && !current.Crashed && !driver.Paused;
             bool jumped = session.SnappedThisFrame || session != _paintedSession;
             _paintedSession = session;
-            Paint(_trackLeft, _skiLeft, position, normal, onSnow, jumped);
-            Paint(_trackRight, _skiRight, position, normal, onSnow, jumped);
+            Vector3 velocity = SimCoordinatesUnity.ToVector3(current.Velocity);
+            Paint(_trackLeft, _skiLeft, velocity, position, normal, onSnow, jumped);
+            Paint(_trackRight, _skiRight, velocity, position, normal, onSnow, jumped);
         }
 
         private void BuildGraph(Animator animator)
@@ -291,12 +292,20 @@ namespace FirstChair.Riding
             prop.localPosition = -(localRotation * Vector3.Scale(prop.localScale, socketInModel));
         }
 
-        private static void Paint(SkiTrack track, Transform ski, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
+        private static void Paint(
+            SkiTrack track, Transform ski, Vector3 velocity, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
         {
             if (track != null && ski != null)
             {
-                track.Paint(ski.position, snowPoint, snowNormal, onSnow, jumped);
+                track.Paint(ski.position, ski.forward, velocity, snowPoint, snowNormal, onSnow, jumped);
             }
+        }
+
+        // The ski's track, laid from its trailing end, so it never lies under the ski.
+        private SkiTrack NewTrack(string name, Transform ski)
+        {
+            ViewHelpers.SkiEnds(ski, out float tailBehind, out float tipAhead);
+            return new SkiTrack(name, trackMaterial, settings, tailBehind, tipAhead);
         }
     }
 }

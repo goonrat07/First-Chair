@@ -38,3 +38,14 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
 - Found in passing: in both builds the ski tracks were drawn over the back half of each ski (the ribbon sits 15 mm
   off the snow, the ski's top 17 mm). Fixed as its own change (below).
 - Not verified: the Unity editor; the look sign-off is yours, on the PC.
+
+## Fix: ski tracks drawn over the ski tails (found in story 012's rides)
+- Changed: `Assets/Scripts/Riding/Core/SkiTrailingEnd.cs` (new), `SkiTrack.cs`, `ViewHelpers.cs`, `SkierView.cs`,
+  `RiderView.cs`; `Assets/Tests/EditMode/SkiTrailingEndTests.cs` (new, 7 tests).
+- What: tracks start at the ski's trailing end (the tail riding forward, the tip riding switch) instead of under the
+  boot, so the translucent ribbon never lies under the ski. The end follows the rider's velocity along the ski's line
+  and keeps its end in a skid across the ski or below 0.5 m/s; a change of end breaks the track.
+- Tests: local NUnit run (.NET 10) 219 passed; compiles against Unity 6.3's player DLLs. Seen in story 013's build.
+- Decisions made for you: a short gap (up to the 0.3 m point spacing) can show between the tail and the track at low
+  speed, in place of the ribbon over the ski.
+- Not verified: the Unity editor.

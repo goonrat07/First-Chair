@@ -48,6 +48,36 @@ namespace FirstChair.Riding
             return instance;
         }
 
+        /// <summary>
+        /// How far a ski's tail and tip reach behind and ahead of its origin, metres, along its +Z (the way <c>PR_Ski</c>'s
+        /// tip faces), from its meshes' bounds; both zero for a ski with no mesh. Measured once, when the ski is attached.
+        /// </summary>
+        /// <param name="ski">The ski's root, as attached.</param>
+        /// <param name="tailBehind">The tail's distance behind the origin.</param>
+        /// <param name="tipAhead">The tip's distance ahead of it.</param>
+        public static void SkiEnds(Transform ski, out float tailBehind, out float tipAhead)
+        {
+            tailBehind = 0f;
+            tipAhead = 0f;
+            foreach (MeshFilter filter in ski.GetComponentsInChildren<MeshFilter>())
+            {
+                if (filter.sharedMesh == null)
+                {
+                    continue;
+                }
+
+                Bounds bounds = filter.sharedMesh.bounds;
+                for (int corner = 0; corner < 8; corner++)
+                {
+                    var sign = new Vector3((corner & 1) == 0 ? -1f : 1f, (corner & 2) == 0 ? -1f : 1f, (corner & 4) == 0 ? -1f : 1f);
+                    Vector3 point = filter.transform.TransformPoint(bounds.center + Vector3.Scale(bounds.extents, sign));
+                    float along = Vector3.Dot(point - ski.position, ski.forward);
+                    tailBehind = Mathf.Max(tailBehind, -along);
+                    tipAhead = Mathf.Max(tipAhead, along);
+                }
+            }
+        }
+
         /// <summary>The snow's unit normal under the rider, between the last two sim states; straight up in the air.</summary>
         /// <param name="session">The ride.</param>
         /// <param name="alpha">The interpolation factor between the previous and current state.</param>

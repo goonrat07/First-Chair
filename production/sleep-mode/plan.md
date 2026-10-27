@@ -12,7 +12,7 @@ scheduled after the weekly reset as well.
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
-| 1 | story-012-skier-detail-pass: ski bindings, pole grips and baskets; the player always drawn at LOD0; CI build, cloud ride, evidence | dev-story, then story-done | done (In Review) | 0d2953f, 729473d, 310c30e, evidence commit |
+| 1 | story-012-skier-detail-pass: ski bindings, pole grips and baskets; the player always drawn at LOD0; CI build, cloud ride, evidence | dev-story, then story-done | done (In Review) | 0d2953f, 729473d, 310c30e, f70a125 |
 | 2 | story-013-procedural-animation (new): leg IK on the snow, lean and angulation, springs and follow-through, pole plants, layered over the 16 key poses | create the story, then dev-story | running | 361ea91, bf20bd7, c875a57 |
 | 3 | story-014-procedural-snow-shader (new): sparkle, blue-tinted shade, ski trails read as bump and detail, procedural surface detail; covers story 007's two open snow criteria | create the story, then dev-story | queued (story written) | 38cefda |
 | 4 | story-015-mountain-design-tool (new): a mountain data format and scripts that build the terrain, snow map, runs, trees and features from it (the game brief's "mountain-making tool"), for Claude now and the user later | create the story, then dev-story | queued | |
