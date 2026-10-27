@@ -1,7 +1,7 @@
 # Story 012: A skier detail pass for the chase camera
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review
 > **Layer**: Presentation (art)
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -69,23 +69,51 @@ review assets from the old far camera (az 30, el 45, 18 m, an 80 px strip). They
 see it. A back reference view joins the front and side ones (`ref/make_refs.py`), so the back is designed, not
 inferred.
 
+## As built (2026-10-27)
+
+- **The seat** (fbca6b6): the trouser faces under the hem are tucked in and the hem drops at the back. An in-repo check
+  (`build/seat_only_copy.py`, `build/seat_check.py`) renders all 16 clips from behind with and without the seat; it finds
+  0 seat pixels in every clip, and 5,386 on the model from before the fix, so it can fail.
+- **The detail pass** (0d2953f): rounder sections and every listed detail, all flat colour; the pockets and flaps are
+  panels swept along the surface they sit on. Silhouettes pass front, side and back at every LOD (IoU 0.955 to 0.977,
+  bands within 0.0172); height 1.7505 and span within 0.1 percent; `validate.py --budget-tris 10000` 0 FAIL; weights
+  0 unweighted, at most 4 influences; the FBX round trip passes (20 bones, 16 clips, 4 sockets). Reviews now use the
+  chase camera and a back reference view (`FIRST-CHAIR.md`, `ref/make_refs.py`).
+- **Skis and poles** (729473d): toe and heel pieces with a lever, brake arms and light accents (PR_Ski 456 tris, was
+  212); the pole's finger ridge, rounder knob and ringed basket (PR_SkiPole 400, was 192). Sizes, origins and sockets
+  unchanged; gates and round trips pass.
+- **Full detail on the player** (310c30e): Unity's automatic LOD group would switch the rider to LOD1 under 25 percent
+  of the screen's height, so `SkierView` forces LOD0 on the player's skier and logs the heights Unity picked.
+- **In the build** (run 40443808319, commit bf20bd7, ridden 2026-10-27; before: run 40423919050, a5091fb): at rest,
+  carving, in a fast tuck and in the air with three grabs, the seat shows in every before frame and in no after frame;
+  the stripes, pockets, gauntlets and helmet details read, and each heel piece shows behind its boot
+  (`production/qa/evidence/story-012-skier-detail-pass/evidence.md`).
+- **Not met as written: the body's budget.** LOD0 is 4,269, under the 5k floor: every section that faceted at the chase
+  camera got more sides and every detail is in, and more would mostly smooth the flat facets that are the style. LOD2
+  is 1,262, above about 1k, because decimation keeps the stripes' boundaries. Both are in the asset brief; the first
+  waits on the user's call (`production/sleep-mode/questions.md`).
+- **Found in passing:** in both builds the ski tracks were drawn over the back half of each ski once moving (the
+  ribbon sits 15 mm off the snow, the ski's top 17 mm, and the ribbon was laid from under the boot). Not this story's;
+  fixed separately so tracks start at the ski's trailing end, seen in story 013's build.
+
 ## Acceptance Criteria
 
-- [ ] The asset brief records the pass: the new parts, the budget, the back reference view and the decisions.
-- [ ] Silhouette gates pass front, side and back against the reference views; proportions within 2 percent.
-- [ ] The seat never shows through the jacket: back three-quarter close-ups of all 16 poses, with a pixel check
+- [x] The asset brief records the pass: the new parts, the budget, the back reference view and the decisions.
+- [x] Silhouette gates pass front, side and back against the reference views; proportions within 2 percent.
+- [x] The seat never shows through the jacket: back three-quarter close-ups of all 16 poses, with a pixel check
   for navy inside the jacket's outline.
 - [ ] Budget: body LOD0 5k to 8k triangles, LOD1 2k to 4k, LOD2 about 1k; helmet with goggles, each boot, each ski
   and each pole 100 to 600; `validate.py --budget-tris 10000` passes; no unweighted vertices or more than 4
-  influences.
-- [ ] The skis' bindings and the poles' grips and baskets read from the chase camera; the ski and pole sockets, sizes
+  influences. *Not met as written: body LOD0 4,269 and LOD2 1,262 (As built); the rest holds (helmet 584, each boot
+  256, each ski 456, each pole 400).*
+- [x] The skis' bindings and the poles' grips and baskets read from the chase camera; the ski and pole sockets, sizes
   and origins are unchanged, and their round-trip checks pass.
-- [ ] The rig, sockets and 16 clips keep their names; the FBX round-trip check passes (triangles per LOD,
+- [x] The rig, sockets and 16 clips keep their names; the FBX round-trip check passes (triangles per LOD,
   20 bones, 16 clips, height 1.75 m); the Unity EditMode tests still pass.
-- [ ] In a build, from the chase camera, at rest, carving, in a fast tuck and in the air with a grab: the new
+- [x] In a build, from the chase camera, at rest, carving, in a fast tuck and in the air with a grab: the new
   details read, the style and palette match the old skier, the bindings show behind the boots, and the seat stays
   hidden (retained before-and-after screenshots).
-- [ ] No change to riding or the camera.
+- [x] No change to riding or the camera.
 
 ## Out of Scope
 
