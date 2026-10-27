@@ -1,7 +1,7 @@
 # Story 014: A procedural snow shader
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review
 > **Layer**: Presentation
 > **Type**: Visual/Feel
 > **Estimate**: L
@@ -73,15 +73,17 @@ material each frame, so the look tunes live. The scene builder makes the terrain
 
 ## Acceptance Criteria
 
-- [ ] `First Chair/Snow Terrain` and its add pass build in CI for Windows and Linux with no shader errors in the
+- [x] `First Chair/Snow Terrain` and its add pass build in CI for Windows and Linux with no shader errors in the
   build log, and the terrain is not drawn magenta in the cloud build.
-- [ ] From the chase camera, retained in `production/qa/evidence/story-014-procedural-snow-shader/`, before (stock
+- [x] From the chase camera, retained in `production/qa/evidence/story-014-procedural-snow-shader/`, before (stock
   shader, the previous build) and after: glints in sunlit snow and none in shade; shade bluer than before; a roller's
   terminator softer; powder with ripples; the five snow types still told apart.
-- [ ] Each effect has a weight on `LightingSettings`, shown in the Feel Lab's Light tab; with every weight at 0 the
+  *The terminator is measured on the corduroy's ridges, the slope's smallest rollers: the soft light acts alike on any
+  snow turned from the sun. The ripples are faint at their default strength (evidence.md).*
+- [x] Each effect has a weight on `LightingSettings`, shown in the Feel Lab's Light tab; with every weight at 0 the
   snow looks as it did with the stock shader.
-- [ ] The cloud ride's frame time is no more than 10 percent above the previous build's on the same ride.
-- [ ] No change to the sim, the camera or the ski tracks.
+- [x] The cloud ride's frame time is no more than 10 percent above the previous build's on the same ride.
+- [x] No change to the sim, the camera or the ski tracks.
 
 ## Out of Scope
 

@@ -76,7 +76,7 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
 - Not verified: the landing's compression, a roller with both skis on the snow, and every layer's motion (the cloud's
   frame rate); the Unity editor; the feel sign-off is yours, on the PC.
 
-## story-014-procedural-snow-shader (running: the five snow types view is next)
+## story-014-procedural-snow-shader (In Review)
 - Changed:
   - `Assets/Shaders/SnowTerrain/` (new): `SH_Env_SnowTerrain.shader` and its add pass, forks of URP 17.3's terrain
     shader whose forward pass includes `SH_Env_SnowTerrainForward.hlsl`; the snow terms in `SH_Env_SnowEffects.hlsl`
@@ -89,7 +89,8 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
   vulkan with no shader error, Linux and Windows players build. Cloud rides, pinned, against the stock shader
   (ee60523): every weight at 0 draws the stock snow (all but 4 differing pixels are on the skier); glints in 0.05
   percent of lit snow and none in the skier's shadow; shade bluer (blue minus red 26 to 32); the corduroy's
-  terminators softer; ripples in powder, fading by 30 m; frame time 2.3 percent above the stock build's.
+  terminators softer; ripples in powder, fading by 30 m; the five snow types as distinct as before (pinned in
+  each); frame time 2.3 percent above the stock build's.
 - Found and fixed on the way: the first build's glints (938e312) changed no pixel from the chase camera. Its 2 cm
   cells were under a pixel by 10 m, and its facets leaned too little to mirror a sun low behind the camera; the cells
   now grow with distance to stay 2.5 pixels wide, and the facets spread wider (cadd45d). Its default wrap (0.35) cut

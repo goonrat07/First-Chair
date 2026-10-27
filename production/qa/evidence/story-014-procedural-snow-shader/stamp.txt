@@ -1,0 +1,10 @@
+Reviewed-Content-Hash: Assets/Shaders/SnowTerrain/SH_Env_SnowTerrain.shader 696a4ad8b5a1ebc3dcebafd62d26d4012da8ce57
+Reviewed-Content-Hash: Assets/Shaders/SnowTerrain/SH_Env_SnowTerrainAdd.shader 4c4b04849236e4461a953b6bd50364ded2ec8632
+Reviewed-Content-Hash: Assets/Shaders/SnowTerrain/SH_Env_SnowTerrainForward.hlsl 4987f129e8f718d73a558525bd2008cae630b671
+Reviewed-Content-Hash: Assets/Shaders/SnowTerrain/SH_Env_SnowEffects.hlsl a3b244baf5ce62f97a99d6da1a69ca81cb22e809
+Reviewed-Content-Hash: Assets/Scripts/Riding/LightingSettings.cs 317ed15cc1ac976be5306b00da050957a3e492eb
+Reviewed-Content-Hash: Assets/Scripts/Riding/LightingRig.cs 790fb98f280ac82fba5f4099714a4f38a01a2dde
+Reviewed-Content-Hash: production/qa/evidence/story-014-procedural-snow-shader/evidence.md 6b7f906c62d7e74b1b1db6e0ca428dc8afd26149
+Reviewed-Content-Hash: production/qa/evidence/story-014-procedural-snow-shader/2026-10-27-frame-times-cadd45d.md 65c3d9a5a6b77a6d4873ff7ad9ab9e13e09e924f
+Reviewed-Content-Hash: production/qa/evidence/story-014-procedural-snow-shader/2026-10-27-frame-times-938e312.md 2bee4159cc29d57f478cadf1044047a8b3e7c9c3
+Reviewed-Content-Hash: production/epics/first-chair/story-014-procedural-snow-shader.md cc7b4dbc4e39e749711c39f35db26326505f409d
