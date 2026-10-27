@@ -49,3 +49,29 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
 - Decisions made for you: a short gap (up to the 0.3 m point spacing) can show between the tail and the track at low
   speed, in place of the ribbon over the ski.
 - Not verified: the Unity editor.
+
+## story-013-procedural-animation (In Review)
+- Changed:
+  - `Assets/Scripts/Riding/Core/`: `TurnLean`, `DampedSpring`, `TwoBoneIk`, `LegReach`, `PolePlantTimer` and
+    `PoseVector` (bf20bd7), the lean that counts the frame's tilt (ee60523) and the lean that waits for speed
+    (b90eccf), each with EditMode tests
+  - `Assets/Scripts/Riding/SkierProceduralPose.cs` (new) and `SkierView.cs`: the four layers after the clip blend
+    (c875a57); `RiderViewSettings.cs`: every number, on the Feel Lab's Effects tab
+  - `production/qa/evidence/story-013-procedural-animation/`: rides with the layers on and off, evidence and stamp
+- Tests: CI run 40510043401 (a399708): EditMode 238/238, Linux and Windows players build. Cloud rides, layers on and
+  off: the first edge change (the bug and its fix), a slow and a fast carve, a fast edge change with the plant's
+  reach.
+- Found and fixed on the way: the first cloud ride (c875a57) laid a slow skier almost flat on the snow at every edge
+  change. Two causes: the lean didn't count the frame's tilt to the slope (ee60523), and the sim's slow GMA-style
+  pivots read as a 50 degree lean, so the extra lean now waits for speed (b90eccf). Ridden with one layer at a time
+  before the fix, the lean layer alone laid the skier flat.
+- Found about the cloud: the player draws about 0.75 frames a second there (1280x720 on four CPU cores, Mesa's
+  software renderer), and a player Xvfb never focuses idles. Rides run in slow motion and the springs settle between
+  frames, so motion can't be judged from cloud shots.
+- Decisions made for you:
+  - IK written in C# (`TwoBoneIk`) rather than Unity's Animation Rigging package, which the project doesn't have.
+  - The layers' numbers live on `RiderViewSettings`, so the Feel Lab tunes them with no new asset.
+  - The extra lean fades in from 6 m/s (about 22 km/h) to 14 m/s (about 50 km/h) and is capped at 15 degrees; the
+    carve clips are taken to lean 30 degrees and the race clips 34.
+- Not verified: the landing's compression, a roller with both skis on the snow, and every layer's motion (the cloud's
+  frame rate); the Unity editor; the feel sign-off is yours, on the PC.

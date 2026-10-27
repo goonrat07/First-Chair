@@ -1,7 +1,7 @@
 # Story 013: Procedural animation on top of the key poses
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review
 > **Layer**: Presentation
 > **Type**: Logic + Visual/Feel
 > **Estimate**: L
@@ -54,7 +54,7 @@ on `RiderViewSettings`, so the Feel Lab's Effects tab tunes it live, and each la
    clip. Two-bone IK on the arm (upper arm, forearm) places the hand so the pole, held rigidly in it, reaches the
    tip point. The timing (reach, planted, release) and reach distances are settings.
 
-## As built (2026-10-27, in progress)
+## As built (2026-10-27)
 
 - **The math** (bf20bd7): `TurnLean`, `DampedSpring`, `TwoBoneIk`, `LegReach` and `PolePlantTimer` in `Riding/Core`,
   with EditMode tests (CI: 224/224).
@@ -71,23 +71,31 @@ on `RiderViewSettings`, so the Feel Lab's Effects tab tunes it live, and each la
   Ridden again on ee60523 with one layer on at a time, the first edge change at 8 to 15 km/h: with the lean layer
   alone the skier lies flat; with the legs layer alone, or with no layer, it leans only as far as the clips. The fix:
   the extra lean fades in with speed (none below about 22 km/h, all from about 50 km/h, `TurnLean.SpeedFade`), the
-  clips' own lean is taken as 30 and 34 degrees, and the extra is capped at 15.
+  clips' own lean is taken as 30 and 34 degrees, and the extra is capped at 15 (b90eccf).
+- **Ridden in the cloud** (a399708, run 40510043401, EditMode 238/238): the first edge change now leans as far as the
+  clips alone; a slow turn at 5 to 7 km/h looks the same with the layers on and off; at 40 km/h the edge change leans
+  about 10 degrees further than the clips and the inside hand reaches for the plant. The cloud draws about 0.75 frames
+  a second, so the springs settle between frames: the landing and the motion are for the PC
+  (`production/qa/evidence/story-013-procedural-animation/`).
 
 ## Acceptance Criteria
 
-- [ ] Core math with EditMode tests: lean from speed and turn rate (zero when straight, sign follows the turn,
+- [x] Core math with EditMode tests: lean from speed and turn rate (zero when straight, sign follows the turn,
   clamped); the extra lean over the clips' own; a damped spring that converges, does not overshoot when critically
   damped and gives the same result at 30, 60 and 144 frames a second; a two-bone IK that keeps the bone lengths,
   reaches a reachable target, straightens toward an unreachable one and bends in the hinted plane; the foot
   correction and the hip drop; the pole plant timing (starts on an edge change at speed, not while tucked, airborne,
   crashed or paused; one plant per turn; the new turn's inside side).
-- [ ] Unity: the four layers run after the clip blend in `SkierView`, each with a weight in `RiderViewSettings`
+- [x] Unity: the four layers run after the clip blend in `SkierView`, each with a weight in `RiderViewSettings`
   (tooltips, ranges, shown in the Feel Lab's Effects tab); with every weight at 0 the skier is exactly as before.
-- [ ] The Unity EditMode tests pass in CI and the Windows and Linux players build.
+- [x] The Unity EditMode tests pass in CI and the Windows and Linux players build.
 - [ ] A cloud ride of the build, from the chase camera, retained in `production/qa/evidence/story-013-procedural-animation/`:
   a slow and a fast carve (the fast one leans further), an edge change with a pole plant, a roller or kicker lip
   with both skis on the snow, and a landing with the hips compressing; before-and-after where a layer changes a shot.
-- [ ] No change to the sim, the camera or the clips; replays still match step for step.
+  *Partly met: the slow and fast carve, the edge change with the plant's reach, and on-and-off pairs are retained; the
+  roller with both skis on the snow and the landing's compression can't be seen at the cloud's 0.75 frames a second
+  and are left for the PC (evidence.md).*
+- [x] No change to the sim, the camera or the clips; replays still match step for step.
 
 ## Out of Scope
 
