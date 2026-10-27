@@ -47,6 +47,30 @@ so nothing repeats with a texture's tile:
 Every value is a field on `LightingSettings` (the Feel Lab's Light tab), which `LightingRig` pushes to the terrain's
 material each frame, so the look tunes live. The scene builder makes the terrain material from the new shader.
 
+## As built (2026-10-27)
+
+- **The shaders** (938e312): `Assets/Shaders/SnowTerrain/SH_Env_SnowTerrain.shader` and `SH_Env_SnowTerrainAdd.shader`
+  are URP 17.3's `TerrainLit` and its add pass (Unity's Graphics repository, `6000.3/staging`, Unity Companion
+  License), changed in one place each: the forward pass includes `SH_Env_SnowTerrainForward.hlsl`, URP's own forward
+  fragment with the snow terms added. Every other pass and the base-map shaders stay URP's; the GBuffer passes are left
+  out (the renderer is Forward). The terms are in `SH_Env_SnowEffects.hlsl`, and none samples a texture.
+- **Glints**, reworked in cadd45d after the first cloud ride showed none: from the chase camera a 2 cm cell is under a
+  pixel by 10 m, and a facet leaning at most 30 to 45 degrees never mirrored a sun low behind the camera. The cells are
+  now 2 cm near the camera and double in size with distance as often as it takes to span 2.5 pixels (the two nearest
+  sizes blended), the facets spread wider (1.5) and the mirror lobe is broader (sharpness 150), so a few tenths of a
+  percent of crystals flash at any angle. Per snow type: powder 1, groomed 0.6, crud 0.35, slush 0.15, ice 0. Only in
+  the sun, fading by 40 m.
+- **Blue shade** 0.6; **soft light** wrap 0.15 (938e312's 0.35 cut the corduroy's contrast by a quarter); **wind
+  ripples** in powder only, 0.25 at their steepest, 0.5 m long, the wind from 70 degrees, fading by 30 m and as a
+  wavelength nears two pixels.
+- **Settings:** 18 `LightingSettings` fields (the Feel Lab's Light tab), which `LightingRig` sets as shader globals each
+  frame, not on the terrain's material as the Design said: globals reach every terrain without finding its material.
+  Unset or at 0, every term is off and the snow is URP's stock terrain (measured: the same pixels).
+- **Cost:** about 150 ALU a pixel on top of URP's terrain, no texture samples, no new keywords (64 ForwardLit variants
+  per graphics API, as URP's own). The cloud ride's frame time is 2.3 percent above the stock build's.
+- **Evidence:** `production/qa/evidence/story-014-procedural-snow-shader/evidence.md`. Not verified in the editor; the
+  glints' twinkle in motion and the look at a real GPU's frame rate are the user's review, on the PC.
+
 ## Acceptance Criteria
 
 - [ ] `First Chair/Snow Terrain` and its add pass build in CI for Windows and Linux with no shader errors in the

@@ -76,6 +76,36 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
 - Not verified: the landing's compression, a roller with both skis on the snow, and every layer's motion (the cloud's
   frame rate); the Unity editor; the feel sign-off is yours, on the PC.
 
+## story-014-procedural-snow-shader (running: the five snow types view is next)
+- Changed:
+  - `Assets/Shaders/SnowTerrain/` (new): `SH_Env_SnowTerrain.shader` and its add pass, forks of URP 17.3's terrain
+    shader whose forward pass includes `SH_Env_SnowTerrainForward.hlsl`; the snow terms in `SH_Env_SnowEffects.hlsl`
+    (938e312; the glints reworked in cadd45d)
+  - `LightingSettings.cs`: 18 snow fields, on the Feel Lab's Light tab; `LightingRig.cs`: sets them as shader globals
+    each frame; the scene builder's terrain material uses the new shader
+  - `production/qa/evidence/story-014-procedural-snow-shader/`: pinned before and after views, the glint, wrap and
+    ripple crops, the snow types, two frame-time logs, evidence and stamp
+- Tests: CI run 40522231518 (cadd45d): EditMode 238/238, both shaders compile 64 ForwardLit variants for glcore and
+  vulkan with no shader error, Linux and Windows players build. Cloud rides, pinned, against the stock shader
+  (ee60523): every weight at 0 draws the stock snow (all but 4 differing pixels are on the skier); glints in 0.05
+  percent of lit snow and none in the skier's shadow; shade bluer (blue minus red 26 to 32); the corduroy's
+  terminators softer; ripples in powder, fading by 30 m; frame time 2.3 percent above the stock build's.
+- Found and fixed on the way: the first build's glints (938e312) changed no pixel from the chase camera. Its 2 cm
+  cells were under a pixel by 10 m, and its facets leaned too little to mirror a sun low behind the camera; the cells
+  now grow with distance to stay 2.5 pixels wide, and the facets spread wider (cadd45d). Its default wrap (0.35) cut
+  the corduroy's contrast by a quarter; now 0.15.
+- Found about the cloud: the player runs at about 7 percent of real time on the test slope and 4.7 percent on the test
+  mountain, and the chase camera needs a few seconds after a pinned restart before its frame holds still. A scratch
+  console program on the sim (the planner) now picks where and when to pin a ride.
+- Decisions made for you:
+  - A fork of URP's own terrain shader in HLSL (Shader Graph has no terrain target in URP), the snow terms added after
+    URP's lighting in the forward pass, so shadows, fog and the ambient stay URP's.
+  - The values are shader globals set each frame, not material properties: every terrain gets them.
+  - Defaults: glints 6 (powder 1, groomed 0.6, crud 0.35, slush 0.15, ice 0), shade 0.6, wrap 0.15, ripples 0.25 at
+    0.5 m. The ripples are faint at 0.25: if you want them seen, raise "Snow ripple strength" in the Light tab.
+- Not verified: the glints' twinkle in motion and the look at a real GPU's frame rate; the Unity editor; the look
+  sign-off is yours, on the PC.
+
 ## story-015-mountain-design-tool (In Review)
 - Changed:
   - `tools/mountain/` (new): `mountain.py` (`build`, `preview`, `check`, `new`), `README.md` (the format, field by
