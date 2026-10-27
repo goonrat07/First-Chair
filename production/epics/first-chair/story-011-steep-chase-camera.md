@@ -1,12 +1,12 @@
 # Story 011: A Steep-style chase camera
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review
 > **Layer**: Presentation
 > **Type**: Logic (camera math) + Visual/Feel (framing, speed)
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: 2026-10-26
+> **Last Updated**: 2026-10-27
 
 ## Context
 
@@ -92,17 +92,21 @@ What the screenshots show, and what this camera does about it. Every number is a
   height at 76 to 164 km/h with the slope's far end about 28 to 33 percent down; the edges streaked from about
   100 km/h with the rider sharp and no halo; rest, carves and the traverse as before. The user then asked for the
   slide over the shoulder (above).
+- Final build (run 40423919050, commit a5091fb), ridden 2026-10-27: every acceptance criterion seen in the cloud
+  (`production/qa/evidence/story-011-steep-chase-camera/evidence.md`). In a fast tuck the rider sits 3 to 6 percent
+  of the width left of the middle (0.0 at rest) at 35 to 46 percent of the height; the rollover tilt, pinned and
+  toggled, drops the view about 2 degrees where the snow ahead steepens. The feel is the user's call on the PC.
 
 ## Acceptance Criteria
 
-- [ ] Unit tests cover the new math: the pitch from the snow ahead, the distance and height with speed and tuck, the
+- [x] Unit tests cover the new math: the pitch from the snow ahead, the distance and height with speed and tuck, the
   slide to the rider's right, the rise that keeps the camera and its line to the rider above the snow, and the motion
   blur's strength with speed and with each frame's length.
-- [ ] In a build, on the test slope and the test mountain: the chase framing at rest, carving, in a fast tuck (closer,
+- [x] In a build, on the test slope and the test mountain: the chase framing at rest, carving, in a fast tuck (closer,
   lower, wider, a little to the rider's right, edges blurred), over a rollover into steeper snow (tilted down), on a
   traverse, and off a kicker (retained screenshots).
-- [ ] The camera is never seen under the snow, and the snow never hides the rider, in those rides.
-- [ ] The Feel Lab's Camera tab shows the new numbers and "Steep chase (default)"; the old presets are gone.
+- [x] The camera is never seen under the snow, and the snow never hides the rider, in those rides.
+- [x] The Feel Lab's Camera tab shows the new numbers and "Steep chase (default)"; the old presets are gone.
 
 ## Out of Scope
 
