@@ -28,6 +28,13 @@ namespace FirstChair.Riding
         [SerializeField, Min(0.1f)] private float fastHeight = 2.5f;
         [Tooltip("Its height at full speed in a tuck, metres: close in, it still looks down over the rider's back.")]
         [SerializeField, Min(0.1f)] private float tuckHeight = 1.8f;
+        [Tooltip("How far the camera slides to the rider's right at full speed, not tucked, metres: over the shoulder, so the "
+            + "rider sits a little left of the screen's middle. Standing still it sits straight behind; a negative number "
+            + "slides it left.")]
+        [SerializeField] private float fastSideOffset = 0.15f;
+        [Tooltip("How far it slides to the rider's right at full speed in a tuck, metres: in close, a little to the side "
+            + "(the user's Steep shots, 2026-10-27), the rider about 6 percent of the width left of the middle.")]
+        [SerializeField] private float tuckSideOffset = 0.4f;
         [Tooltip("The speed where the full-speed and tuck numbers apply in full, m/s (25 is 90 km/h); between, they ease in.")]
         [SerializeField, Min(0.1f)] private float closeInSpeed = 25f;
         [Tooltip("Aim point height above the rider's feet, metres.")]
@@ -134,6 +141,10 @@ namespace FirstChair.Riding
         public float FastHeight => fastHeight;
         /// <summary>Height above the snow at full speed in a tuck, metres.</summary>
         public float TuckHeight => tuckHeight;
+        /// <summary>Slide to the rider's right at full speed, not tucked, metres; negative is left.</summary>
+        public float FastSideOffset => fastSideOffset;
+        /// <summary>Slide to the rider's right at full speed in a tuck, metres; negative is left.</summary>
+        public float TuckSideOffset => tuckSideOffset;
         /// <summary>The speed where the full-speed and tuck numbers apply in full, m/s.</summary>
         public float CloseInSpeed => closeInSpeed;
         /// <summary>Aim height above the feet, metres.</summary>

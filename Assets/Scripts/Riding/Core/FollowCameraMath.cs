@@ -111,6 +111,24 @@ namespace FirstChair.Riding
         }
 
         /// <summary>
+        /// The chase camera's slide to the side, over the rider's shoulder (Story 011): a ground offset in Unity's axes,
+        /// <paramref name="metres"/> to the right of the travel, so the rider sits a little left of the screen's middle;
+        /// a negative <paramref name="metres"/> slides it left.
+        /// </summary>
+        /// <example>Travelling down +Z, <c>SideOffset(0, 1, 0.4, out x, out z)</c> gives x 0.4, z 0: Unity's right.</example>
+        /// <param name="directionX">The travel's ground direction, x (a unit vector with <paramref name="directionZ"/>).</param>
+        /// <param name="directionZ">The travel's ground direction, z.</param>
+        /// <param name="metres">How far to the right, metres.</param>
+        /// <param name="x">The offset's x, metres.</param>
+        /// <param name="z">The offset's z, metres.</param>
+        public static void SideOffset(double directionX, double directionZ, double metres, out double x, out double z)
+        {
+            // Unity's right of a forward (x, z) on the ground is (z, -x): up cross forward, Y up and left-handed.
+            x = directionZ * metres;
+            z = -directionX * metres;
+        }
+
+        /// <summary>
         /// A chase camera number that changes with speed and tuck (Story 011), such as its distance or its pitch over the
         /// snow: <paramref name="atRest"/> standing still, easing (smoothstep) to <paramref name="atSpeed"/> at
         /// <paramref name="fullSpeed"/>, and toward <paramref name="tucked"/> as much as the rider is tucked and fast, so a

@@ -200,6 +200,20 @@ namespace FirstChair.Riding.Tests
         }
 
         [Test]
+        public void SideOffset_IsToTheRiderRight_InUnitysAxes()
+        {
+            // Act: travelling down +Z (Unity's right is +X), down +X (its right is -Z), and a negative shift.
+            FollowCameraMath.SideOffset(0.0, 1.0, 0.4, out double alongZx, out double alongZz);
+            FollowCameraMath.SideOffset(1.0, 0.0, 0.4, out double alongXx, out double alongXz);
+            FollowCameraMath.SideOffset(0.0, 1.0, -0.4, out double leftX, out double leftZ);
+
+            // Assert
+            Assert.That(new[] { alongZx, alongZz }, Is.EqualTo(new[] { 0.4, 0.0 }).Within(1e-12));
+            Assert.That(new[] { alongXx, alongXz }, Is.EqualTo(new[] { 0.0, -0.4 }).Within(1e-12));
+            Assert.That(new[] { leftX, leftZ }, Is.EqualTo(new[] { -0.4, 0.0 }).Within(1e-12), "a negative shift goes left");
+        }
+
+        [Test]
         public void RiseToClear_LineWellAboveTheSnow_NoRise()
         {
             // Arrange: aim at 101.2 m, camera at 103 m; the snow halfway at 100 m, 0.5 m margin.

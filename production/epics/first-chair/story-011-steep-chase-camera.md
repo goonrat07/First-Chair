@@ -21,6 +21,9 @@ Decisions (user, 2026-10-26):
 - Camera first; then a skier detail pass (story 012, the rider fills more of the screen) and procedural animation on
   top of the key poses (story 013).
 - No backpack on the base skier; a pack becomes a customizable item later, once the basics are in.
+- 2026-10-27, from the last Steep shot: "when the camera gets in close, the angle slightly changes and it might go
+  ever so slightly to the side of the skier". The camera slides over the rider's **right shoulder** (the user's pick,
+  over the outside of the turn or the downhill side).
 
 The user may send Steep clips; they tune the camera's dynamics (how fast it follows, how far it pulls in) but nothing
 waits on them.
@@ -52,6 +55,10 @@ What the screenshots show, and what this camera does about it. Every number is a
   faster. The view widens with speed (up to 12 degrees more), and from about 55 km/h the screen's edges blur with the
   camera's motion (URP motion blur, camera and objects, so the rider stays sharp), more the faster. The blur's strength
   is set as at 60 frames a second and scales with each frame's length, so the streaks are as long at any frame rate.
+- **Over the shoulder.** Closing in, the camera and its aim slide a little to the rider's right, 0.15 m at full speed
+  and 0.4 m in a fast tuck (straight behind at rest), so it still looks along the travel, the rider sits a little left
+  of the screen's middle (about 6 percent of the width in a fast tuck, as in the Steep shots, which show 4 to 9) and
+  the view takes in a little of the rider's right side. A negative number in the Feel Lab slides it left.
 - **Turns.** A little bank into the turn and a gentle shake at speed, as before.
 - **Air.** The yaw keeps following the travel, so flips and spins turn the rider, not the camera; the pitch reads the
   snow ahead of where the rider is over the ground.
@@ -81,15 +88,19 @@ What the screenshots show, and what this camera does about it. Every number is a
   60 fps strength: the edges streak from about 100 km/h, the rider stays sharp, no halo.
 - To reach race speed in the cloud's slow sim, the fast-tuck rides load gravity times 4 through the Feel Lab (cloud
   evidence only). The camera reads only the speed, the tuck and the snow, so its framing at a given speed is the same.
+- Third build (run 40417526631, commit 110f0c2): the fast tuck as designed. The rider filled 37 to 44 percent of the
+  height at 76 to 164 km/h with the slope's far end about 28 to 33 percent down; the edges streaked from about
+  100 km/h with the rider sharp and no halo; rest, carves and the traverse as before. The user then asked for the
+  slide over the shoulder (above).
 
 ## Acceptance Criteria
 
 - [ ] Unit tests cover the new math: the pitch from the snow ahead, the distance and height with speed and tuck, the
-  rise that keeps the camera and its line to the rider above the snow, and the motion blur's strength with speed and
-  with each frame's length.
+  slide to the rider's right, the rise that keeps the camera and its line to the rider above the snow, and the motion
+  blur's strength with speed and with each frame's length.
 - [ ] In a build, on the test slope and the test mountain: the chase framing at rest, carving, in a fast tuck (closer,
-  lower, wider, edges blurred), over a rollover into steeper snow (tilted down), on a traverse, and off a kicker
-  (retained screenshots).
+  lower, wider, a little to the rider's right, edges blurred), over a rollover into steeper snow (tilted down), on a
+  traverse, and off a kicker (retained screenshots).
 - [ ] The camera is never seen under the snow, and the snow never hides the rider, in those rides.
 - [ ] The Feel Lab's Camera tab shows the new numbers and "Steep chase (default)"; the old presets are gone.
 

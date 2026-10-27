@@ -9,10 +9,10 @@ namespace FirstChair.Riding
     /// A Steep-style chase camera (Story 011): behind the rider along the travel, at a height above the snow under it,
     /// looking at a point just ahead of the rider, so the rider sits in the lower middle of the screen and the view
     /// follows the slope by itself. It tilts further down where the snow ahead drops away more steeply than under the
-    /// rider, closes in with speed and comes in close and lower in a fast tuck, widens, banks, shakes gently and blurs
-    /// at the screen's edges with speed, and rises to keep itself and its line to the rider above the snow. Nearly
-    /// stopped, it sits behind the skis; on the chairlift it follows the chair. Presentation only: it reads the rider
-    /// view's transform and the sim's state, and writes nothing back.
+    /// rider, closes in with speed and comes in close, lower and a little over the rider's right shoulder in a fast
+    /// tuck, widens, banks, shakes gently and blurs at the screen's edges with speed, and rises to keep itself and its
+    /// line to the rider above the snow. Nearly stopped, it sits behind the skis; on the chairlift it follows the chair.
+    /// Presentation only: it reads the rider view's transform and the sim's state, and writes nothing back.
     /// </summary>
     [DefaultExecutionOrder(100)]
     [RequireComponent(typeof(Camera))]
@@ -174,14 +174,21 @@ namespace FirstChair.Riding
                 settings.AimHeight, settings.AimHeight, settings.TuckAimHeight, speed, settings.CloseInSpeed, _tuck);
             float lookAhead = (float)FollowCameraMath.LookAhead(settings.LookAheadBase, settings.LookAheadPerSpeed, settings.LookAheadMax, speed);
 
+            // Over the shoulder: closing in, the camera and its aim slide a little to the rider's right, so it still looks
+            // along the travel and the rider sits a little left of the screen's middle.
+            float sideMetres = (float)FollowCameraMath.ChaseValue(
+                0.0, settings.FastSideOffset, settings.TuckSideOffset, speed, settings.CloseInSpeed, _tuck);
+            FollowCameraMath.SideOffset(direction.x, direction.z, sideMetres, out double sideX, out double sideZ);
+            var side = new Vector3((float)sideX, 0f, (float)sideZ);
+
             // Behind the rider along the travel, at its height above the snow there; in the air it rises with the rider.
             // The offset from the rider is what smooths, so the camera keeps up however fast the rider goes.
-            Vector3 behind = rider - direction * back;
+            Vector3 behind = rider - direction * back + side;
             SnowAt(session, behind, out float snowBehind, snowUnderRider);
             var offset = new Vector3(behind.x - rider.x, snowBehind - snowUnderRider + height, behind.z - rider.z);
             _offset = snap ? offset : Vector3.Lerp(_offset, offset, FollowCameraMath.SmoothingFactor(settings.PositionSmoothTime, dt));
             Vector3 position = rider + _offset;
-            Vector3 aim = rider + Vector3.up * aimHeight + direction * lookAhead;
+            Vector3 aim = rider + Vector3.up * aimHeight + direction * lookAhead + side;
 
             // Never under the snow: rise until the camera clears the snow under it and its line to the aim the snow between.
             float rise = 0f;
