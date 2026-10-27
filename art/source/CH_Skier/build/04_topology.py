@@ -36,7 +36,7 @@ T.OWNER_TAG = "phase:" + T.PHASE
 P = F.P
 
 # EDGE LOOPS added for deformation, as {segment between Phase 3 rings i and i+1: [fractions]}. Positions in metres.
-INS_JACKET = {3: [0.5]}            # waist loop z 1.085 for the spine bend: .93, 1.02, 1.085, 1.15
+INS_JACKET = {F.JACKET_Z.index(1.02): [0.5]}   # waist loop z 1.085 for the spine bend: .93, 1.02, 1.085, 1.15
 INS_SEAT = {1: [0.5]}              # z 0.84: seat loops .80, .84, .88 around the hip joints (z 0.88)
 INS_HOOD = {0: [0.5], 1: [0.5]}    # neck: 1.39, 1.4075, 1.425, 1.435, 1.445
 INS_NECKWARMER = {0: [0.5]}        # 1.385, 1.4075, 1.43
@@ -53,13 +53,14 @@ MARGIN_RIGID = 0.003  # parts on one rigid bone (head pieces under the helmet, p
 HEAD_PARTS = ("Head", "Jaw", "Chin", "Nose", "Mouth")
 # LOD part ratios (Decimate face ratio per part, applied with the skill's lod_copy). Silhouette parts named in the
 # brief (head, shoulders, mittens) keep more; long tubes (sleeves, legs) give the most.
-LOD_RATIO = {
-    1: {"Jacket": .75, "Seat": .7, "Hood": .7, "NeckWarmer": .7, "Head": .85, "Jaw": 1, "Chin": 1, "Nose": 1,
+LOD_RATIO = {   # story 012: LOD0 grew from 2,895 to about 4,300, so LOD2 keeps a smaller share to stay near 1k, and
+    #   drops the pocket flaps and cargo pockets (0: left out), which are under a pixel wherever LOD2 is shown
+    1: {"Jacket": .75, "Seat": .85, "Hood": .7, "NeckWarmer": .7, "Head": .85, "Jaw": 1, "Chin": 1, "Nose": 1,
         "Mouth": 1, "Shoulder": .8, "Sleeve": .7, "Cuff": .7, "Mitten": .85, "Thumb": 1, "ThumbTip": .7,
-        "Trousers": .7, "KneePatch": .7},
-    2: {"Jacket": .5, "Seat": .6, "Hood": .45, "NeckWarmer": .3, "Head": .7, "Jaw": .5, "Chin": .5, "Nose": .7,
-        "Mouth": 1, "Shoulder": .5, "Sleeve": .25, "Cuff": .3, "Mitten": .5, "Thumb": .5, "ThumbTip": .25,
-        "Trousers": .25, "KneePatch": .5},
+        "Trousers": .7, "KneePatch": .7, "Gauntlet": .7, "PocketFlap": .8, "CargoPocket": .8},
+    2: {"Jacket": .35, "Seat": 1, "Hood": .5, "NeckWarmer": .25, "Head": .45, "Jaw": .5, "Chin": .5, "Nose": .7,
+        "Mouth": 1, "Shoulder": .3, "Sleeve": .18, "Cuff": .25, "Mitten": .3, "Thumb": .5, "ThumbTip": .2,
+        "Trousers": .25, "KneePatch": .25, "Gauntlet": .25, "PocketFlap": 0, "CargoPocket": 0},
 }
 OUTLINE_SNAP_TOL = 0.002   # a LOD part whose extent along an axis falls this far inside LOD0's is pulled back out
 OUTLINE_MAX = 0.006        # larger shrinkage is not patched (it would make a spike); that part's ratio is raised
@@ -281,17 +282,11 @@ def subcol(name, parent):
 
 def body_parts():
     C, L = [], []
-    rings, src = dense([F.torso_ring(z, hw, hd) for z, hw, hd in F.JACKET], INS_JACKET)
+    rings, src = dense(F.jacket_rings(), INS_JACKET)
     bm = bmesh.new()
     grid = F.loft(bm, rings)
-    s0 = P["chest_stripe_z"] - P["chest_stripe_size"][2] / 2
-    s1 = P["chest_stripe_z"] + P["chest_stripe_size"][2] / 2
     for k, row in enumerate(grid):          # the Phase 3 rule, applied per approved row
-        z0, z1 = F.JACKET[src[k]][0], F.JACKET[src[k] + 1][0]
-        if z1 <= 1.40 + 1e-6:
-            row[4].material_index = 1
-        if z0 >= s0 - 1e-6 and z1 <= s1 + 1e-6:
-            row[2].material_index = row[6].material_index = 1
+        F.jacket_splits(row, F.JACKET[src[k]][0], F.JACKET[src[k] + 1][0])
     C.append(part("Jacket", bm, ["jacket", "stripe"]))
     bm = bmesh.new()
     F.loft(bm, dense([F.se_ring(z, hw, hd, 0.03) for z, hw, hd in F.SEAT], INS_SEAT)[0])
@@ -301,7 +296,7 @@ def body_parts():
     C.append(part("Hood", bm, ["jacket"]))
     nc, ns = P["neck_warmer_centre"], P["neck_warmer_size"]
     bm = bmesh.new()
-    F.loft(bm, dense([F.se_ring(z, ns[0] / 2, ns[1] / 2, nc[1], n=14, p=2.4)
+    F.loft(bm, dense([F.se_ring(z, ns[0] / 2, ns[1] / 2, nc[1], n=F.NECK_N, p=2.4)
                       for z in (nc[2] - ns[2] / 2, nc[2] + ns[2] / 2)], INS_NECKWARMER)[0])
     C.append(part("NeckWarmer", bm, ["neck_warmer"]))
     for f in HEAD_PARTS:
@@ -315,40 +310,31 @@ def body_parts():
     W = S + d * (P["upper_arm_len"] + P["forearm_len"])
     L.append(from_form("Shoulder_L", "L"))
     st = F.SLEEVE + [(P["upper_arm_len"] + P["forearm_len"] + P["forearm_end"], P["sleeve_r"][2] + 0.001)]
-    rings, src = dense([F.tube_ring(S + d * t, d, r, 16, n_out) for t, r in st], INS_SLEEVE)
+    rings, src = dense([F.tube_ring(S + d * t, d, r, F.SLEEVE_N, n_out) for t, r in st], INS_SLEEVE)
     bm = bmesh.new()
     grid = F.loft(bm, rings)
     for k, row in enumerate(grid):
         if st[src[k] + 1][0] <= P["upper_arm_len"] + 1e-6:
-            row[15].material_index = 1       # stripe down the outside of the upper sleeve, ends at the elbow ring
+            row[F.SLEEVE_N - 1].material_index = 1   # stripe down the outside of the upper sleeve, to the elbow ring
     L.append(part("Sleeve_L", bm, ["jacket", "stripe"], "L"))
     c0, c1, cr = P["cuff"]
     bm = bmesh.new()
-    F.loft(bm, dense([F.tube_ring(W + d * c0, d, cr, 12, n_out), F.tube_ring(W + d * c1, d, cr, 12, n_out)],
+    F.loft(bm, dense([F.tube_ring(W + d * c0, d, cr, F.CUFF_N, n_out), F.tube_ring(W + d * c1, d, cr, F.CUFF_N, n_out)],
                      INS_CUFF)[0])
     L.append(part("Cuff_L", bm, ["cuff"], "L"))
-    for f in ("Mitten_L", "Thumb_L", "ThumbTip_L"):
+    for f in ("Gauntlet_L", "Mitten_L", "Thumb_L", "ThumbTip_L", "PocketFlap_L"):
         L.append(from_form(f, "L"))
     # LEFT LEG
-    hip, knee, hem = [Vector((P[k][0], P[k][1], P[k][2])) for k in ("hip_joint", "knee", "trouser_hem")]
-    rings = []
-    for z, r, push in F.LEG:
-        if z >= hip.z:
-            c = hip
-        elif z >= knee.z:
-            c = hip.lerp(knee, (hip.z - z) / (hip.z - knee.z))
-        else:
-            c = knee.lerp(hem, (knee.z - z) / (knee.z - hem.z))
-        rings.append(F.se_ring(z, r, r, c.y + push, n=12, p=2.0, xc=c.x))
     bm = bmesh.new()
-    F.loft(bm, dense(rings, INS_LEG)[0])
+    F.loft(bm, dense(F.leg_rings(1), INS_LEG)[0])
     L.append(part("Trousers_L", bm, ["trousers"], "L"))
-    L.append(from_form("KneePatch_L", "L"))
+    for f in ("KneePatch_L", "CargoPocket_L"):
+        L.append(from_form(f, "L"))
     return C, L
 
 
 def helmet_parts():
-    return [clean(from_form(f)) for f in ("Helmet", "GoggleStrap", "Goggles", "Lens")]
+    return [clean(from_form(f)) for f in ("Helmet", "GoggleStrap", "Goggles", "Lens", "Vents", "StrapBuckle")]
 
 
 def boot_cuff_L():
@@ -369,7 +355,11 @@ def boot_cuff_L():
     grid = F.loft(bm, rings)
     for f in grid[3]:
         f.material_index = 1
-    return clean(part("BootCuff_L", bm, ["boot", "boot_band"], "L"))
+    ps0, ps1 = P["power_strap_z"]          # the Phase 3 power strap round the top of the cuff
+    for row in F.loft(bm, [F.rr_ring(z, ss[0] / 2 + 0.004, ss[1] / 2 + 0.004, 0.034, bx, sc[0]) for z in (ps0, ps1)]):
+        for f in row:
+            f.material_index = 2
+    return clean(part("BootCuff_L", bm, ["boot", "boot_band", "goggle_frame"], "L"))
 
 
 # LODS
@@ -480,7 +470,8 @@ def build(scene, args):
 
     # LOD1 and LOD2: lod_copy per part (left and centre), outline fix, right side mirrored, joined
     for level in (1, 2):
-        lp = [lod_part(tri_parts[p["name"]], level, tmp) for p in C + L]
+        lp = [lod_part(tri_parts[p["name"]], level, tmp) for p in C + L
+              if LOD_RATIO[level][p["name"].replace("_L", "")] > 0]
         lp += [mirrored(p) for p in lp if p["side"] == "L"]
         ob = join("CH_Skier_Body_LOD%d" % level, lp, cols["LOD%d" % level].name)
         bm = bmesh.new()

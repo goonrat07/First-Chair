@@ -1,6 +1,6 @@
 {
   "asset": "CH_Skier",
-  "generated": "2026-10-27T02:10:56",
+  "generated": "2026-10-27T02:48:07",
   "blender": "5.2.2 LTS",
   "source": "/home/user/First-Chair/art/source/CH_Skier/CH_Skier_master.blend",
   "target_engine": "unity",
@@ -17,19 +17,19 @@
   "target_height_m": 1.75,
   "bounds_m": {
     "min": [
-      -0.7656,
+      -0.7653,
       -0.19,
       0.0
     ],
     "max": [
-      0.7656,
-      0.1845,
-      1.75
+      0.7653,
+      0.1869,
+      1.7505
     ],
     "size": [
-      1.5313,
-      0.3745,
-      1.75
+      1.5306,
+      0.3769,
+      1.7505
     ]
   },
   "files": {
@@ -46,14 +46,14 @@
         "CH_Skier_BootShell_R",
         "CH_Skier_BootCuff_R"
       ],
-      "tris": 3647,
+      "tris": 5365,
       "objects_tris": {
-        "CH_Skier_Body_LOD0": 2865,
-        "CH_Skier_Helmet": 374,
-        "CH_Skier_BootShell_L": 96,
-        "CH_Skier_BootCuff_L": 108,
-        "CH_Skier_BootShell_R": 96,
-        "CH_Skier_BootCuff_R": 108
+        "CH_Skier_Body_LOD0": 4269,
+        "CH_Skier_Helmet": 584,
+        "CH_Skier_BootShell_L": 120,
+        "CH_Skier_BootCuff_L": 136,
+        "CH_Skier_BootShell_R": 120,
+        "CH_Skier_BootCuff_R": 136
       }
     },
     {
@@ -61,9 +61,9 @@
       "objects": [
         "CH_Skier_Body_LOD1"
       ],
-      "tris": 2119,
+      "tris": 3171,
       "objects_tris": {
-        "CH_Skier_Body_LOD1": 2119
+        "CH_Skier_Body_LOD1": 3171
       }
     },
     {
@@ -71,14 +71,15 @@
       "objects": [
         "CH_Skier_Body_LOD2"
       ],
-      "tris": 1063,
+      "tris": 1262,
       "objects_tris": {
-        "CH_Skier_Body_LOD2": 1063
+        "CH_Skier_Body_LOD2": 1262
       }
     }
   ],
   "materials": [
     "M_CH_Skier_Boot",
+    "M_CH_Skier_Buckle",
     "M_CH_Skier_GoggleFrame",
     "M_CH_Skier_Helmet",
     "M_CH_Skier_HelmetPanel",
@@ -534,12 +535,12 @@
     "no motion reference)"
   ],
   "dependencies": [],
-  "lod_note": "Unity builds a LODGroup from CH_Skier_Body_LOD0/1/2. Helmet and boots carry no LOD suffix, so they are counted in LOD0 here and render at every LOD: totals with props are LOD0 3677, LOD1 2913, LOD2 1855.",
   "body_tris_per_lod": {
-    "LOD0": 2865,
-    "LOD1": 2119,
-    "LOD2": 1063
+    "LOD0": 4269,
+    "LOD1": 3171,
+    "LOD2": 1262
   },
+  "lod_note": "Unity builds a LODGroup from CH_Skier_Body_LOD0/1/2. Helmet and boots carry no LOD suffix, so they are counted in LOD0 here and render at every LOD: totals with props are LOD0 5365, LOD1 4267, LOD2 2358.",
   "materials_detail": [
     {
       "name": "M_CH_Skier_Boot",
@@ -551,6 +552,17 @@
         0.0395
       ],
       "roles": "boot"
+    },
+    {
+      "name": "M_CH_Skier_Buckle",
+      "hex_srgb": "#AEB6C2",
+      "roughness": 0.45,
+      "base_color_linear": [
+        0.4233,
+        0.4678,
+        0.5395
+      ],
+      "roles": "buckle"
     },
     {
       "name": "M_CH_Skier_GoggleFrame",

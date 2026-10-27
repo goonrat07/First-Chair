@@ -1,5 +1,5 @@
 """Pose-sheet renders for the Phase 6/8 gate: every clip in CLIPS at front (ortho), side (ortho) and the game
-camera direction (az 30, el 45, 35 mm, pulled in), LOD0 body with helmet, boots and the real PR_Ski and PR_SkiPole
+camera direction (the chase camera since story 012: az 185, el 33, 26 mm, pulled in), LOD0 body with helmet, boots and the real PR_Ski and PR_SkiPole
 from POSE_TEST on the sockets, over a snow plane at z -0.045. Workbench, material colours. Also measures the
 lowest body, boot, ski and pole points per pose. Compose with build/compose_pose_sheet.py (Pillow).
 
@@ -13,6 +13,9 @@ SNOW = -0.045
 CLIPS = ["Stance", "CarveLeft", "CarveRight", "Tuck", "Crouch", "Air", "Brake", "Pole", "Crash", "RaceCarveLeft", "RaceCarveRight"]
 GRABS = ["GrabMute", "GrabTip", "GrabTail", "GrabJapan", "GrabSafety"]
 FRAME = {"Pole": 9}
+# The game camera's direction (FIRST-CHAIR.md): the chase camera, behind the rider and a little over the right
+# shoulder, looking down 33 degrees; was the GMA2 far camera (az 30, el 45, 35 mm) before story 012.
+GAME_AZ, GAME_EL, GAME_LENS, GAME_DIST = 185, 33, 26, 2.9
 CYCLE = {"Pole": [0, 6, 12, 18, 24], "Stance": [0, 15]}
 
 
@@ -56,7 +59,7 @@ def main(a):
     cam = bpy.data.objects.new("_cam", bpy.data.cameras.new("_cam"))
     scene.collection.objects.link(cam)
     scene.camera = cam
-    az, el = math.radians(30), math.radians(45)
+    az, el = math.radians(GAME_AZ), math.radians(GAME_EL)
     views = {"front": (V((0, -1, 0)), "ORTHO"), "side": (V((1, 0, 0)), "ORTHO"),
              "game": (V((math.sin(az) * math.cos(el), -math.cos(az) * math.cos(el), math.sin(el))), "PERSP")}
     arm = bpy.data.objects["CH_Skier_Rig"]
@@ -70,8 +73,8 @@ def main(a):
             cam.data.ortho_scale = scale
             cam.location = target + d * 10
         else:
-            cam.data.lens = 35
-            cam.location = target + d * 3.9
+            cam.data.lens = GAME_LENS
+            cam.location = target + d * GAME_DIST
         cam.rotation_mode = "QUATERNION"
         cam.rotation_quaternion = (-d).to_track_quat("-Z", "Y")
         scene.render.filepath = path

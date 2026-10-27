@@ -87,9 +87,11 @@ def main():
     arm = bpy.data.objects["CH_Skier_Rig"]
     for lod in man["lods"]:
         lod["objects_tris"] = {n: ED.tri_count(bpy.data.objects[n]) for n in lod["objects"]}
-    man["lod_note"] = ("Unity builds a LODGroup from CH_Skier_Body_LOD0/1/2. Helmet and boots carry no LOD suffix, so they "
-                       "are counted in LOD0 here and render at every LOD: totals with props are LOD0 3677, LOD1 2913, LOD2 1855.")
     man["body_tris_per_lod"] = {"LOD%d" % l["level"]: l["objects_tris"].get("CH_Skier_Body_LOD%d" % l["level"]) for l in man["lods"]}
+    props = man["lods"][0]["tris"] - man["body_tris_per_lod"]["LOD0"]
+    man["lod_note"] = ("Unity builds a LODGroup from CH_Skier_Body_LOD0/1/2. Helmet and boots carry no LOD suffix, so they "
+                       "are counted in LOD0 here and render at every LOD: totals with props are " +
+                       ", ".join("%s %d" % (k, v + props) for k, v in sorted(man["body_tris_per_lod"].items())) + ".")
     mats = {}
     for o in bpy.data.collections["LOW"].all_objects:
         for m in o.data.materials:

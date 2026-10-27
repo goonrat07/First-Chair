@@ -1,12 +1,15 @@
 # CH_Skier asset brief
 
-Status: Phases 5 (light), 6, 8 (nine pose clips) and 9 done, 2026-10-23. The user asked for the real skier with
+Status: Phases 5 (light), 6, 8 (16 pose clips) and 9 done, 2026-10-23. The user asked for the real skier with
 animation in the next test build, so the work went past the Phase 4 review stop. Exported to
 `Assets/Art/Characters/CH_Skier/` (FBX, manifest, animation contract); **not verified in the Unity editor**. The
 seat showing through the lower jacket back is fixed (story 012, 2026-10-27; see Gate results). The proportions,
 palette, helmet, stripes and socket names are approved (user, 2026-10-20).
+**Detail pass for the chase camera (story 012, 2026-10-27):** phases 3 to 9 rebuilt with rounder sections and new
+detail (see PARTS, "Story 012 detail pass" under Decisions, and the story 012 rows of Gate results), reviewed from
+the chase camera with a back reference view added. Same proportions, palette, rig, sockets and clip names.
 Stories: `production/epics/first-chair/story-007-first-art-pass.md`; the detail pass for the chase camera,
-`production/epics/first-chair/story-012-skier-detail-pass.md` (in progress).
+`production/epics/first-chair/story-012-skier-detail-pass.md`.
 
 ```text
 ASSET      CH_Skier
@@ -18,7 +21,11 @@ VIEWS      ref/front.png and ref/front_matte.png: front, orthographic (az 0, cam
              The subject fills 700 px of the 780 (1.75 m); the ground is 5.13 percent up from the bottom.
            ref/side.png and ref/side_matte.png: side, orthographic (az 90, camera at +X, image right = world +Y,
              so the figure faces image left), same scale and ground line, 360 x 780 px, axis column 180.
-           ref/sheet.png: both views with a metre ruler and key heights, for review only.
+           ref/back.png and ref/back_matte.png (story 012): back, orthographic (az 180, camera at +Y, image right
+             = world -X), same scale and ground line, 760 x 780 px, axis column 380. Drawn so the back is designed,
+             not inferred: yoke stripe, hem band, the strap buckle; front-only decals (zip, chest stripes, mouth)
+             left out.
+           ref/sheet.png: the three views with a metre ruler and key heights, for review only.
            All drawn by ref/make_refs.py from the proportion table in ref/refs.json: our own reference sheet,
              not a photo or a screenshot. Simple shapes (tapered capsules, flat-ended cylinders, rounded boxes,
              ellipsoids, a tilted helmet rim), projected exactly, so front and side agree. Mattes are drawn at
@@ -26,8 +33,10 @@ VIEWS      ref/front.png and ref/front_matte.png: front, orthographic (az 0, cam
            Look source: art/reference/style-notes-gma2.md, our notes on the user's GMA2 screenshots, including
              "Second skier" (face, puffy shoulders, hood bunched at the neck). The screenshots are copyrighted,
              not in the repo, and were used only to judge forms, never traced or measured.
-           Game camera (FIRST-CHAIR.md estimate): az 30, el 45, 35 mm, 18 m. Review renders call it the
-             "ref" view (--ref-cam 30 45 35), with an 80 px gameplay strip.
+           Game camera (story 011, FIRST-CHAIR.md): the chase camera, behind the rider and a little over the
+             right shoulder, about 3 to 5 m back, 26 mm. Review renders call it the "ref" view
+             (--ref-cam 185 33 26), with a 300 px gameplay strip. Before story 012 it was the GMA2-style far
+             camera (az 30, el 45, 35 mm, 18 m, an 80 px strip); the story 007 gate rows below used that.
 SCALE      1.75 m from sole to helmet top, in boots (user brief: an adult about 1.75 m tall in boots).
            1 unit = 1 m, Z up, faces -Y, origin on the ground between the feet. Every other dimension comes
            from our proportion table (see INFERRED). Proportions approved by the user, 2026-10-20.
@@ -68,6 +77,16 @@ PARTS      in construction and overlap order; (S) = separate object in the expor
            Surface detail: centre zip, two short chest stripes and one stripe down the outside of each upper
            sleeve are material splits on the jacket and sleeve faces; knee patches are separate faceted
            pieces on the trousers. Stripes only on the jacket, no pattern (user).
+           Story 012 detail (the user approved the list, 2026-10-27; seen from behind and the right):
+             jacket: a navy drawcord line above the hem (z 0.845 to 0.87) and a hem that drops 3.5 cm at the
+               back centre; a navy yoke stripe across the upper back (z 1.285 to 1.315, |x| < 0.19); both
+               material splits. A hand-pocket flap on each side seam: a raised panel following the jacket,
+               6 mm proud, 15 x 5 cm, its zip along the top edge.
+             trousers: a cargo pocket on each outer thigh, a raised panel following the leg (12 x 13 cm, 7 mm
+               proud) with a navy flap 4 mm prouder over its top; the hem flares to r 0.108 over the boot cuff.
+             mittens: a red gauntlet over the cuff and sleeve end, flaring from r 0.072 at the wrist to 0.078.
+             helmet: four dark vent grooves on the crown, front to back; a light buckle on the strap at the back.
+             boots: two light buckles on the outside of each shell; a dark power strap round the top of each cuff.
 SILHOUETTE 1 big rounded helmet with wide dark goggles and a pink lens, the lower face and jaw showing below
            2 puffy, boxy jacket with round shoulders, the hood bunched behind the neck and a slight hem flare
            3 baggy navy trousers with rounded knees over chunky dark boots with red cuff bands
@@ -131,7 +150,9 @@ INFERRED   No measured reference exists. Every dimension except the 1.75 m heigh
            - boots: foot 0.115 x 0.32 x 0.13 (boot centre y -0.03), shaft 0.12 x 0.16 x 0.30 (top 0.34),
              band 0.13 x 0.17 x 0.06 (z 0.23 to 0.29), ankle joint z 0.11; boot centres 0.26 apart
            - socket positions above
-           - the back: no back view, so the back is the side view's depth with a symmetric jacket and hood
+           - the back: drawn as ref/back.png from the same table since story 012 (before that, no back view: the
+             side view's depth with a symmetric jacket and hood)
+           - story 012 detail sizes and places (PARTS), all design choices
            - boot construction (shell and cuff on a hinge) and a vertical boot cuff in the rest pose; real
              boots have about 13 deg of built-in forward lean, which comes from the rig
            - colours marked * above
@@ -144,6 +165,11 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
            body is under the 5k floor on purpose (see Decisions); the 10k ceiling is the hard limit.
            Phase 9 (Assets/Art/Characters/CH_Skier/CH_Skier.fbx): body 2,895 / 2,139 / 1,081; helmet 374, boot shells
            96, boot cuffs 108 each, shared by every LOD (with props: 3,677 / 2,913 / 1,855). 20 bones, 4 sockets, 9 clips.
+           Story 012: the game camera is now the chase camera (VIEWS), the skier 250 to 330 px tall at 720p and twice
+           that at 1440p. Budget: body 5k to 8k at LOD0, 2k to 4k at LOD1, about 1k at LOD2; helmet with goggles and
+           each boot 100 to 600. Built (Phase 9, 2026-10-27): body 4,269 / 3,171 / 1,262; helmet 584; each boot 256 (shell
+           120 + cuff 136); with props 5,365 / 4,267 / 2,358. 20 bones, 4 sockets, 16 clips. Body LOD0 is under the
+           story's 5k floor and LOD2 above about 1k (see Decisions).
 ```
 
 ## Decisions
@@ -264,6 +290,38 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
   bounds and socket positions are rest values (otherwise the top NLA track was evaluated).
 - **`roundtrip.py --rest-pose`** (skill change, recorded in FIRST-CHAIR.md): Blender's FBX importer leaves the first
   take active, so the rigged import was measured in Stance (1.579 m). The flag measures at rest.
+- **Story 012 detail pass (2026-10-27).** The chase camera shows the rider three to five times larger than the far
+  camera did, so:
+  - **Rounder where the outline facets** (`03_forms.py` RING COUNTS; Phase 4 builds from the same constants): jacket
+    back 5 to 9 points per ring; sleeves 16 to 20 sides; cuffs, seat, legs and hood 12 to 16; neck warmer 14 to 18;
+    goggle strap 16 to 20; thumb 8 to 10; mitten bevel 2 to 3 segments; spheres: head 12x8 to 16x10, helmet 16x10 to
+    20x12, shoulders 12x8 to 16x10, thumb tips and knee patches 8x6 to 10x8. Still flat-shaded facets: rounder, not
+    smooth, to keep the look.
+  - **The new stripes are material splits too:** the drawcord line is the whole row of jacket faces between two new
+    rings (z 0.845 and 0.87); the yoke stripe is the back faces near the centre between rings 1.285 and 1.315 (which
+    replace the ring at 1.30, keeping its profile). The hem drop lowers the back points of the rings at and below
+    0.87 by up to 3.5 cm (drop times sin squared of the angle round the back), which also covers the seat.
+  - **Raised panels follow the surface they sit on:** the pocket flaps and cargo pockets are swept along the jacket's
+    or leg's actual faces, through every corner of its outline, 6 to 7 mm proud and reaching 10 mm under. A first
+    pass used boxes, which stood up to 1.6 cm off the curving surface and read as tabs.
+  - **The gauntlet flares** from r 0.072 at the wrist to 0.078 at its open end, so it stays outside the 20-sided
+    sleeve. At r 0.068 the sleeve's corners poked through its flat faces as a saw-tooth edge.
+  - **Vents** are strips 1 mm off the round shell (its flat faces lie inside that), so they cannot z-fight. From
+    straight behind they show as small notches on the crown, as the reference draws them.
+  - **New material `M_CH_Skier_Buckle`** #AEB6C2 (a placeholder light grey) for the boot and strap buckles. The
+    helmet has 5 submeshes (was 4), each boot cuff 3 (the power strap is goggle-frame dark; was 2), each boot shell 2.
+  - **Body LOD0 is 4,269, under the story's 5k floor.** The floor was an estimate of what rounder sections would cost.
+    Every section that facets at the chase camera was made rounder and every listed detail was added; more triangles
+    would mostly smooth the flat facets that are the style. Waiting on the user's call (story 012): a rounder pass
+    (shoulders, sleeves, jacket back) is a constants change and a rebuild.
+  - **LOD2 is 1,262, above the about 1k asked.** Decimation protects material boundaries so the stripes stay straight,
+    and the new drawcord rows and yoke hold the jacket at 233. LOD2 leaves out the pocket flaps and cargo pockets
+    (under a pixel wherever LOD2 is shown); Seat, Hood, Nose, Trousers and ThumbTip keep higher ratios so no part
+    shrinks more than 6 mm.
+  - **Seat check, seat only:** a copy of the master with just the seat shell removed, rendered from behind in all 16
+    poses; any pixel that is navy in the normal render and jacket in the copy is seat in front of the jacket. The
+    story 007 version removed every trouser face, so it also counted the thighs that rightly pass in front of the
+    jacket in the grabs.
 
 ## Gate results
 
@@ -285,6 +343,29 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
 | 04 topology LOD1 (body 2,139) | side | 0.9596 | 0.0114 | - | IoU against the Phase 3 silhouette 0.9967 |
 | 04 topology LOD2 (body 1,081) | front | 0.9799 | 0.0029 | - | IoU against the Phase 3 silhouette 0.9884 |
 | 04 topology LOD2 (body 1,081) | side | 0.9575 | 0.0100 | - | IoU against the Phase 3 silhouette 0.9845 |
+| 012 forms (detail pass) | front | 0.9769 | 0.0057 | - | tolerance 0.90 / 0.03; new references drawn from the same table |
+| 012 forms | side | 0.9571 | 0.0172 | - | |
+| 012 forms | back | 0.9769 | 0.0057 | - | the new back view |
+| 012 LOD0 (body 4,269) | front | 0.9769 | 0.0057 | - | at rest (rig in its rest pose) |
+| 012 LOD0 | side | 0.9569 | 0.0172 | - | |
+| 012 LOD0 | back | 0.9769 | 0.0057 | - | |
+| 012 LOD1 (body 3,171) | front | 0.9759 | 0.0057 | - | |
+| 012 LOD1 | side | 0.9573 | 0.0172 | - | |
+| 012 LOD1 | back | 0.9759 | 0.0057 | - | |
+| 012 LOD2 (body 1,262) | front | 0.9705 | 0.0086 | - | |
+| 012 LOD2 | side | 0.9550 | 0.0172 | - | |
+| 012 LOD2 | back | 0.9705 | 0.0086 | - | |
+
+Story 012 checks (2026-10-27). Forms measured (`review/03_forms/measure.json`): height 1.7505, fingertip span 1.5306
+(table 1.532), depth 0.3769, all within 0.1 percent. `validate.py` on LOW, SOCKETS, RIG_DEF with `--budget-tris 10000`
+exits 0: 0 FAIL, 8 WARN (no UV layers, expected); triangles by LOD 5,365 / 3,171 / 1,262. Weights on all three body
+LODs: 0 unweighted, at most 4 influences; the gauntlets classify with the cuffs (`06_rig.py`), so they bend across the
+wrist with the sleeve end under them. Seat check, seat only (see Decisions), back three-quarter close-ups of all 16
+clips: 0 pixels in every clip; the same check on the model before the seat fix finds the seat in all 16 (5,386 px,
+275 in Stance), so the check can fail. With every trouser face removed instead, the only pixels left are the thighs
+passing in front of the jacket's side in the five grabs (correct occlusion). Export: 16 takes, frames 0 to 30.
+`roundtrip.py --rest-pose` exits 0 at height 1.7505; `09_roundtrip_check.py` exits 0: triangles 5,365 / 3,171 / 1,262
+match the manifest, 20 bones, 16 clips, the 4 sockets on Foot_L/R and Hand_L/R.
 
 Measured on the forms (`review/03_forms/measure.json`): height 1.75, fingertip span 1.531 (table 1.532),
 depth 0.3745. The blockout's measured proportions are all within 1 percent of the table. One known
@@ -345,26 +426,28 @@ python3 ref/make_refs.py
 S=../../../.claude/skills/blender-image-to-3d/scripts
 $BLENDER_BIN -b --python $S/init_master.py -- --out CH_Skier_master.blend --name CH_Skier --height 1.75 \
   --ref-front ref/front.png --ref-right ref/side.png --subject-frac 0.948718 --ground-frac 0.051282 \
-  --cell 2.0 --capsule 0.35 1.75 --cam-elev 45 --cam-az 30 --cam-dist 18 --cam-lens 35
+  --cell 2.0 --capsule 0.35 1.75 --cam-elev 33 --cam-az 185 --cam-dist 5.7 --cam-lens 26
 $BLENDER_BIN -b --python build/02_blockout.py -- --master CH_Skier_master.blend
 $BLENDER_BIN -b --python build/03_forms.py -- --master CH_Skier_master.blend
 $BLENDER_BIN -b --python-exit-code 1 --python build/04_topology.py -- --master CH_Skier_master.blend
 # per phase: D=review/02_blockout with C=BLOCKOUT (moved out of LOW by Phase 4), or D=review/03_forms with C=HIGH
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $D \
-  --collections $C --views front,side,threequarter --ref-cam 30 45 35 --mode clay --gameplay-px 80
+  --collections $C --views front,side,threequarter --ref-cam 185 33 26 --mode clay --gameplay-px 300
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $D \
   --collections $C --views front,side --mode silhouette
 $BLENDER_BIN -b --python $S/world_gate.py -- --blend CH_Skier_master.blend --out $D --collections $C \
   --matte ref/front_matte.png --az 0 --m-per-px 0.0025 --axis-col 380 --ground-row 740 --name front
 $BLENDER_BIN -b --python $S/world_gate.py -- --blend CH_Skier_master.blend --out $D --collections $C \
   --matte ref/side_matte.png --az 90 --m-per-px 0.0025 --axis-col 180 --ground-row 740 --name side
+$BLENDER_BIN -b --python $S/world_gate.py -- --blend CH_Skier_master.blend --out $D --collections $C \
+  --matte ref/back_matte.png --az 180 --m-per-px 0.0025 --axis-col 380 --ground-row 740 --name back
 python3 $S/compose_review.py --ref ref/front_matte.png --render $D/silhouette_front.png \
-  --out $D/compare_front.png --measure --gameplay-px 80   # and the same for side
+  --out $D/compare_front.png --measure --gameplay-px 300   # and the same for side
 # forms only: colour renders, head close-ups, sheets
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/03_forms \
-  --collections HIGH --views front,side,threequarter --ref-cam 30 45 35 --mode material --gameplay-px 80 --samples 64
+  --collections HIGH --views front,side,threequarter --ref-cam 185 33 26 --mode material --gameplay-px 300 --samples 64
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/03_forms/head \
-  --collections HIGH --views threequarter,threequarter_back --ref-cam 30 45 35 --mode material --samples 64 \
+  --collections HIGH --views threequarter,threequarter_back --ref-cam 185 33 26 --mode material --samples 64 \
   --fit CH_Skier_Helmet_form,CH_Skier_Hood_form,CH_Skier_Jaw_form,CH_Skier_NeckWarmer_form
 python3 build/review_sheet.py --dir review/03_forms --mode material --out review/03_forms/colour_sheet.png
 python3 build/review_sheet.py --dir review/03_forms --mode clay --out review/03_forms/clay_sheet.png
@@ -372,22 +455,28 @@ python3 build/review_sheet.py --dir review/03_forms --mode clay --out review/03_
 $BLENDER_BIN -b --python $S/validate.py -- --blend CH_Skier_master.blend --collections LOW,SOCKETS \
   --out $D/validate.json --budget-tris 10000
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out $O --collections $C \
-  --views front,side,threequarter --ref-cam 30 45 35 --mode clay --gameplay-px 80   # and again with --mode wire
-# world_gate.py front and side as above with --collections $C --out $O; LOD0 also silhouette renders + compose_review
+  --views front,side,threequarter --ref-cam 185 33 26 --mode clay --gameplay-px 300   # and again with --mode wire
+# world_gate.py front, side and back as above with --collections $C --out $O (after Phase 6, on a copy with
+#   the rig at rest); LOD0 also silhouette renders + compose_review
 python3 build/review_sheet.py --dir $O --mode wire --out $D/wire_sheet_lod$L.png
 python3 build/lod_review.py --dir $D --forms review/03_forms   # clay_compare, gameplay_strip_grey, lod_gates.json
 # Phase 5, 6, 8, 9 (run in this order; 06 rebuilds the rig, so 08 must follow it)
 $BLENDER_BIN -b --python-exit-code 1 --python build/05_materials.py -- --master CH_Skier_master.blend
 $BLENDER_BIN -b --python $S/review_render.py -- --blend CH_Skier_master.blend --out review/05_materials \
-  --collections LOW_LOD0,LOW_PROPS --views front,side,threequarter --ref-cam 30 45 35 --mode material \
-  --gameplay-px 80 --samples 64 --res 768
+  --collections LOW_LOD0,LOW_PROPS --views front,side,threequarter --ref-cam 185 33 26 --mode material \
+  --gameplay-px 300 --samples 64 --res 768
 $BLENDER_BIN -b --python-exit-code 1 --python build/06_rig.py -- --master CH_Skier_master.blend
 $BLENDER_BIN -b --python $S/validate.py -- --blend CH_Skier_master.blend --collections LOW,SOCKETS,RIG_DEF \
   --out review/06_rig/validate.json --budget-tris 10000
 $BLENDER_BIN -b --python-exit-code 1 --python build/08_poses.py -- --master CH_Skier_master.blend
-$BLENDER_BIN -b --python build/pose_sheet.py -- --master CH_Skier_master.blend --out review/06_rig/poses \
-  --closeup Tuck,Crouch,Brake,CarveLeft,Crash
+ALL=Air,Brake,CarveLeft,CarveRight,Crash,Crouch,GrabJapan,GrabMute,GrabSafety,GrabTail,GrabTip,Pole,RaceCarveLeft,RaceCarveRight,Stance,Tuck
+$BLENDER_BIN -b --python build/pose_sheet.py -- --master CH_Skier_master.blend --out review/06_rig/poses --closeup $ALL
 python3 build/compose_pose_sheet.py --dir review/06_rig/poses --out review/06_rig
+# seat check (story 012): the same close-ups of a copy with only the seat removed; exits 0 on PASS only
+$BLENDER_BIN -b --python-exit-code 1 --python build/seat_only_copy.py -- CH_Skier_master.blend review/06_rig/no_seat.blend
+$BLENDER_BIN -b --python build/pose_sheet.py -- --master review/06_rig/no_seat.blend --out review/06_rig/poses_no_seat \
+  --closeup $ALL
+python3 build/seat_check.py --with review/06_rig/poses --without review/06_rig/poses_no_seat --out review/06_rig/seat_check.json
 $BLENDER_BIN -b --python-exit-code 1 --python build/09_export.py
 E=../../../Assets/Art/Characters/CH_Skier
 $BLENDER_BIN -b --python $S/roundtrip.py -- --file $E/CH_Skier.fbx --out review/09_export --expect-height 1.75 --rest-pose

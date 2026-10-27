@@ -2,8 +2,8 @@
 textures). Roles that share a colour are merged (brief: Decisions): navy = stripes, zip, cuffs, trousers; red =
 mittens, boot band, neck warmer. Principled BSDF base colour and roughness from the brief's MATERIALS table; the
 viewport colour is set too, so Workbench reviews show the same colours. No UVs and no bake: Unity's URP Lit takes
-the FBX diffuse colour. The AO bake is deferred (brief: Decisions). The HIGH and BLOCKOUT pieces keep the 15 role
-materials of the forms phase.
+the FBX diffuse colour. The AO bake is deferred (brief: Decisions). The HIGH and BLOCKOUT pieces keep the 16 role
+materials of the forms phase (story 012 added buckle, light grey).
 
   $BLENDER_BIN -b --python build/05_materials.py -- --master CH_Skier_master.blend
 """
@@ -29,6 +29,7 @@ PALETTE = [
     ("M_CH_Skier_Lens", "#E2557A", 0.15, ["goggle_lens"]),
     ("M_CH_Skier_Skin", "#D9A07A", 0.60, ["skin"]),
     ("M_CH_Skier_Mouth", "#9A5A4E", 0.60, ["mouth"]),
+    ("M_CH_Skier_Buckle", "#AEB6C2", 0.45, ["buckle"]),        # story 012: boot buckles, helmet strap buckle
 ]
 LOW_OBJECTS = ["CH_Skier_Body_LOD0", "CH_Skier_Body_LOD1", "CH_Skier_Body_LOD2", "CH_Skier_Helmet",
                "CH_Skier_BootShell_L", "CH_Skier_BootCuff_L", "CH_Skier_BootShell_R", "CH_Skier_BootCuff_R"]

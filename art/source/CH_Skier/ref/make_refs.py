@@ -6,14 +6,17 @@ front and side views agree by construction. Every number is in the table P below
 from a photo or a screenshot; asset-brief.md lists them all as inferred. The look follows
 art/reference/style-notes-gma2.md (our notes, no copyrighted image is used or stored).
 
-  python3 make_refs.py  -> front.png, side.png      flat colour views (REF planes in the master)
-                           front_matte.png, side_matte.png   silhouettes for world_gate.py (4x supersampled)
-                           sheet.png                 both views with a ruler and key heights, for review
+  python3 make_refs.py  -> front.png, side.png, back.png      flat colour views (front and side are REF planes)
+                           front_matte.png, side_matte.png, back_matte.png   silhouettes for world_gate.py (4x
+                                                     supersampled)
+                           sheet.png                 the three views with a ruler and key heights, for review
                            refs.json                 scale, axis column, ground row, table, palette
 
 Coordinates: metres, Z up, the figure faces -Y, origin on the ground between the feet.
 Front view: az 0, camera at -Y, image right = world +X (the figure's left).
 Side view:  az 90, camera at +X, image right = world +Y (the figure's back), so it faces image left.
+Back view:  az 180, camera at +Y, image right = world -X (the figure's right): what the chase camera sees most
+            (story 012), so the back is designed here rather than inferred from the side view.
 """
 import json, math, os
 from PIL import Image, ImageDraw, ImageFont
@@ -22,7 +25,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SS = 4                                  # draw at 4x, downsample (FIRST-CHAIR.md, Lessons)
 PPM = 400.0                             # pixels per metre in every delivered image
 PAD_TOP, PAD_BOTTOM = 0.10, 0.10        # metres of margin above the helmet and below the soles
-HALF_W = {"front": 0.95, "side": 0.45}  # half width of each view's world window; the axis is the centre
+HALF_W = {"front": 0.95, "side": 0.45, "back": 0.95}  # half width of each view's world window; the axis is the centre
 
 # PROPORTION TABLE (metres, degrees). All inferred: a stylised adult 1.75 m tall in boots, helmet and
 # mittens about 15 percent oversized, boxy jacket, baggy trousers, relaxed A-pose.
@@ -69,6 +72,27 @@ P = {
     "boot_foot_centre": [-0.03, 0.065], "boot_foot_size": [0.115, 0.32, 0.13], "boot_foot_r": 0.03,
     "boot_shaft_centre": [0.02, 0.19], "boot_shaft_size": [0.12, 0.16, 0.30], "boot_shaft_r": 0.04,
     "cuff_band_centre": [0.02, 0.26], "cuff_band_size": [0.13, 0.17, 0.06], "cuff_band_r": 0.02,
+    # STORY 012 DETAIL PASS for the chase camera (all inferred design choices; the user approved the list,
+    # 2026-10-27). Left side (+X) where it matters; the right mirrors.
+    "hem_band_z": [0.845, 0.87],                  # navy drawcord line just above the hem, a yellow edge below it
+    "hem_drop_back": 0.035,                       # the hem drops this much lower at the back centre (forms only)
+    "yoke_stripe_z": [1.285, 1.315],              # navy stripe across the upper back, between the sleeves
+    "yoke_stripe_half_w": 0.19,
+    # Pocket flaps and cargo pockets are panels lying on the surface: the centre is a point on the surface; the size
+    # is (how far proud, length along the surface, height).
+    "pocket_flap_centre": [0.232, -0.01, 0.955],  # hand-pocket flap on each side seam
+    "pocket_flap_size": [0.006, 0.15, 0.05], "pocket_zip_h": 0.008,
+    "cargo_pocket_centre": [0.215, 0.03, 0.70],   # cargo pocket on the outside of each thigh
+    "cargo_pocket_size": [0.007, 0.12, 0.13], "cargo_flap_h": 0.03,
+    "gaiter_r": 0.108,                            # the trouser hem flares over the boot cuff (shin_r end was 0.10)
+    "gauntlet": [-0.005, -0.075, 0.072, 0.078],   # along the arm from the wrist: hand end, open end (flaring over
+    #   the sleeve), radii
+    "vent_x": [-0.045, -0.015, 0.015, 0.045],     # helmet vents: grooves on the top, front to back
+    "vent_y": [-0.07, 0.07], "vent_w": 0.012,
+    "strap_buckle_size": [0.04, 0.012, 0.032],    # on the goggle strap at the back of the helmet
+    "boot_buckle_z": [0.13, 0.20],                # buckles on the outside of each boot shell
+    "boot_buckle_size": [0.012, 0.055, 0.022],
+    "power_strap_z": [0.312, 0.336],              # strap round the top of each boot cuff
 }
 
 # PALETTE: the user's "First Chair" outfit (2026-10-20), replacing the GMA2-derived colours. Entries marked
@@ -79,6 +103,7 @@ PALETTE = {
     "trousers": ("#22304A", U), "knee_patch": ("#18223A", U), "boot": ("#2B2F38", U), "boot_band": ("#D7263D", U),
     "helmet": ("#2C3A57", U), "helmet_panel": ("#4A5B7D", U), "goggle_frame": ("#15181E", U),
     "goggle_lens": ("#E2557A", U), "neck_warmer": ("#D7263D", U),
+    "buckle": ("#AEB6C2", "placeholder: light grey buckles (story 012)"),
     "skin": ("#D9A07A", "placeholder: light-medium skin tone"),
     "mouth": ("#9A5A4E", "placeholder: mouth, a darker skin tone"),
 }
@@ -106,6 +131,13 @@ def cyl(p0, p1, r0, r1, col):
 
 def box(c, size, r, col, axes=AXES):
     return {"kind": "box", "c": c, "size": size, "r": r, "axes": axes, "col": col, "zmin": None, "zmax": None}
+
+
+def panel(c, side, size, r, col):
+    """A panel lying on a side surface at point c (side +1 left, -1 right): size is (how far proud, length, height);
+    drawn as a box from 4 mm under the surface out to its face."""
+    proud, length, height = size
+    return box([c[0] + side * (proud - 0.004) / 2, c[1], c[2]], [proud + 0.004, length, height], r, col)
 
 
 def ell(c, radii, col, zmin=None, zmax=None):
@@ -137,6 +169,8 @@ def arm(side):
             P["sleeve_stripe_r"], "stripe"),
         cyl(E, add(W, mul(d, P["forearm_end"])), r[1], r[2], "jacket"),
         cyl(add(W, mul(d, c0)), add(W, mul(d, c1)), cr, cr, "cuff"),
+        cyl(add(W, mul(d, P["gauntlet"][1])), add(W, mul(d, P["gauntlet"][0])), P["gauntlet"][3], P["gauntlet"][2],
+            "mitten"),
         box(M, P["mitten_size"], P["mitten_r"], "mitten", axes=(d, [0.0, 1.0, 0.0], [-n_out[0], 0.0, -n_out[2]])),
         cap(add(M, mul(d, t0)), add(add(M, mul(d, t1)), [0.0, ty, 0.0]), tr, tr, "mitten"),
     ]
@@ -151,9 +185,16 @@ def leg(side):
         box([bx, sy, sz], P["boot_shaft_size"], P["boot_shaft_r"], "boot"),
         box([bx, by, bz], P["cuff_band_size"], P["cuff_band_r"], "boot_band"),
         cap(m(P["hip_joint"]), m(P["knee"]), P["thigh_r"][0], P["thigh_r"][1], "trousers"),
-        cap(m(P["knee"]), m(P["trouser_hem"]), P["shin_r"][0], P["shin_r"][1], "trousers", zmin=P["trouser_hem"][2]),
+        cap(m(P["knee"]), m(P["trouser_hem"]), P["shin_r"][0], P["gaiter_r"], "trousers", zmin=P["trouser_hem"][2]),
         ell(m(P["knee_patch_centre"]), P["knee_patch_radii"], "knee_patch"),
-    ]
+        panel(m(P["cargo_pocket_centre"]), side, P["cargo_pocket_size"], 0.0, "knee_patch"),
+        panel(add(m(P["cargo_pocket_centre"]), [0.0, 0.0, P["cargo_pocket_size"][2] / 2 - P["cargo_flap_h"] / 2]), side,
+              [P["cargo_pocket_size"][0] + 0.004, P["cargo_pocket_size"][1], P["cargo_flap_h"]], 0.0, "trousers"),
+        box([bx, sy, (P["power_strap_z"][0] + P["power_strap_z"][1]) / 2],
+            [P["boot_shaft_size"][0] + 0.008, P["boot_shaft_size"][1] + 0.008, P["power_strap_z"][1] - P["power_strap_z"][0]],
+            P["boot_shaft_r"], "goggle_frame"),
+    ] + [box([bx + side * (P["boot_foot_size"][0] / 2 + P["boot_buckle_size"][0] / 2 - 0.004), fy * 0.5, z],
+             P["boot_buckle_size"], 0.003, "buckle") for z in P["boot_buckle_z"]]
 
 
 def torso():
@@ -170,6 +211,21 @@ def torso():
         out.append(box([s * P["chest_stripe_x"], zc[1], P["chest_stripe_z"]], P["chest_stripe_size"], 0.0, "stripe"))
     for p in out[4:]:                         # zip and chest stripes: flat decals, drawn in the front view only
         p["front_only"] = True
+    hz = P["hem_centre"][2] - P["hem_size"][2] / 2
+    hs = P["hem_size"]
+    bz = P["hem_band_z"]
+    out.append(box([0.0, P["hem_centre"][1], (bz[0] + bz[1]) / 2], [hs[0] + 0.004, hs[1] + 0.004, bz[1] - bz[0]],
+                   0.008, "stripe"))
+    for s in (-1, 1):
+        fc, fs = P["pocket_flap_centre"], P["pocket_flap_size"]
+        out.append(panel([s * fc[0], fc[1], fc[2]], s, fs, 0.0, "jacket"))
+        out.append(panel([s * fc[0], fc[1], fc[2] + fs[2] / 2 - P["pocket_zip_h"] / 2], s,
+                         [fs[0] + 0.001, fs[1], P["pocket_zip_h"]], 0.0, "stripe"))
+    yz = P["yoke_stripe_z"]
+    yoke = box([0.0, P["torso_centre"][1] + P["torso_size"][1] / 2 + 0.003, (yz[0] + yz[1]) / 2],
+               [2 * P["yoke_stripe_half_w"], 0.01, yz[1] - yz[0]], 0.0, "stripe")
+    yoke["back_only"] = True
+    out.append(yoke)
     return out
 
 
@@ -190,6 +246,13 @@ def head(view):
     helmet = [shell,
               ell(hc, strap_r, "goggle_frame", zmin=P["strap_z"][0], zmax=P["strap_z"][1]),
               ell(hc, hr, "helmet_panel", zmin=P["helmet_panel_z"])]
+    top = hc[2] + hr[2]
+    for vx in P["vent_x"]:                    # grooves along the top; seen in every view as notches in the outline
+        vy = P["vent_y"]
+        helmet.append(box([vx, (vy[0] + vy[1]) / 2, top - 0.006], [P["vent_w"], vy[1] - vy[0], 0.012], 0.0, "goggle_frame"))
+    sb = box([0.0, hc[1] + hr[1] + 0.008, sum(P["strap_z"]) / 2], P["strap_buckle_size"], 0.004, "buckle")
+    sb["back_only"] = True
+    helmet.append(sb)
     goggles = [box(P["goggle_centre"], P["goggle_size"], P["goggle_r"], "goggle_frame"),
                box(P["lens_centre"], P["lens_size"], P["lens_r"], "goggle_lens")]
     # far first: hood behind the neck, collar rim, head, the band in front of the neck, chin over the band
@@ -200,15 +263,25 @@ def figure(view):
     """Primitives in painter's order for one view (far first)."""
     if view == "front":
         order = [leg(-1), leg(1), torso(), arm(-1), arm(1), head(view)]
-    else:                                     # camera at +X: the right side (-X) is far
+    elif view == "side":                      # camera at +X: the right side (-X) is far
         order = [arm(-1), leg(-1), leg(1), torso(), head(view), arm(1)]
-    return [p for group in order for p in group if view == "front" or not p.get("front_only")]
+    else:                                     # camera at +Y: the face is far, the hood and the back are near
+        hd = head(view)
+        far = [p for p in hd if p["col"] in ("skin", "mouth", "goggle_frame", "goggle_lens") and not p.get("back_only")
+               and p["kind"] == "box" and p["c"][1] < 0]
+        rest = [p for p in hd if p not in far]
+        hood = [p for p in rest if p["col"] == "jacket"]
+        order = [far, leg(-1), leg(1), torso(), arm(-1), arm(1), [p for p in rest if p not in hood],
+                 [p for p in hood]]
+    keep = {"front": lambda p: not p.get("back_only"), "side": lambda p: not p.get("front_only") and not p.get("back_only"),
+            "back": lambda p: not p.get("front_only")}[view]
+    return [p for group in order for p in group if keep(p)]
 
 
 # 2D GEOMETRY (u = horizontal world coordinate of the view, z = height)
 
 def proj(p, view):
-    return (p[0] if view == "front" else p[1], p[2])
+    return ({"front": p[0], "side": p[1], "back": -p[0]}[view], p[2])
 
 
 def disc(c, r, n=48):
@@ -295,7 +368,7 @@ def outline(prim, view):
                     pts += disc(proj(corner, view), r)
     else:
         c = proj(prim["c"], view)
-        a, b = prim["radii"][0 if view == "front" else 1], prim["radii"][2]
+        a, b = prim["radii"][1 if view == "side" else 0], prim["radii"][2]
         pts = [(c[0] + a * math.cos(2 * math.pi * i / 96), c[1] + b * math.sin(2 * math.pi * i / 96)) for i in range(96)]
     poly = hull(pts)
     zmin = prim["zmin"]
@@ -374,7 +447,7 @@ def key_measurements():
 def main():
     info = {}
     views = {}
-    for view, az in (("front", 0), ("side", 90)):
+    for view, az in (("front", 0), ("side", 90), ("back", 180)):
         colour, matte = draw_view(view, False), draw_view(view, True)
         colour.save(os.path.join(HERE, view + ".png"))
         matte.save(os.path.join(HERE, view + "_matte.png"))
@@ -394,7 +467,7 @@ def main():
     # review sheet: ruler, key heights, both views
     km = key_measurements()
     ruler_w, gap, head_h = 150, 40, 70
-    sw = ruler_w + views["front"].width + gap + views["side"].width + 20
+    sw = ruler_w + views["front"].width + gap + views["side"].width + gap + views["back"].width + 20
     sheet = Image.new("RGB", (sw, H + head_h + 40), "white")
     d = ImageDraw.Draw(sheet)
     g0 = head_h + info["front"]["ground_row"]
@@ -407,6 +480,7 @@ def main():
         d.text((4, y - 9), "%s %.2f" % (label, z), fill=(90, 90, 100), font=font(14))
     sheet.paste(views["front"], (ruler_w, head_h), None)
     sheet.paste(views["side"], (ruler_w + views["front"].width + gap, head_h), None)
+    sheet.paste(views["back"], (ruler_w + views["front"].width + 2 * gap + views["side"].width, head_h), None)
     for lbl, z in lines:                      # redraw guides faintly over the white background only
         y = int(g0 - z * PPM)
         for x in range(ruler_w - 10, sw - 10, 6):
@@ -421,13 +495,16 @@ def main():
            "%d px/m, A-pose 40 deg, faces -Y" % PPM, fill="black", font=font(18))
     d.text((ruler_w, 36), "FRONT (az 0, image right = +X = figure's left)", fill="black", font=font(16))
     d.text((ruler_w + views["front"].width + gap, 36), "SIDE (az 90, faces left)", fill="black", font=font(16))
+    d.text((ruler_w + views["front"].width + 2 * gap + views["side"].width, 36),
+           "BACK (az 180, image right = -X = figure's right)", fill="black", font=font(16))
     sheet.save(os.path.join(HERE, "sheet.png"))
 
     with open(os.path.join(HERE, "refs.json"), "w") as f:
         json.dump({"source": "our own proportion table for a stylised adult skier (all inferred); look from "
                              "art/reference/style-notes-gma2.md; no external image used",
                    "px_per_m": PPM, "m_per_px": 1.0 / PPM, "supersample": SS,
-                   "front": info["front"], "side": info["side"], "init_master": info["init_master"],
+                   "front": info["front"], "side": info["side"], "back": info["back"],
+                   "init_master": info["init_master"],
                    "key_measurements_m": km, "proportions_m": P,
                    "palette": {k: {"hex": v[0], "source": v[1]} for k, v in PALETTE.items()}}, f, indent=1)
     print(json.dumps({"front": info["front"], "side": info["side"], "init_master": info["init_master"],

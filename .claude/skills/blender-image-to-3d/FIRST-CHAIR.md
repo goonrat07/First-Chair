@@ -9,10 +9,15 @@ disagree. Upstream: blender-game-skills at `f0ef293` (see `THIRD_PARTY_NOTICES.m
   `--engine unity` to `export_delivery.py`.
 - **Units and axes:** unchanged from the skill: 1 unit = 1 m, Z up, the subject faces -Y,
   origin at ground contact. In Unity that becomes Y up with the subject facing +Z.
-- **Game camera:** a high, pulled-back follow camera like Grand Mountain Adventure 2's.
-  Until the Unity camera exists, review with `--cam-elev 45 --cam-az 30 --cam-dist 18
-  --cam-lens 35` and `--gameplay-px 80` for a skier. These are starting estimates; replace them
-  with measured values once the camera is built.
+- **Game camera:** a Steep-style chase camera (story 011; it replaced the GMA2-style far camera
+  on 2026-10-26). It sits behind the rider along the travel, 4.8 m back and 2.5 m above the snow
+  at rest, and comes in to 2.4 m back, 1.8 m up and 0.4 m over the right shoulder in a fast tuck,
+  with a 26 mm lens (50 degrees vertical, wider at speed). It sees mostly the back and the right
+  side: the rider fills about 34 percent of the screen's height at rest and about 40 in a fast
+  tuck, about 250 to 300 px at 720p and twice that at 1440p. Review a character with
+  `--ref-cam 185 33 26` (at rest; `190 38 26` in a tuck) and `--gameplay-px 300`; a new master
+  takes `--cam-az 185 --cam-elev 33 --cam-dist 5.7 --cam-lens 26`. Scenery and props seen from
+  a distance (trees, lift parts, buildings) still need checking at small sizes too, about 80 px.
 
 ## Look (GMA2 direction)
 

@@ -1,0 +1,24 @@
+{
+ "verdict": "PASS",
+ "clips": 16,
+ "seat_pixels": {
+  "Air": 0,
+  "Brake": 0,
+  "CarveLeft": 0,
+  "CarveRight": 0,
+  "Crash": 0,
+  "Crouch": 0,
+  "GrabJapan": 0,
+  "GrabMute": 0,
+  "GrabSafety": 0,
+  "GrabTail": 0,
+  "GrabTip": 0,
+  "Pole": 0,
+  "RaceCarveLeft": 0,
+  "RaceCarveRight": 0,
+  "Stance": 0,
+  "Tuck": 0
+ },
+ "not_assessed": [],
+ "contract": "Assets/Art/Characters/CH_Skier/animation-contract.json"
+}

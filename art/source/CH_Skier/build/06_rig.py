@@ -189,7 +189,13 @@ def classify(me, comp):
     if "Skin" in mat or "Mouth" in mat:
         return "head"
     if "Red" in mat:
-        return "neck" if c.z > 1.3 else "hand_" + side
+        if c.z > 1.3:
+            return "neck"
+        # a gauntlet (story 012) lies before the wrist along the arm: it blends across the wrist like the cuff and
+        # sleeve end under it, so they move together; the mitten and thumb lie past the wrist and stay on the hand
+        sg = 1 if c.x > 0 else -1
+        along = (V((c.x * sg, c.y, c.z)) - WR).dot((WR - EL).normalized())
+        return "cuff" if along < 0.0 else "hand_" + side
     if "Navy" in mat:
         return "cuff" if abs(c.x) > 0.45 else "legs"
     if "KneePatch" in mat:

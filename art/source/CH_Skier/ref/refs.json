@@ -41,6 +41,25 @@
    "top_z": 1.75
   }
  },
+ "back": {
+  "file": "back.png",
+  "matte": "back_matte.png",
+  "az": 180,
+  "m_per_px": 0.0025,
+  "axis_col": 380.0,
+  "ground_row": 740.0,
+  "image_px": [
+   760,
+   780
+  ],
+  "matte_extent_m": {
+   "horizontal": [
+    -0.765,
+    0.765
+   ],
+   "top_z": 1.75
+  }
+ },
  "init_master": {
   "height": 1.75,
   "ground_frac": 0.051282,
@@ -374,7 +393,75 @@
    0.17,
    0.06
   ],
-  "cuff_band_r": 0.02
+  "cuff_band_r": 0.02,
+  "hem_band_z": [
+   0.845,
+   0.87
+  ],
+  "hem_drop_back": 0.035,
+  "yoke_stripe_z": [
+   1.285,
+   1.315
+  ],
+  "yoke_stripe_half_w": 0.19,
+  "pocket_flap_centre": [
+   0.232,
+   -0.01,
+   0.955
+  ],
+  "pocket_flap_size": [
+   0.006,
+   0.15,
+   0.05
+  ],
+  "pocket_zip_h": 0.008,
+  "cargo_pocket_centre": [
+   0.215,
+   0.03,
+   0.7
+  ],
+  "cargo_pocket_size": [
+   0.007,
+   0.12,
+   0.13
+  ],
+  "cargo_flap_h": 0.03,
+  "gaiter_r": 0.108,
+  "gauntlet": [
+   -0.005,
+   -0.075,
+   0.072,
+   0.078
+  ],
+  "vent_x": [
+   -0.045,
+   -0.015,
+   0.015,
+   0.045
+  ],
+  "vent_y": [
+   -0.07,
+   0.07
+  ],
+  "vent_w": 0.012,
+  "strap_buckle_size": [
+   0.04,
+   0.012,
+   0.032
+  ],
+  "boot_buckle_z": [
+   0.13,
+   0.2
+  ],
+  "boot_buckle_size": [
+   0.012,
+   0.055,
+   0.022
+  ],
+  "power_strap_z": [
+   0.312,
+   0.336
+  ]
  },
  "palette": {
   "jacket": {
@@ -428,6 +515,10 @@
   "neck_warmer": {
    "hex": "#D7263D",
    "source": "user choice 2026-10-20"
+  },
+  "buckle": {
+   "hex": "#AEB6C2",
+   "source": "placeholder: light grey buckles (story 012)"
   },
   "skin": {
    "hex": "#D9A07A",
