@@ -26,6 +26,9 @@ namespace FirstChair.Riding.Editor
         /// <summary>Where the generated textures, layers, materials and volume profile go.</summary>
         public const string Folder = "Assets/Data/Riding/Look";
 
+        /// <summary>The snow terrain's shader (Assets/Shaders/SnowTerrain/SH_Env_SnowTerrain.shader).</summary>
+        public const string SnowTerrainShader = "First Chair/Snow Terrain";
+
         private const int TextureSize = 512;
         private const int AlphamapResolution = 1024;
         private const int SnowBlurTexels = 2;
@@ -124,9 +127,24 @@ namespace FirstChair.Riding.Editor
             AssetDatabase.SaveAssets();
         }
 
-        /// <summary>The URP terrain material, so the build carries the terrain shader.</summary>
-        public static Material TerrainMaterial() =>
-            LitMaterial("TerrainSnow", "Universal Render Pipeline/Terrain/Lit", Color.white, 0.1f, false);
+        /// <summary>
+        /// The terrain material, on First Chair's snow terrain shader (story 014: URP's terrain with glints, blue shade,
+        /// soft light and wind ripples), so the build carries the shader. A material made before story 014, on URP's
+        /// stock terrain shader, is switched over.
+        /// </summary>
+        public static Material TerrainMaterial()
+        {
+            Material material = LitMaterial("TerrainSnow", SnowTerrainShader, Color.white, 0.1f, false);
+            Shader shader = Shader.Find(SnowTerrainShader);
+            if (shader != null && material.shader != shader)
+            {
+                material.shader = shader;
+                EditorUtility.SetDirty(material);
+                AssetDatabase.SaveAssets();
+            }
+
+            return material;
+        }
 
         /// <summary>The ski track material: a groove in shade, a little bluer and darker than the snow, translucent and double-sided.</summary>
         public static Material TrackMaterial() =>

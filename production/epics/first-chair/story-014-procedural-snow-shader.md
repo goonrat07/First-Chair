@@ -1,7 +1,7 @@
 # Story 014: A procedural snow shader
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: Ready
+> **Status**: In Progress
 > **Layer**: Presentation
 > **Type**: Visual/Feel
 > **Estimate**: L

@@ -1,0 +1,175 @@
+// SH_Env_SnowEffects.hlsl
+// First Chair, written by Claude for Story 014 (production/epics/first-chair/story-014-procedural-snow-shader.md).
+// Purpose: the procedural snow terms SH_Env_SnowTerrain adds to URP's terrain lighting: wind ripples in the normal, a
+// soft terminator, blue shade and sun glints. All in world space, so nothing repeats with a texture's tile.
+// Target: URP 17.3 (Unity 6.3 LTS), Forward and Forward+, desktop (Windows, Linux). Cost: no texture samples; about
+// a hundred ALU instructions a pixel on top of URP's terrain (four hashes, one value noise, two pow).
+// Variants: none added; every term runs always and a weight of 0 turns it off.
+//
+// Every value is a global that LightingRig sets each frame from LightingSettings (the Feel Lab's Light tab). Unset,
+// every global is zero and every term is off: the snow is URP's stock terrain.
+#ifndef FIRST_CHAIR_SNOW_EFFECTS_INCLUDED
+#define FIRST_CHAIR_SNOW_EFFECTS_INCLUDED
+
+float4 _FCSnowGlint;            // x strength, y cell size (m), z sharpness (the mirror lobe's exponent), w fade distance (m)
+float4 _FCSnowGlintLayers0;     // crystals per cell, 0 to 1, for the terrain layers 0 to 3 (the first pass)
+float4 _FCSnowGlintLayers1;     // the same for layers 4 to 7 (the add pass)
+float4 _FCSnowShade;            // x how far shade takes on the tint, 0 to 1
+float4 _FCSnowShadeTint;        // rgb the colour shaded snow is multiplied toward
+float4 _FCSnowWrap;             // x how far the lit side wraps past the terminator, 0 to 1
+float4 _FCSnowRipple;           // x strength (the ripples' steepest slope), y wavelength (m), z wind heading (rad), w fade distance (m)
+float4 _FCSnowRippleLayers0;    // ripples per layer, 0 to 1, layers 0 to 3
+float4 _FCSnowRippleLayers1;    // layers 4 to 7
+
+// --- Shape constants: how the effects look at a weight of 1. Their strengths and sizes are the globals above.
+static const float FC_TWO_PI = 6.2831853;
+// Glints: a crystal's facet leans up to this far off the snow's normal (a unit-vector offset, about 31 degrees).
+static const float FC_GLINT_FACET_TILT = 0.6;
+// Glints: a crystal's radius, as a fraction of its cell, is this plus up to the spread; with its centre kept in the
+// cell's middle 40 percent, the disc never crosses the cell's edge.
+static const float FC_GLINT_RADIUS_MIN = 0.12;
+static const float FC_GLINT_RADIUS_SPREAD = 0.16;
+static const float FC_GLINT_CENTRE_MARGIN = 0.3;
+// Glints: the dimmest crystal's brightness; the brightest is one more.
+static const float FC_GLINT_BRIGHTNESS_MIN = 0.4;
+// Glints only where the sun is well up on the snow: full from a cosine of a quarter on.
+static const float FC_GLINT_SUN_RAMP = 4.0;
+// Hash offsets, so a cell's position, facet and dice are independent draws.
+static const float FC_HASH_CENTRE = 41.0;
+static const float FC_HASH_FACET = 73.0;
+// Shade: snow counts as fully sunlit from a cosine of 0.4 to the sun on.
+static const float FC_SHADE_SUN_RAMP = 2.5;
+// Ripples: the crests wander over this many wavelengths, by up to this many wavelengths.
+static const float FC_RIPPLE_WANDER_SCALE = 7.0;
+static const float FC_RIPPLE_WANDER = 1.2;
+// Ripples: a ripple is sin(x) + a sin(2x), steeper on its lee side; its slope's peak is 1 + 2a.
+static const float FC_RIPPLE_SKEW = 0.3;
+
+// The terrain draws layers 0 to 3 in its first pass and 4 to 7 in the add pass; each pass picks its own four.
+float4 FCSnowLayerVector(float4 firstPass, float4 addPass)
+{
+#if defined(TERRAIN_SPLAT_ADDPASS)
+    return addPass;
+#else
+    return firstPass;
+#endif
+}
+
+// Hashes without sine (after Dave Hoskins' "Hash without Sine"), uniform in [0, 1). The multipliers and the 33.33 are
+// that hash's own constants.
+float FCHash12(float2 p)
+{
+    float3 p3 = frac(p.xyx * 0.1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.x + p3.y) * p3.z);
+}
+
+float2 FCHash22(float2 p)
+{
+    float3 p3 = frac(p.xyx * float3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yzx + 33.33);
+    return frac((p3.xx + p3.yz) * p3.zy);
+}
+
+float3 FCHash32(float2 p)
+{
+    float3 p3 = frac(p.xyx * float3(0.1031, 0.1030, 0.0973));
+    p3 += dot(p3, p3.yxz + 33.33);
+    return frac((p3.xxy + p3.yzz) * p3.zyx);
+}
+
+// Smooth value noise in [0, 1): the four corner hashes blended with a smoothstep.
+float FCValueNoise(float2 p)
+{
+    float2 i = floor(p);
+    float2 f = p - i;
+    float2 u = f * f * (3.0 - 2.0 * f);
+    float a = FCHash12(i);
+    float b = FCHash12(i + float2(1.0, 0.0));
+    float c = FCHash12(i + float2(0.0, 1.0));
+    float d = FCHash12(i + float2(1.0, 1.0));
+    return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
+}
+
+// How large a pixel is on the snow, metres.
+float FCFootprint(float3 positionWS)
+{
+    return max(length(ddx(positionWS)), length(ddy(positionWS)));
+}
+
+// 1 at the camera, falling to 0 at the fade distance.
+float FCDistanceFade(float3 positionWS, float fadeDistance)
+{
+    return saturate(1.0 - distance(positionWS, GetCameraPositionWS()) / max(fadeDistance, 1e-3));
+}
+
+// 1 while a feature is at least twice a pixel's size, 0 once it is down to one pixel: past that it would only shimmer.
+float FCFootprintFade(float3 positionWS, float featureSize)
+{
+    return saturate((featureSize - FCFootprint(positionWS)) / (0.5 * featureSize));
+}
+
+// Wind ripples (sastrugi): long, wandering crests across the wind, steeper on the lee side, bent into the normal where
+// the layers ask for them. A wavelength fades out once it is down to a couple of pixels, and with distance.
+half3 SnowRipples(half3 normalWS, float3 positionWS, half4 layers)
+{
+    float amount = dot((float4)layers, FCSnowLayerVector(_FCSnowRippleLayers0, _FCSnowRippleLayers1)) * _FCSnowRipple.x;
+    float wavelength = max(_FCSnowRipple.y, 0.05);
+    float2 wind = float2(sin(_FCSnowRipple.z), cos(_FCSnowRipple.z));
+    float2 xz = positionWS.xz;
+    float wander = FCValueNoise(xz / (wavelength * FC_RIPPLE_WANDER_SCALE)) * 2.0 - 1.0;
+    float phase = (dot(xz, wind) / wavelength + wander * FC_RIPPLE_WANDER) * FC_TWO_PI;
+    // d/dx [sin x + a sin 2x] = cos x + 2a cos 2x, over its peak, so the strength is the steepest slope.
+    float slope = (cos(phase) + 2.0 * FC_RIPPLE_SKEW * cos(2.0 * phase)) / (1.0 + 2.0 * FC_RIPPLE_SKEW);
+    float fade = FCFootprintFade(positionWS, 0.5 * wavelength) * FCDistanceFade(positionWS, _FCSnowRipple.w);
+    float2 gradient = wind * (slope * amount * fade);
+    // A height field's normal leans against its gradient.
+    return normalize(normalWS - half3((half)gradient.x, 0.0h, (half)gradient.y));
+}
+
+// A snow crystal in each small cell of the surface (as many cells as the layers' density says), with its own facet,
+// size and brightness. It flashes when its facet mirrors the sun into the camera, so the sparkle moves as the camera
+// does. Cells are laid out over the ground plane, so every crystal lies on the snow.
+half SnowGlint(float3 positionWS, half3 normalWS, half3 halfDir, half density)
+{
+    float cellSize = max(_FCSnowGlint.y, 1e-3);
+    float2 p = positionWS.xz / cellSize;
+    float2 cell = floor(p);
+    float2 f = p - cell;
+    float3 dice = FCHash32(cell);                       // x: is there a crystal, y: its size, z: its brightness
+    float2 centre = FC_GLINT_CENTRE_MARGIN + (1.0 - 2.0 * FC_GLINT_CENTRE_MARGIN) * FCHash22(cell + FC_HASH_CENTRE);
+    float3 tilt = FCHash32(cell + FC_HASH_FACET) * 2.0 - 1.0;
+    half3 facet = normalize(normalWS + (half3)tilt * (half)FC_GLINT_FACET_TILT);
+    float radius = FC_GLINT_RADIUS_MIN + FC_GLINT_RADIUS_SPREAD * dice.y;
+    float crystal = saturate((radius - length(f - centre)) / (radius * 0.5)) * step(dice.x, density);
+    float mirror = pow(saturate((float)dot(facet, halfDir)), max(_FCSnowGlint.z, 1.0));
+    float fade = FCFootprintFade(positionWS, cellSize) * FCDistanceFade(positionWS, _FCSnowGlint.w);
+    return (half)(crystal * mirror * (FC_GLINT_BRIGHTNESS_MIN + dice.z) * fade);
+}
+
+// After URP's lighting: the soft terminator (snow scatters light under its surface, so the lit side wraps past 90
+// degrees), the blue shade (snow out of the sun takes on the sky's blue, the more the darker it is) and the glints.
+half3 SnowLight(half3 color, InputData inputData, half3 albedo, half4 layers)
+{
+    Light sun = GetMainLight(inputData.shadowCoord, inputData.positionWS, inputData.shadowMask);
+    half3 n = inputData.normalWS;
+    half nl = dot(n, sun.direction);
+    half lit = sun.shadowAttenuation * sun.distanceAttenuation;
+
+    // Wrapped diffuse, (n.l + w) / (1 + w), is never below URP's n.l on the lit side; add the difference.
+    half wrap = (half)_FCSnowWrap.x;
+    half wrapped = saturate((nl + wrap) / (1.0h + wrap));
+    color += albedo * sun.color * (lit * max(0.0h, wrapped - saturate(nl)));
+
+    half sunlit = lit * saturate(nl * (half)FC_SHADE_SUN_RAMP);
+    half shade = (1.0h - sunlit) * (half)_FCSnowShade.x;
+    color *= lerp(half3(1.0h, 1.0h, 1.0h), (half3)_FCSnowShadeTint.rgb, shade);
+
+    half density = (half)dot((float4)layers, FCSnowLayerVector(_FCSnowGlintLayers0, _FCSnowGlintLayers1));
+    half3 halfDir = normalize(sun.direction + inputData.viewDirectionWS);
+    half glint = SnowGlint(inputData.positionWS, n, halfDir, density);
+    color += sun.color * (lit * saturate(nl * (half)FC_GLINT_SUN_RAMP) * (half)_FCSnowGlint.x * glint);
+    return color;
+}
+
+#endif

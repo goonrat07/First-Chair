@@ -1,15 +1,18 @@
+using FirstChair.Sim;
 using UnityEngine;
 
 namespace FirstChair.Riding
 {
     /// <summary>
     /// The scene's light, as data (story 007's lighting pass): the sun's height, direction, strength and warmth, the
-    /// shadows, the ambient light, and the camera's exposure, contrast and saturation. <see cref="LightingRig"/> applies
-    /// them every frame, so the Feel Lab's Light tab changes them live. The defaults come from the pass (2026-10-26): a
-    /// warm sun behind and to the right of a camera looking down the fall line, 35 degrees up, so steeper snow faces
-    /// further from it and reads darker, with the shadows reaching ahead and to the left. Measured on the test slope's
-    /// rollers from one held view, the rows' brightness range rose from 12 to 26 levels of 255 with the snow as bright
-    /// (203 against 207); the earlier sun, ahead and to the right, lit steep and flat snow nearly alike.
+    /// shadows, the ambient light, the snow shader's glints, shade, soft light and wind ripples (story 014), and the
+    /// camera's exposure, contrast and saturation. <see cref="LightingRig"/> applies them every frame, so the Feel Lab's
+    /// Light tab changes them live. The light's defaults come from the pass (2026-10-26): a warm sun behind and to the
+    /// right of a camera looking down the fall line, 35 degrees up, so steeper snow faces further from it and reads
+    /// darker, with the shadows reaching ahead and to the left. Measured on the test slope's rollers from one held view,
+    /// the rows' brightness range rose from 12 to 26 levels of 255 with the snow as bright (203 against 207); the earlier
+    /// sun, ahead and to the right, lit steep and flat snow nearly alike. The snow's defaults are story 014's first
+    /// pass, to be tuned against the user's look.
     /// </summary>
     [CreateAssetMenu(menuName = "First Chair/Lighting Settings", fileName = "LightingSettings")]
     public sealed class LightingSettings : ScriptableObject
@@ -31,6 +34,43 @@ namespace FirstChair.Riding
         [Header("Sky light")]
         [Tooltip("The blue sky light's strength: how much light reaches the shadows and the faces turned from the sun.")]
         [SerializeField, Range(0f, 2f)] private float ambientIntensity = 0.8f;
+
+        [Header("Snow (story 014: First Chair/Snow Terrain)")]
+        [Tooltip("How bright the sun's glints off snow crystals are; 0 turns them off.")]
+        [SerializeField, Range(0f, 20f)] private float snowGlintStrength = 6f;
+        [Tooltip("The size of the cells that each hold at most one crystal, metres. Smaller is finer sparkle, which also "
+            + "fades out nearer the camera.")]
+        [SerializeField, Range(0.005f, 0.1f)] private float snowGlintCellMetres = 0.02f;
+        [Tooltip("How exactly a crystal must mirror the sun into the camera to flash; higher makes fewer, briefer glints.")]
+        [SerializeField, Range(10f, 5000f)] private float snowGlintSharpness = 800f;
+        [Tooltip("Glints fade out by this distance from the camera, metres.")]
+        [SerializeField, Range(1f, 200f)] private float snowGlintFadeMetres = 40f;
+        [Tooltip("How many cells of groomed snow hold a crystal, 0 to 1.")]
+        [SerializeField, Range(0f, 1f)] private float snowGlintGroomed = 0.6f;
+        [Tooltip("How many cells of powder hold a crystal, 0 to 1.")]
+        [SerializeField, Range(0f, 1f)] private float snowGlintPowder = 1f;
+        [Tooltip("How many cells of crud hold a crystal, 0 to 1.")]
+        [SerializeField, Range(0f, 1f)] private float snowGlintCrud = 0.35f;
+        [Tooltip("How many cells of ice hold a crystal, 0 to 1. Ice is glossy instead.")]
+        [SerializeField, Range(0f, 1f)] private float snowGlintIce = 0f;
+        [Tooltip("How many cells of slush hold a crystal, 0 to 1.")]
+        [SerializeField, Range(0f, 1f)] private float snowGlintSlush = 0.15f;
+        [Tooltip("How far snow out of the sun (in a shadow or turned from it) takes on the shade tint, 0 to 1; 0 turns it off.")]
+        [SerializeField, Range(0f, 1f)] private float snowShadeStrength = 0.6f;
+        [Tooltip("What shaded snow's colour is multiplied toward, as linear values: the sky's blue.")]
+        [SerializeField] private Color snowShadeTint = new Color(0.80f, 0.89f, 1.06f, 1f);
+        [Tooltip("How far the sunlit side of the snow wraps past its edge, softening the light over rollers, 0 to 1; 0 is "
+            + "URP's hard edge.")]
+        [SerializeField, Range(0f, 1f)] private float snowWrap = 0.35f;
+        [Tooltip("How steep the wind ripples in powder are, as their steepest slope; 0 turns them off.")]
+        [SerializeField, Range(0f, 1f)] private float snowRippleStrength = 0.25f;
+        [Tooltip("The wind ripples' wavelength, metres.")]
+        [SerializeField, Range(0.1f, 3f)] private float snowRippleWavelength = 0.5f;
+        [Tooltip("Which way the wind blew, degrees clockwise from +Z (down the fall line) seen from above; the ripples' "
+            + "crests run across it.")]
+        [SerializeField, Range(-180f, 180f)] private float snowRippleWindHeading = 70f;
+        [Tooltip("Wind ripples fade out by this distance from the camera, metres.")]
+        [SerializeField, Range(1f, 200f)] private float snowRippleFadeMetres = 30f;
 
         [Header("Camera grade")]
         [Tooltip("Exposure, in stops. Lower keeps lit snow out of the tonemapper's shoulder, where its shading flattens.")]
@@ -57,6 +97,54 @@ namespace FirstChair.Riding
 
         /// <summary>Ambient light multiplier.</summary>
         public float AmbientIntensity => ambientIntensity;
+
+        /// <summary>Snow glint brightness; 0 is off.</summary>
+        public float SnowGlintStrength => snowGlintStrength;
+
+        /// <summary>The glint cell size, metres.</summary>
+        public float SnowGlintCellMetres => snowGlintCellMetres;
+
+        /// <summary>The glint's mirror sharpness (the lobe's exponent).</summary>
+        public float SnowGlintSharpness => snowGlintSharpness;
+
+        /// <summary>The distance glints fade out by, metres.</summary>
+        public float SnowGlintFadeMetres => snowGlintFadeMetres;
+
+        /// <summary>Snow shade tint strength, 0 to 1; 0 is off.</summary>
+        public float SnowShadeStrength => snowShadeStrength;
+
+        /// <summary>The linear colour shaded snow is multiplied toward.</summary>
+        public Color SnowShadeTint => snowShadeTint;
+
+        /// <summary>How far the lit side of the snow wraps past its edge, 0 to 1; 0 is off.</summary>
+        public float SnowWrap => snowWrap;
+
+        /// <summary>The powder ripples' steepest slope; 0 is off.</summary>
+        public float SnowRippleStrength => snowRippleStrength;
+
+        /// <summary>The ripples' wavelength, metres.</summary>
+        public float SnowRippleWavelength => snowRippleWavelength;
+
+        /// <summary>The wind's heading, degrees clockwise from +Z.</summary>
+        public float SnowRippleWindHeading => snowRippleWindHeading;
+
+        /// <summary>The distance ripples fade out by, metres.</summary>
+        public float SnowRippleFadeMetres => snowRippleFadeMetres;
+
+        /// <summary>How many glint cells of a kind of snow hold a crystal, 0 to 1.</summary>
+        /// <param name="kind">The kind of snow.</param>
+        public float SnowGlintDensity(SnowType kind)
+        {
+            switch (kind)
+            {
+                case SnowType.Groomed: return snowGlintGroomed;
+                case SnowType.Powder: return snowGlintPowder;
+                case SnowType.Crud: return snowGlintCrud;
+                case SnowType.Ice: return snowGlintIce;
+                case SnowType.Slush: return snowGlintSlush;
+                default: return 0f;
+            }
+        }
 
         /// <summary>Post exposure, stops.</summary>
         public float PostExposure => postExposure;
