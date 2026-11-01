@@ -40,14 +40,15 @@ Decisions and are the user's to change.
 
 ## Acceptance Criteria
 
-- [ ] The window math is pure C# with EditMode tests: snapped to whole texels, the camera inside the window and most of
+- [x] The window math is pure C# with EditMode tests: snapped to whole texels, the camera inside the window and most of
   it ahead, still while the camera moves less than a texel, and world positions mapped to texture coordinates.
 - [ ] The stamp shader and the terrain shader build in CI for Windows and Linux with no shader errors, and the terrain
   is not drawn magenta in the cloud build.
 - [ ] From the chase camera, retained in `production/qa/evidence/story-017-ski-grooves/`: tracks read as grooves with a
   lit and a shaded wall, deepest in powder, a shallow cut on the groomer and none on ice; with the strength at 0 the
   snow looks as it did before (story 014's look).
-- [ ] The cloud ride's frame time is no more than 10 percent above the previous build's on the same view.
+- [x] The cloud ride's frame time is no more than 10 percent above the previous build's on the same view.
+  1.0 percent (627dbde against 81380ac, `2026-10-28-frame-times-627dbde.md`).
 - [ ] No change to the sim, the camera or the ribbons' own look.
 
 ## Out of Scope

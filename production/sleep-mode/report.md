@@ -1,13 +1,16 @@
 # Sleep mode report
 
-Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0 (`0d2953f..`)
+Started 2026-10-27T02:58:57Z · Ended 2026-11-01T16:10:30Z · Reason off (your next message) · Commits 29 (`0d2953f..` this report's commit)
 
 ## Summary
-- Finished: (running)
-- Skipped: (running)
+- Finished: stories 012 (skier detail pass), 013 (procedural animation), 014 (procedural snow shader), 015 (mountain
+  design tool) and 016 (varied forest), all In Review; and a fix for ski tracks drawn over the ski tails
+- Stopped mid-story: 017 (ski grooves). Built, in CI and ridden once; a fix from that ride (4c962fc) was building in
+  CI when you wrote, and its ride and the last evidence are left
 - Waiting on you: 2 questions in production/sleep-mode/questions.md
 - Needs the PC: stories 008 to 011 (In Review), story 003's PC playtest, and the look sign-off of everything below
-- Next: (running)
+- Next: ride 4c962fc's build (CI run 41324405251) for story 017's last criterion, then close story 007, whose open
+  criteria stories 012 to 017 built
 
 ## Usage
 - At the start the seven-day limit was at its warning level (`allowed_warning`), resetting 2026-11-01 16:00 UTC. The
@@ -159,3 +162,32 @@ Started 2026-10-27T02:58:57Z · Ended (running) · Reason (running) · Commits 0
     test slope (its tallest spruce is 16.2 m). Change `MaxTreeHeightMetres` in `TestSlopeLook` to taste.
 - Not verified: the Unity editor; the forest in motion; the look sign-off is yours, on the PC, above all whether the
   slim fir reads too sparse (EN_Conifer's brief: its first version "read too sparse, like a fishbone").
+
+## story-017-ski-grooves (In Progress: stopped at your message)
+- Changed:
+  - `Assets/Scripts/Riding/Core/TrackGrooveWindow.cs` (new, 6 EditMode tests): the square of snow the grooves are
+    stamped into, 32 m at 2,048 texels ahead of the camera, snapped to whole texels (5fcdb77)
+  - `Assets/Scripts/Riding/TrackGrooves.cs`, `GrooveSource.cs` and `Assets/Shaders/SnowTerrain/SH_Env_TrackGrooveStamp.shader`
+    (new): every frame the track ribbons over the window are drawn from above into an R8 render texture as rounded
+    grooves (627dbde); `SkiTrack` and the scene builder's old tracks are sources, the old tracks' meshes now carry u
+    across the track
+  - `SH_Env_SnowEffects.hlsl` (`SnowGrooves`) and `SH_Env_SnowTerrainForward.hlsl`: the terrain reads the texture as
+    relief, a lit and a shaded wall and a darker floor, as deep as the snow type says
+  - `LightingSettings` and `LightingRig`: groove strength, depth per snow type, darkening and fade, in the Feel Lab's
+    Light tab
+  - The groove profile (4c962fc): flat before the ribbon's edge, after the first ride showed a texel-long zipper along
+    tracks diagonal to the texture's texels
+- Tests: the Core tests locally 243/243; CI run 40589500464 (627dbde): EditMode green, both players build, no shader
+  errors, no magenta. The cloud ride (627dbde): with the strength at 0 the snow matches the build before (no snow
+  pixel differs by 4 levels); the rider's and the old tracks read as shallow cuts on the groomer (1.5 levels mean
+  change in their crop) and trenches in powder (6.4 levels); frame time 1.0 percent above the build before (the AC
+  allows 10). CI run 41324405251 (4c962fc) was in its EditMode tests at the stop.
+- Left: the fixed build's ride (the zipper gone, an ice pin: the first ice ride overshot the patch), the evidence file,
+  As built and In Review.
+- Decisions made for you:
+  - The ribbons are the stamp: they already hold every track across runs, so the grooves need no second record.
+  - A 32 m window at 1.6 cm a texel, not the whole mountain; past it the tracks are ribbons only.
+  - First-pass depths: powder 8 cm, crud 5 cm, slush 4 cm, groomed 1.5 cm, ice none; the floor darkens up to 12
+    percent. All in the Light tab.
+- Not verified: the Unity editor; the grooves in motion and at a real GPU's frame rate; the look sign-off is yours.
+
