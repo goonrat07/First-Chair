@@ -68,3 +68,20 @@ Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0
   adds the grind check. Before, a grind counted as on the snow, so the ribbon (and now a trench) ran under the rail.
 - Tests: 3 EditMode tests; the grinding one failed against the old rule first. 271 Core tests pass locally.
 - Not verified: in a build on a rail (the cloud rides don't reach the park's rails yet) and in the editor.
+
+## Brainstorms, more specific: the story's acts 1 to 4, and the gear measured in the sim
+- **Story** (`design/drafts/story-outline.md`): the prologue and acts 1 to 4 mission by mission (37 missions), each
+  with its giver, objectives, what it teaches and opens, sample lines in the cast's voices, and, from act 2 on, what it
+  needs beyond today's riding (gates and timing, ghosts, bots or recorded runs, a run score, night lighting, weather
+  and time of day changing the snow, surface lifts, combos, the replay editor, water). New options: Cass watched or
+  ridden against in act 2; night riding kept or cut; the combo mission kept or moved; the act 3 burial as written,
+  lighter or left out; the festival's results fixed or played for real.
+- **Gear** (`design/drafts/gear-progression.md`): every ski's bars applied to the default tuning and the same
+  scripted rides run in the real sim (a throwaway probe; nothing in the sim or the game changed). The first draft's 3
+  to 5% a step moved the pace by under 2%, too little to feel, and two mappings were backwards (Float's turn factors
+  made the powder ski slower through powder turns; Glide on powder let the race ski beat the rental there). The bars
+  now act on measured values (Edge 15%, Glide 8%, Float 15%, Pop and Swing 4%): about 5% in a ski's best place and
+  15% in the air. Two new decisions: how big the differences should be, and whether powder should slow a rider more
+  so float matters.
+- **Skill tree**: a note that its 2% ranks on grip and drag would not be felt either.
+- Decisions made for you: none; each choice is listed in the drafts.
