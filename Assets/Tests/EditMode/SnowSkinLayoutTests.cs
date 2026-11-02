@@ -14,6 +14,10 @@ namespace FirstChair.Riding.Tests
         private const int CellsPerHalf = 8;
         private const float Tolerance = 1e-5f;
 
+        // How near a snapped origin 400 m out must be to a whole number of steps, metres: a float there is good to about
+        // 0.03 mm. The check is a distance, not the quotient x / step, whose rounding differs between runtimes.
+        private const double SnapTolerance = 1e-4;
+
         [Test]
         public void Write_OneLevel_IsAPlainGrid()
         {
@@ -147,8 +151,8 @@ namespace FirstChair.Riding.Tests
             layout.SnapOrigin(412.371f, -288.917f, out float x, out float z);
 
             // Assert
-            Assert.That(Math.Abs(x / coarse - Math.Round(x / coarse)), Is.LessThan(1e-4));
-            Assert.That(Math.Abs(z / coarse - Math.Round(z / coarse)), Is.LessThan(1e-4));
+            Assert.That(Math.Abs(x - Math.Round(x / (double)coarse) * coarse), Is.LessThan(SnapTolerance));
+            Assert.That(Math.Abs(z - Math.Round(z / (double)coarse) * coarse), Is.LessThan(SnapTolerance));
             Assert.That(412.371f - x, Is.InRange(0f, coarse));
             Assert.That(-288.917f - z, Is.InRange(0f, coarse));
         }
