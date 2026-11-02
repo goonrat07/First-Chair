@@ -22,6 +22,10 @@ namespace FirstChair.Riding.Tests
         private const byte FullWeight = 255;
         private static readonly float[] LayerDepths = { GroomedDepth, PowderDepth, 0.08f, 0f, 0.06f };
 
+        // The deepest cut the skis ride over (metres; RiderViewSettings' default, the groomer's depth), and a small step.
+        private const float RidesOver = 0.02f;
+        private const float Nudge = 1e-4f;
+
         [Test]
         public void Offset_OnTheCentreLine_IsTheFullDepthDown()
         {
@@ -177,6 +181,52 @@ namespace FirstChair.Riding.Tests
             Assert.Throws<ArgumentException>(() => SnowTrench.SplatDepth(new byte[7], 2, Layers, 0f, 0f, LayerDepths, 1f));
             Assert.Throws<ArgumentException>(() => SnowTrench.SplatDepth(Uniform(2, Groomed), 0, Layers, 0f, 0f, LayerDepths, 1f));
             Assert.Throws<ArgumentNullException>(() => SnowTrench.SplatDepth(Uniform(2, Groomed), 2, Layers, 0f, 0f, null, 1f));
+        }
+
+        [Test]
+        public void SkiSink_OnTheGroomer_RidesOnTop()
+        {
+            // Act: the groomer's cut is no deeper than the cut the skis ride over
+            float sink = SnowTrench.SkiSink(GroomedDepth, RidesOver, 1f);
+
+            // Assert: the skis stay on the snow, their groove behind them, not buried along their sides in it
+            Assert.That(sink, Is.EqualTo(0f));
+        }
+
+        [Test]
+        public void SkiSink_InPowder_SinksByTheDepthPastTheFirmCut()
+        {
+            // Act
+            float all = SnowTrench.SkiSink(PowderDepth, RidesOver, 1f);
+            float half = SnowTrench.SkiSink(PowderDepth, RidesOver, 0.5f);
+
+            // Assert
+            Assert.That(all, Is.EqualTo(PowderDepth - RidesOver).Within(Tolerance));
+            Assert.That(half, Is.EqualTo(0.5f * (PowderDepth - RidesOver)).Within(Tolerance));
+        }
+
+        [Test]
+        public void SkiSink_EitherSideOfTheFirmCut_HasNoStep()
+        {
+            // Act: the snow under the rider deepens smoothly as its splat weights blend from groomer to powder
+            float shallower = SnowTrench.SkiSink(RidesOver - Nudge, RidesOver, 1f);
+            float deeper = SnowTrench.SkiSink(RidesOver + Nudge, RidesOver, 1f);
+
+            // Assert: the skis start to sink from nothing, not with a jump
+            Assert.That(shallower, Is.EqualTo(0f));
+            Assert.That(deeper, Is.EqualTo(Nudge).Within(Tolerance));
+        }
+
+        [Test]
+        public void SkiSink_SettingsBelowZero_SinkFromTheSurfaceAndNeverLift()
+        {
+            // Act
+            float noFirmCut = SnowTrench.SkiSink(PowderDepth, -RidesOver, 1f);
+            float noShare = SnowTrench.SkiSink(PowderDepth, RidesOver, -1f);
+
+            // Assert: a firm cut below 0 counts as none; a share below 0 sinks nothing rather than lifting the skis
+            Assert.That(noFirmCut, Is.EqualTo(PowderDepth).Within(Tolerance));
+            Assert.That(noShare, Is.EqualTo(0f));
         }
 
         // Splat weights as the snow terrain has them: one byte a layer a texel, rows along Z, every texel all one layer.

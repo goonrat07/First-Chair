@@ -63,8 +63,10 @@ namespace FirstChair.Riding
         [SerializeField, Min(0f)] private float trackLift = 0.015f;
 
         [Header("Sinking into the snow (Story 018)")]
-        [Tooltip("How far the skis sink into the trench they cut, as a share of its depth (LightingSettings, per snow type): "
-            + "1 stands them on its floor, 0 on the untouched snow.")]
+        [Tooltip("The deepest cut the skis ride over, metres: in snow a ski cuts no deeper (LightingSettings' depth per snow "
+            + "type; the groomer's is 0.02) they stay on top, their groove behind them; deeper snow takes them down by the rest.")]
+        [SerializeField, Range(0f, 0.2f)] private float snowSinkRidesOver = 0.02f;
+        [Tooltip("How much of the depth past that cut the skis sink: 1 all of it, 0 none, so they ride on top everywhere.")]
         [SerializeField, Range(0f, 1.5f)] private float snowSinkWeight = 1f;
         [Tooltip("How quickly the skis settle into the snow or rise out of it, seconds: landing in powder, riding onto a groomer.")]
         [SerializeField, Range(0.01f, 1f)] private float snowSinkSmoothTime = 0.08f;
@@ -253,7 +255,9 @@ namespace FirstChair.Riding
         public float TrackMinVertexDistance => trackMinVertexDistance;
         /// <summary>Track lift above the ski base, metres.</summary>
         public float TrackLift => trackLift;
-        /// <summary>How far the skis sink into the trench they cut, as a share of its depth.</summary>
+        /// <summary>The deepest cut the skis ride over, metres; deeper snow takes them down by the rest.</summary>
+        public float SnowSinkRidesOver => snowSinkRidesOver;
+        /// <summary>How much of the depth past <see cref="SnowSinkRidesOver"/> the skis sink, 1 for all of it.</summary>
         public float SnowSinkWeight => snowSinkWeight;
         /// <summary>How quickly the skis settle into the snow or rise out of it, seconds.</summary>
         public float SnowSinkSmoothTime => snowSinkSmoothTime;

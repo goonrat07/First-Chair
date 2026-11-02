@@ -171,13 +171,15 @@ namespace FirstChair.Riding
             Paint(_trackRight, _skiRight, unsink, velocity, position, normal, onSnow, jumped);
         }
 
-        // How far the skier is drawn down into the snow this frame (Story 018): as deep as the snow mesh cuts under the
-        // rider, eased in and out (landing in powder, riding onto a groomer), at once across a reset, and not at all in the
-        // air, on a rail or on the chairlift. Crashed, the body settles into soft snow too.
+        // How far the skier is drawn down into the snow this frame (Story 018): by the depth the snow mesh cuts under the
+        // rider past the cut the skis ride over (SnowTrench.SkiSink: on top on the groomer, deep in powder), eased in and
+        // out (landing in powder, riding onto a groomer), at once across a reset, and not at all in the air, on a rail or
+        // on the chairlift. Crashed, the body settles into soft snow too.
         private float Sink(in RiderState current, Vector3 position, bool snapped)
         {
             bool sinking = snow != null && !current.Airborne && !current.Grinding && !driver.Paused;
-            float target = sinking ? snow.DepthAt(position) * settings.SnowSinkWeight : 0f;
+            float depth = sinking ? snow.DepthAt(position) : 0f;
+            float target = SnowTrench.SkiSink(depth, settings.SnowSinkRidesOver, settings.SnowSinkWeight);
             if (snapped)
             {
                 return target;

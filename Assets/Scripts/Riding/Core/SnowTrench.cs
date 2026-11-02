@@ -90,6 +90,26 @@ namespace FirstChair.Riding
             return depth / FullWeight * strength;
         }
 
+        /// <summary>
+        /// How far the skis sink into snow that a ski cuts <paramref name="depth"/> deep, metres (Story 018). Firm snow
+        /// holds them up: in a cut no deeper than <paramref name="ridesOver"/> they ride on top, their groove behind them;
+        /// deeper, softer snow takes them down by the rest of the depth, times <paramref name="share"/>. A ski is under
+        /// 2 cm thick and wider than the rounded trench it stamps, so sunk the groomer's whole 2 cm it was buried along
+        /// its sides and looked thin (the Pine Bowl ride of build 49c1146); in powder the snow should cover it. No step
+        /// as the depth crosses <paramref name="ridesOver"/>. Allocates nothing.
+        /// </summary>
+        /// <param name="depth">How deep a ski cuts the snow there, metres (<see cref="SplatDepth"/>).</param>
+        /// <param name="ridesOver">The deepest cut the skis ride over, metres; below 0 counts as 0.</param>
+        /// <param name="share">How much of the rest of the depth they sink, 1 for all of it; below 0 counts as 0.</param>
+        /// <returns>The sink, metres; never below 0.</returns>
+        /// <example>
+        /// <code>
+        /// float sink = SnowTrench.SkiSink(snow.DepthAt(position), settings.SnowSinkRidesOver, settings.SnowSinkWeight);
+        /// </code>
+        /// </example>
+        public static float SkiSink(float depth, float ridesOver, float share) =>
+            Math.Max(0f, depth - Math.Max(0f, ridesOver)) * Math.Max(0f, share);
+
         // A splat weight of 1, as a byte.
         private const float FullWeight = 255f;
 
