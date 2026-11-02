@@ -52,10 +52,22 @@ branch's nodes. A park rider grows the park branch without grinding races.
 **Ranks** (marked R) are small: three steps of about 2 percent above today's tuning, tuned in the Feel Lab so the top
 step still feels right. **Moves** (marked M) are new; the sim gates each one on a bit in `RunSetup`.
 
-> **Measured since (2026-11-02, `gear-progression.md`, "Measured in the sim"):** steps of a few percent on grip and
-> drag move the pace by under 2%, too little to feel; only the air values (pop, spin) are felt at 4%. So the ranks on
-> grip, drag and speed below would need steps of about 8 to 15% to be noticed, or be folded into moves. The air ranks
-> can stay small.
+> **Measured since (2026-11-02):** each rank family at its top rank, applied to today's tuning, with the same scripted
+> rides in the real sim as the gear draft's skis (`gear-progression.md`, "Measured in the sim"):
+>
+> | Top rank | 2% a step (as drafted) | 5% a step | 8% a step |
+> |---|---|---|---|
+> | Edge III (ice grip up, edge ramp down) | ice carve skids 76% of the time (78% with no ranks), leaves the ice 1% faster | 72%, 2% faster | 67%, 3% faster |
+> | Race Tuck II (tuck air drag down) | top speed 127 km/h (126) | 129 | 132 |
+> | Float III (powder drag and skid drag down) | 1% faster through powder | 2% | 3% |
+> | Pop III (pop speed up, load time down) | ollie 1.57 m (1.40) | 1.87 m | 2.17 m |
+> | Swing III (spin and flip rates up) | 497° in a one-second ollie (469°) | 539° | 581° |
+>
+> So the **air ranks are right at about 2% a step**: rank III is felt (12% higher, 6% more rotation) without
+> breaking the park (at 5%, Pop III alone lands a 540 off a one-second ollie). The **snow ranks are not felt at 2%**
+> and barely at 8% (3 to 5%): today's pace is set mostly by gravity and air drag. Either give them 8% steps and
+> accept a small effect, or drop Edge and Float as ranks and leave them to the skis (the gear draft's bars move the
+> same values further), keeping Race Tuck at 8% (rank II: top speed +5%). Decision 6 below.
 
 ### Carving (from carving, racing and speed)
 
@@ -125,3 +137,6 @@ points to spare. Decision 3 asks whether it should (Bluebird ran points short on
 3. Can one rider unlock everything eventually, or should points run short so builds differ (Bluebird D2)?
 4. Which next-layer moves matter most to you, and in what order should they arrive?
 5. Respec: free at the lodge (warm and forgiving), or a cost?
+6. The snow ranks (Edge, Float, Race Tuck): 8% steps for a small but real effect, or drop Edge and Float as ranks and
+   leave grip and float to the skis (recommended: a ski choice already moves them by 15% a step; ranks on top would
+   blur what a ski is for)? Race Tuck stays either way, at 8% a step.

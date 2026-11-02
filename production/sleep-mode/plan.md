@@ -24,7 +24,8 @@ in CI and ridden here; their sign-off and the Unity editor check stay the user's
 | 11 | Refill (fix, story 018): the skis were thin and half buried on the groomer (Pine Bowl, build 49c1146); they now ride on top of a cut 2 cm deep or less and sink by the rest of a deeper one | dev-story | done: ridden in the CI build (Pine Bowl and the test slope: skis full width; powder: still sunk) | b92d0be, (this commit) |
 | 12 | Brainstorm, more specific: the gear draft's skis measured in the sim (each bar alone and the eight skis), and the per-step shares fixed so a ski is felt | (design draft) | done | 04f4af9 |
 | 13 | Brainstorm, more specific: the story draft's act 2, mission by mission, with what each mission needs beyond today's riding | (design draft) | done | 99a9556 |
-| 14 | Brainstorm, more specific: the story draft's acts 3 and 4, mission by mission | (design draft) | done | (this commit) |
+| 14 | Brainstorm, more specific: the story draft's acts 3 and 4, mission by mission | (design draft) | done | 6a6fb0c |
+| 15 | Brainstorm, more specific: the skill tree's ranks measured in the sim at their top rank (2, 5 and 8% a step) | (design draft) | done | (this commit) |
 
 ## Left for the PC
 - story-008, 009, 010, 011, 012, 013, 014, 015, 016: In Review, waiting on the user's playtest and sign-off.
