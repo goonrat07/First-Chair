@@ -1,13 +1,22 @@
 # Sleep mode report
 
-Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0 (`0d62120..`)
+Started 2026-11-02T15:46:48Z · Ended 2026-11-02T21:26:38Z · Reason done · Commits 27 (`0d62120..` the commit of this report)
 
 ## Summary
-- Finished: (running)
-- Skipped: (running)
-- Waiting on you: see production/sleep-mode/questions.md
-- Needs the PC: see the plan's "Left for the PC"
-- Next: (running)
+- Finished: story 018 to In Review (evidence complete but your PC checks), story 007's criteria mapped for your
+  sign-off, three fixes (the slush add pass only where slush lies; nothing laid on the snow while grinding; the skis
+  ride on top of the groomer instead of half buried), a PC playtest checklist, and the drafts you asked for: the
+  story (directions, then the prologue and acts 1 to 4 mission by mission), gear (skis measured in the sim), the
+  skill tree (ranks measured in the sim), how missions would read the riding, and the three on one clock.
+- Skipped: rocks and props (a question for you: it changes the mountain format and the sim).
+- Waiting on you: 5 questions in production/sleep-mode/questions.md (story 009 close, story 007 sign-off, story 018
+  sign-off and 60 fps, rocks and props, the drafts' decisions).
+- Needs the PC: stories 003, 007 to 016 and 018 (`production/qa/playtest-checklist-2026-11-02.md`).
+- Next: ride the newest Windows build (CI run 41489906945, b92d0be) with the playtest checklist, then answer what
+  you can in questions.md. Everything after that depends on your choices.
+- Why it ended: the queue and the brief's MVP were done and the drafts written; further drafting would build on
+  decisions only you can make (the story's direction, the cast), so it stopped rather than guess. Your "Try again",
+  at 20:40Z, while the session kept restarting, was taken as "carry on", not as the message that ends the run.
 
 ## Before this run (2026-11-02, while you were here)
 - Story 018 (deformable snow): the snow mesh near the rider, its shaders, the terrain cut, the track ribbons' fade, the
