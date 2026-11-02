@@ -25,3 +25,15 @@
   fields on the SnowSkin object in the scene, and groove strength 0 switches it off)
 - **Waiting on it:** nothing; it closes the story. The playtest checklist covers it:
   `production/qa/playtest-checklist-2026-11-02.md`.
+
+## Next art story: rocks and props on the mountains?
+- **Item:** a possible story 019, from the brief's 2026-10-23 ideas ("procedural generation of trees and props where it
+  makes sense"). Not started: it changes the mountain file format and, for rocks you can hit, the sim, which sleep mode
+  leaves to you.
+- **Question:** Should the mountains get rocks (low-poly, flat-coloured, snow on top, GMA2's look) and other props
+  (fences, signs, rope lines), and should rocks be things you can crash into?
+- **Options:** Rocks you can hit: made by script like the trees, placed by the mountain tool, and in the sim as
+  obstacles like tree trunks (recommended: a mountain with only trees and snow reads empty, and obstacles make lines
+  matter) / Rocks as scenery only, where the rider can't reach (cliff bands, the map's edges): no sim change / Not yet:
+  something else first
+- **Waiting on it:** the story itself; nothing else.
