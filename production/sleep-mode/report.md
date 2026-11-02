@@ -18,3 +18,12 @@ Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0
 - **On your PC:** reset `Assets/Data/Riding/LightingSettings.asset` (or delete it so the scene builder makes a new
   one): the old asset keeps story 017's groove values, which no longer exist, and misses story 018's depths.
 - Story 017 is superseded: folded into 018. The snow research is saved in `docs/research/snow-deformation.md`.
+
+## story-007-first-art-pass (In Review)
+- Changed: `production/epics/first-chair/story-007-first-art-pass.md` (Status In Review, six criteria ticked with where
+  each was met, an As built section); `production/qa/evidence/story-007-first-art-pass-evidence.md` (new: the map of
+  criteria to evidence, and the sign-off row).
+- Verdict (story-done): NOT ASSESSED: 6 of 7 criteria covered; the seventh is the user's sign-off. Left open.
+- Decisions made for you: the story goes to In Review rather than staying Ready, since its build work is done; it
+  does not close without your sign-off.
+- Not verified: the look on a real GPU and in the Unity Editor.

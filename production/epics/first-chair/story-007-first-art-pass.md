@@ -1,12 +1,12 @@
 # Story 007: First art pass toward the target look
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: Ready
+> **Status**: In Review
 > **Layer**: Presentation
 > **Type**: Visual/Feel
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: [set by /dev-story when implementation begins]
+> **Last Updated**: 2026-11-02
 
 ## Context
 
@@ -28,13 +28,13 @@
 
 *From `design/game-brief.md` (MVP feature 7; Art direction: "realistic-leaning light and snow with clean, low-detail models and flat colors, after Grand Mountain Adventure 2"):*
 
-- [ ] A rigged skier (`CH_Skier`) is built with the blender-image-to-3d skill within the First Chair budget (5k to 10k tris at LOD0). It wears `PR_Ski` and `PR_SkiPole` on its foot and hand sockets.
-- [ ] The skier's pose is driven from sim state (lean from edge angle, crouch from tuck and pop load), with authored clips for tuck, grabs and crashes. The pose never feeds back into the sim.
-- [ ] Glade conifers come from a new tree skill in the same gated format: 300 to 1,500 tris, a flat far version (billboard), and GPU instancing in Unity.
-- [ ] Snow trails: a render texture is stamped where skis touch, and a URP snow shader reads it as bump and detail. The trails are display only.
-- [ ] A bluebird-day lighting preset gives soft shadows, blue-tinted shadows on snow and snow sparkle.
-- [ ] Equipment colours are chosen against snow, so the poles read at the follow camera. They currently almost vanish (`.claude/skills/blender-image-to-3d/FIRST-CHAIR.md`, Lessons).
-- [ ] Retained screenshots from the follow camera, plus sign-off, are in `production/qa/evidence/`.
+- [x] A rigged skier (`CH_Skier`) is built with the blender-image-to-3d skill within the First Chair budget (5k to 10k tris at LOD0). It wears `PR_Ski` and `PR_SkiPole` on its foot and hand sockets. *(Story 012: 5,897 tris at LOD0 with helmet and boots, the body 4,801 after the user's rounder pass; 20 bones, 4 sockets.)*
+- [x] The skier's pose is driven from sim state (lean from edge angle, crouch from tuck and pop load), with authored clips for tuck, grabs and crashes. The pose never feeds back into the sim. *(16 clips blended from sim state, the five grabs here, the procedural layers of story 013.)*
+- [x] Glade conifers come from a new tree skill in the same gated format: 300 to 1,500 tris, a flat far version (billboard), and GPU instancing in Unity. *(The tree kit, EN_Conifer's billboard and instancing here, story 016's four variants.)*
+- [x] Snow trails: a render texture is stamped where skis touch, and a URP snow shader reads it as bump and detail. The trails are display only. *(Story 017's stamped map, folded into story 018: the snow mesh near the rider is pushed down by it, so the trails have real depth.)*
+- [x] A bluebird-day lighting preset gives soft shadows, blue-tinted shadows on snow and snow sparkle. *(The lighting pass here, `LightingSettings`; story 014's blue shade and glints.)*
+- [x] Equipment colours are chosen against snow, so the poles read at the follow camera. They currently almost vanish (`.claude/skills/blender-image-to-3d/FIRST-CHAIR.md`, Lessons). *(Graphite pole shafts, 8.5:1 against sunlit snow.)*
+- [ ] Retained screenshots from the follow camera, plus sign-off, are in `production/qa/evidence/`. *(The screenshots are in; the sign-off is the user's: `production/qa/evidence/story-007-first-art-pass-evidence.md`.)*
 
 ---
 
@@ -120,8 +120,8 @@
     tree lines or the glade is closed. Seen in build 40120266835: a left traverse from the start runs into the western
     tree line, with the forest strip behind it up to the map's edge, all snow-laden conifers with long blue shadows.
     Evidence: `production/qa/evidence/story-007-first-art-pass/2026-10-24-build-40120266835-west-tree-line-and-forest.png`.
-  - [ ] Tracks should build up where skiers pass, as in GMA2, not sit as streaks on a static texture. This belongs
-    to the custom snow shader.
+  - [x] Tracks should build up where skiers pass, as in GMA2, not sit as streaks on a static texture. This belongs
+    to the custom snow shader. *(Done: the ribbons that stay, 2026-10-26, and story 018's trenches near the rider.)*
     Step one, sleep mode 2026-10-26 (commit 716391a): each ski lays a ribbon on the snow that stays (`TrackRibbon`,
     `SkiTrack`), kept up to 12 km of track a ski, across runs and resets, and the live and old track materials are
     translucent so crossings show darker. Seen in build 40278892710: after a restart at the top, the first run's
@@ -132,6 +132,29 @@
 - **Snow shaders (user, 2026-10-23):** GMA2's semi-realistic look comes largely from its own snow and terrain
   shaders. Build them here, after a rough gameplay demo exists: the snow trail and sparkle criteria above, plus
   whatever else gets the snow to read like GMA2's (soft blue shading, sparkle, deformable tracks).
+
+---
+
+## As built (2026-10-24 to 2026-11-02)
+
+This story is the brief's art item; its criteria were met across sleep-mode work here and stories 012 to 018, each
+with its own evidence. The map, criterion by criterion, with the evidence to look at:
+`production/qa/evidence/story-007-first-art-pass-evidence.md`. Every Unity-side piece is not verified in the editor;
+the look sign-off is the user's, on the PC.
+
+- **Skier:** CH_Skier through the blender-image-to-3d skill (story 012's detail pass and the user's rounder pass on
+  2026-11-02): 5,897 / 4,673 / 2,523 tris at LOD0 / 1 / 2 with helmet and boots, inside 5k to 10k at LOD0; skis and
+  poles on its sockets.
+- **Pose:** 16 clips (stance, carves, tuck, crouch, air, brake, pole, crash, five grabs, two race carves) blended by
+  weights from sim state, and story 013's procedural layers (lean, springs, legs on the snow, pole plants). Read
+  only: nothing in the view writes rider state.
+- **Trees:** the tree kit (EN_Conifer, gated 300 to 1,500 tris), its billboard LOD, GPU instancing on the imported
+  materials, and story 016's slim fir, broad spruce, young spruce and snag.
+- **Snow trails:** the ribbons that stay across runs (2026-10-26), story 017's stamped map of where the skis went, and
+  story 018's snow mesh, pushed down by that map into trenches with raised rims, as deep as each snow type sets.
+- **Lighting:** `LightingSettings` (2026-10-26), live in the Feel Lab's Light tab, and story 014's blue shade, soft
+  terminator, glints and wind ripples.
+- **Equipment colours:** graphite pole shafts with red grips and baskets; the skis' orange topsheet kept.
 
 ---
 
@@ -164,7 +187,8 @@
 **Story Type**: Visual/Feel
 **Required evidence**: a retained screenshot in `production/qa/evidence/` and sign-off in `production/qa/evidence/story-007-first-art-pass-evidence.md`. These are not waived at `qa.level: minimal`.
 
-**Status**: [ ] Not yet created
+**Status**: [x] Created: `production/qa/evidence/story-007-first-art-pass-evidence.md` (2026-11-02); its sign-off
+rows wait on the user.
 
 ---
 

@@ -6,3 +6,11 @@
 - **Options:** Close it (then tune further in the Feel Lab as new stories) / Keep it open and tell me what feels off
   (recommended if anything feels wrong: say it in your own words, and paste Feel Lab "Copy values" if you tuned)
 - **Waiting on it:** nothing; the story's code and evidence are in.
+
+## Story 007: sign off the first art pass?
+- **Item:** story-007-first-art-pass (In Review since 2026-11-02)
+- **Question:** Its six build criteria are met across this story and stories 012 to 018 (the map:
+  `production/qa/evidence/story-007-first-art-pass-evidence.md`). Does the look, on your PC, sign it off?
+- **Options:** Approve (tick the sign-off row and the story closes) / Not yet: name what is off (the story stays open
+  and what you name becomes its next work) (recommended: ride the latest build first)
+- **Waiting on it:** nothing; it only closes the story.
