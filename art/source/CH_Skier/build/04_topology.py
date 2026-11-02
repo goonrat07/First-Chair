@@ -67,7 +67,7 @@ OUTLINE_MAX = 0.006        # larger shrinkage is not patched (it would make a sp
 DIRS = (Vector((0, 0, 1)), Vector((0, 1, 0)), Vector((0, -1, 0)))   # mirror-symmetric ray directions
 STATS = {"interior_faces_removed": {}, "stray_islands_removed": {}, "outline_fixes": {}, "loops": {
     "neck": "hood rings z 1.39/1.4075/1.425/1.435/1.445, neck warmer 1.385/1.4075/1.43",
-    "shoulder": "sleeve rings 0/.04/.08/.13 m from the joint, shoulder puff 8 latitude rings, jacket 1.30/1.38/1.40",
+    "shoulder": "sleeve rings 0/.04/.08/.13 m from the joint, shoulder puff 12 latitude rings, jacket 1.30/1.38/1.40",
     "elbow": "sleeve rings .235/.29/.345 m from the shoulder (elbow at .29)",
     "wrist": "sleeve end .52, cuff rings -.04/-.02/0/+.02 m about the wrist",
     "spine": "jacket rings .93/1.02/1.085/1.15",

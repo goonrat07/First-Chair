@@ -169,7 +169,9 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
            that at 1440p. Budget: body 5k to 8k at LOD0, 2k to 4k at LOD1, about 1k at LOD2; helmet with goggles and
            each boot 100 to 600. Built (Phase 9, 2026-10-27): body 4,269 / 3,171 / 1,262; helmet 584; each boot 256 (shell
            120 + cuff 136); with props 5,365 / 4,267 / 2,358. 20 bones, 4 sockets, 16 clips. Body LOD0 is under the
-           story's 5k floor and LOD2 above about 1k (see Decisions).
+           story's 5k floor and LOD2 above about 1k (see Decisions). Rounder pass (2026-11-02, the user giving the
+           shoulders, sleeves and jacket back more triangles): body 4,801 / 3,577 / 1,427; with props 5,897 / 4,673 /
+           2,523.
 ```
 
 ## Decisions
@@ -312,8 +314,12 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
     helmet has 5 submeshes (was 4), each boot cuff 3 (the power strap is goggle-frame dark; was 2), each boot shell 2.
   - **Body LOD0 is 4,269, under the story's 5k floor.** The floor was an estimate of what rounder sections would cost.
     Every section that facets at the chase camera was made rounder and every listed detail was added; more triangles
-    would mostly smooth the flat facets that are the style. Waiting on the user's call (story 012): a rounder pass
-    (shoulders, sleeves, jacket back) is a constants change and a rebuild.
+    would mostly smooth the flat facets that are the style. The user's call (2026-11-02): spend more on the shoulders,
+    sleeves and jacket back. Done as a constants change and a full rebuild: 13 points over the back of each jacket
+    ring (was 9), 24-sided sleeves (was 20), shoulder puffs 24 x 14 (was 16 x 10). Body LOD0 4,801, LOD1 3,577, LOD2
+    1,427; about 800 more were estimated, but Phase 4 keeps only the outer part of each shoulder puff, which the
+    jacket mostly hides. Every gate passes again (below), the seat check passes in all 16 clips, and the FBX round
+    trip is clean.
   - **LOD2 is 1,262, above the about 1k asked.** Decimation protects material boundaries so the stripes stay straight,
     and the new drawcord rows and yoke hold the jacket at 233. LOD2 leaves out the pocket flaps and cargo pockets
     (under a pixel wherever LOD2 is shown); Seat, Hood, Nose, Trousers and ThumbTip keep higher ratios so no part
@@ -354,6 +360,16 @@ TARGET     Unity 6.3 LTS (URP), FBX (--engine unity; rigged, so Blender's defaul
 | 012 LOD1 | back | 0.9759 | 0.0057 | - | |
 | 012 LOD2 (body 1,262) | front | 0.9705 | 0.0086 | - | |
 | 012 LOD2 | side | 0.9550 | 0.0172 | - | |
+| rounder forms (2026-11-02) | front | 0.9764 | - | - | back 13, sleeves 24, shoulder puffs 24 x 14 |
+| rounder forms | side | 0.9571 | - | - | |
+| rounder forms | back | 0.9764 | - | - | |
+| rounder LOD0 (body 4,801) | front | 0.9764 | 0.0057 | - | floor 0.9756; IoU against the forms 1.0000 |
+| rounder LOD0 | side | 0.9569 | 0.0172 | - | floor 0.9562; against the forms 0.9996 |
+| rounder LOD0 | back | 0.9764 | - | - | |
+| rounder LOD1 (body 3,577) | front | 0.9748 | 0.0057 | - | against the forms 0.9981 |
+| rounder LOD1 | side | 0.9573 | 0.0172 | - | |
+| rounder LOD2 (body 1,427) | front | 0.9592 | 0.0086 | - | against the forms 0.9739: the decimated mittens and hood lose a little; LOD2 draws only far off |
+| rounder LOD2 | side | 0.9555 | 0.0172 | - | |
 | 012 LOD2 | back | 0.9705 | 0.0086 | - | |
 
 Story 012 checks (2026-10-27). Forms measured (`review/03_forms/measure.json`): height 1.7505, fingertip span 1.5306

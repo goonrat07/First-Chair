@@ -90,8 +90,9 @@ inferred.
   (`production/qa/evidence/story-012-skier-detail-pass/evidence.md`).
 - **Not met as written: the body's budget.** LOD0 is 4,269, under the 5k floor: every section that faceted at the chase
   camera got more sides and every detail is in, and more would mostly smooth the flat facets that are the style. LOD2
-  is 1,262, above about 1k, because decimation keeps the stripes' boundaries. Both are in the asset brief; the first
-  waits on the user's call (`production/sleep-mode/questions.md`).
+  is 1,262, above about 1k, because decimation keeps the stripes' boundaries. Both are in the asset brief. The user's
+  call (2026-11-02): give the shoulders, sleeves and jacket back more. Rebuilt with a rounder back, sleeves and
+  shoulder puffs: body 4,801 / 3,577 / 1,427, every gate and the seat check passing (asset brief, Gate results).
 - **Found in passing:** in both builds the ski tracks were drawn over the back half of each ski once moving (the
   ribbon sits 15 mm off the snow, the ski's top 17 mm, and the ribbon was laid from under the boot). Not this story's;
   fixed separately so tracks start at the ski's trailing end, seen in story 013's build.
@@ -104,8 +105,8 @@ inferred.
   for navy inside the jacket's outline.
 - [ ] Budget: body LOD0 5k to 8k triangles, LOD1 2k to 4k, LOD2 about 1k; helmet with goggles, each boot, each ski
   and each pole 100 to 600; `validate.py --budget-tris 10000` passes; no unweighted vertices or more than 4
-  influences. *Not met as written: body LOD0 4,269 and LOD2 1,262 (As built); the rest holds (helmet 584, each boot
-  256, each ski 456, each pole 400).*
+  influences. *Not met as written: body LOD0 4,269 and LOD2 1,262 (As built), then 4,801 and 1,427 after the user's
+  rounder pass (2026-11-02); the rest holds (helmet 584, each boot 256, each ski 456, each pole 400).*
 - [x] The skis' bindings and the poles' grips and baskets read from the chase camera; the ski and pole sockets, sizes
   and origins are unchanged, and their round-trip checks pass.
 - [x] The rig, sockets and 16 clips keep their names; the FBX round-trip check passes (triangles per LOD,

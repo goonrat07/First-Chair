@@ -37,9 +37,10 @@ P = REFS["proportions_m"]
 PALETTE = {k: v["hex"] for k, v in REFS["palette"].items()}
 C = "HIGH"
 
-# RING COUNTS (story 012: rounder for the chase camera). Phase 4 builds from the same constants.
-JACKET_BACK_N = 9            # points over the back half of each jacket ring, side to side (was 5)
-SLEEVE_N = 20                # sleeve sides (was 16); the stripe is the last column, centred on the outside
+# RING COUNTS (story 012: rounder for the chase camera; the back, sleeves and shoulders again on 2026-11-02, the
+# user approving about 800 more triangles there). Phase 4 builds from the same constants.
+JACKET_BACK_N = 13           # points over the back half of each jacket ring, side to side (was 5, then 9)
+SLEEVE_N = 24                # sleeve sides (was 16, then 20); the stripe is the last column, centred on the outside
 CUFF_N = 16                  # (was 12)
 SEAT_N = 16                  # (was 12)
 LEG_N = 16                   # trouser sides (was 12)
@@ -48,8 +49,8 @@ NECK_N = 18                  # neck warmer (was 14)
 STRAP_N = 20                 # goggle strap ring points (was 16)
 THUMB_N = 10                 # (was 8)
 MITTEN_SEGS = 3              # mitten bevel segments (was 2)
-UV = {"head": (16, 10), "helmet": (20, 12), "shoulder": (16, 10), "thumbtip": (10, 8), "knee": (10, 8)}  # was
-#   12x8, 16x10, 12x8, 8x6, 8x6
+UV = {"head": (16, 10), "helmet": (20, 12), "shoulder": (24, 14), "thumbtip": (10, 8), "knee": (10, 8)}  # was
+#   12x8, 16x10, 12x8 (then 16x10), 8x6, 8x6
 # FORMS CHOICES (metres). Jacket sections (z, half width, half depth): a puffy chest and a slight hem flare. Story
 # 012 adds rings for the drawcord line (0.845 to 0.87) and the yoke stripe (1.285 to 1.315, replacing 1.30 and
 # keeping its profile).

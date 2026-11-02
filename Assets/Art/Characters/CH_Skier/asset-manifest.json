@@ -1,6 +1,6 @@
 {
   "asset": "CH_Skier",
-  "generated": "2026-10-27T02:48:07",
+  "generated": "2026-11-02T01:25:08",
   "blender": "5.2.2 LTS",
   "source": "/home/user/First-Chair/art/source/CH_Skier/CH_Skier_master.blend",
   "target_engine": "unity",
@@ -46,9 +46,9 @@
         "CH_Skier_BootShell_R",
         "CH_Skier_BootCuff_R"
       ],
-      "tris": 5365,
+      "tris": 5897,
       "objects_tris": {
-        "CH_Skier_Body_LOD0": 4269,
+        "CH_Skier_Body_LOD0": 4801,
         "CH_Skier_Helmet": 584,
         "CH_Skier_BootShell_L": 120,
         "CH_Skier_BootCuff_L": 136,
@@ -61,9 +61,9 @@
       "objects": [
         "CH_Skier_Body_LOD1"
       ],
-      "tris": 3171,
+      "tris": 3577,
       "objects_tris": {
-        "CH_Skier_Body_LOD1": 3171
+        "CH_Skier_Body_LOD1": 3577
       }
     },
     {
@@ -71,9 +71,9 @@
       "objects": [
         "CH_Skier_Body_LOD2"
       ],
-      "tris": 1262,
+      "tris": 1427,
       "objects_tris": {
-        "CH_Skier_Body_LOD2": 1262
+        "CH_Skier_Body_LOD2": 1427
       }
     }
   ],
@@ -536,11 +536,11 @@
   ],
   "dependencies": [],
   "body_tris_per_lod": {
-    "LOD0": 4269,
-    "LOD1": 3171,
-    "LOD2": 1262
+    "LOD0": 4801,
+    "LOD1": 3577,
+    "LOD2": 1427
   },
-  "lod_note": "Unity builds a LODGroup from CH_Skier_Body_LOD0/1/2. Helmet and boots carry no LOD suffix, so they are counted in LOD0 here and render at every LOD: totals with props are LOD0 5365, LOD1 4267, LOD2 2358.",
+  "lod_note": "Unity builds a LODGroup from CH_Skier_Body_LOD0/1/2. Helmet and boots carry no LOD suffix, so they are counted in LOD0 here and render at every LOD: totals with props are LOD0 5897, LOD1 4673, LOD2 2523.",
   "materials_detail": [
     {
       "name": "M_CH_Skier_Boot",

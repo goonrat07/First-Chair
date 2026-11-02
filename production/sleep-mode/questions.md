@@ -7,7 +7,7 @@
   (recommended if anything feels wrong: say it in your own words, and paste Feel Lab "Copy values" if you tuned)
 - **Waiting on it:** nothing; the story's code and evidence are in.
 
-## Story 012: is the skier round enough?
+## Story 012: is the skier round enough? (answered 2026-11-02: give it the triangles; done, body LOD0 4,801)
 - **Item:** story-012-skier-detail-pass (In Progress)
 - **Question:** The detailed body is 4,269 triangles at LOD0, under the 5k floor the story set. Every section that showed
   facets at the chase camera got more sides, and every listed detail is in (stage sheet:
