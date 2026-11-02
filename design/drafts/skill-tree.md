@@ -90,7 +90,7 @@ step still feels right. **Moves** (marked M) are new; the sim gates each one on 
 
 | Node | Kind | What it does | Sim values or rule |
 |---|---|---|---|
-| Float I to III | R | Stay up and turn in deep snow | `PowderDrag` down, `PowderTurnFactor` up |
+| Float I to III | R | Keep speed through deep snow, straight and turning | `PowderDrag`, `PowderSkidDrag` down (not the turn factor: raised, it made a powder ski slower through turns; `gear-progression.md`) |
 | Flow Keeper I to II | R | Flow lasts longer before draining | `FlowDrainDelay` up |
 | Tree Sense | M | Gaps between trees glow faintly at speed; tree wells show | view hint from sim gap data (an assist, off on the hardest setting) |
 | Pillow Lines | M | Drops off snow pillows score, and land softer | scoring and landing rule |
