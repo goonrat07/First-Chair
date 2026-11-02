@@ -166,6 +166,67 @@ spot, can't be failed, and ends on the snow.
 - **Combos** (2-8): keep the mission and build combos as their own story first, or move it to the post-game until
   combos exist.
 
+## Acts 3 and 4, mission by mission
+
+### Act 3: Storm Cycle (deep winter)
+
+A three-day storm buries the mountain. The act is the game's most serious stretch: the burial in 3-6 is played
+straight (short, urgent, everyone found in time), and the rest of the act is the joy of the powder after it.
+
+| # | Mission | Giver, where | Objectives | Teaches | Opens or gives | Needs |
+|---|---|---|---|---|---|---|
+| 3-1 | Beacon, Probe, Shovel | Hank, at the patrol room's training field | Find three practice beacons by riding toward a rising signal, then probe and dig each | The beacon search | The beacon, probe and shovel (`gear-progression.md`) | A beacon readout (the game layer reads the rider's position); a dig action |
+| 3-2 | Storm Day One | June, at the Express in falling snow | Ride the groomers as they fill in: the same runs, deeper each lap | Snow that changes under you | The storm's laps | A weather state that turns groomed snow to powder over the day |
+| 3-3 | The T-Bar | Hank, at the Ridge T-bar | Ride the T-bar up (it pulls you on the snow), then the first ridge run | Surface lifts; the ridge | The powder bowls | A surface lift: the rider towed in the sim |
+| 3-4 | Float | Wren, at the bowl's lip | Ride the bowl top to bottom without stopping in the deep snow | Keeping speed in powder | The Pillow ski | Deep powder that slows a rider (the gear draft's decision 7) |
+| 3-5 | Ski Cut | Hank, at the closed bowl's rope | Watch Hank cut the slope (a slab slides below him), then ride the safe line he marks | Why the ropes are there | Respect for closures | A scripted slab slide (view only) |
+| 3-6 | The Burial (set piece) | Bowie, barking at the rope line | A guest skied past the closure and a slide caught them. Search with Hank: beacon, probe, dig, against a clock that can't run out but feels like it | What the training was for | Hank's trust; the patrol jacket (cosmetic) | 3-1's search, on a slide's debris |
+| 3-7 | Bluebird | Cass, at the bowl's lip the morning after (Cass helped dig) | Ride the sunny bowl side by side with Cass; nobody keeps score | The rivalry turns to respect | Cass as a friend who still wants to beat you | A second rider on the slope (a recorded run or a bot) |
+| 3-8 | The Couloir | Hank, at the top of the couloir | Ride the narrow chute top to bottom, no crash | Steeps in deep snow | The Charger ski | A couloir (the mountain tool) |
+| 3-9 | Thaw | June, at the lodge | Bring the Pulse to its third mark; then the act's closing scene: the first warm afternoon, and June's festival poster | The season turning | Act 4 | (the radio) |
+
+**Sample lines:**
+
+- **Hank** (3-1): "The beacon beeps faster when you're close. Bowie does the same."
+- **June** (3-2): "Snow's a rumour until it's on the ground. It's on the ground."
+- **Wren** (3-4): "Don't sit back. Let the snow carry you."
+- **Hank** (3-6, after): "You did it right. That's the whole job."
+- **Cass** (3-7): "I came to beat you. I stayed to dig. Weird week."
+
+### Act 4: Last Chair (spring)
+
+Every lift runs. The snow is ice in the morning and slush by afternoon. The act ends the story at the festival and the
+season's last chair.
+
+| # | Mission | Giver, where | Objectives | Teaches | Opens or gives | Needs |
+|---|---|---|---|---|---|---|
+| 4-1 | Corn O'Clock | Mo, at the lift shack | Ride the same run at nine (ice) and at two (slush); beat Mo's time at the better hour | Spring snow by the hour | Mo's spring challenge | Time of day that changes the snow |
+| 4-2 | Dex's Line | Dex, at the park | Practise the festival's slopestyle line: every feature, any tricks | Linking a whole line | The festival's slopestyle | (combos, if built) |
+| 4-3 | Dual | Ilse, at the dual course | Race Ilse side by side, best of three | Racing someone, not a clock | The festival's race | Two riders on one course |
+| 4-4 | Pillow Line | Wren, at the spring glade | Ride the glade's pillows (soft drops) with Flow full | Small drops in soft snow | The festival's freeride | Pillows (the mountain tool) |
+| 4-5 | Sweep | Hank, at the summit at closing | Ride the last sweep: every run on the upper mountain, checking for anyone left | The whole mountain | Hank's thanks | A route past each run's checkpoint |
+| 4-6 | Video Part | Tavi, at the base | Three shots anywhere on the mountain; Tavi's cut of your season plays at the festival | Your own riding as a film | Your video part | Clips and the replay editor (out of the MVP) |
+| 4-7 | Pond Skim | Mo and June, at the base pond | Skim across the meltwater pond at the base in a costume | Speed across water | Costume cosmetics | Water as a sim surface |
+| 4-8 | The Festival | June, at the festival stage | Three events against Cass and the locals (slopestyle, dual race, freeride); you place in all three whatever the result | Everything, under pressure | The season's end | The events from 4-2 to 4-4 |
+| 4-9 | Last Chair (set piece) | June, at the Express at sunset | Ride the season's last chair up with June, the whole cast on the chairs behind; ride down together; the credits roll as you ride | Why it mattered | The post-game road trips | A crowd of riders on the lift and the slope |
+
+**Sample lines:**
+
+- **Mo** (4-1): "Spring skiing is two sports. The morning one hurts."
+- **Ilse** (4-3): "No ghosts today. Just me. I don't show off."
+- **Tavi** (4-6): "The light's going gold. Do something you'll remember."
+- **June** (4-9, on the last chair): "Sixty-two years now. You're why it's not sixty-one."
+
+**Options for acts 3 and 4:**
+
+- **The burial** (3-6): played straight as above, lighter (the "guest" is a crash-test dummy in Hank's drill), or
+  left out (the act turns on the storm alone). Recommended: as above, short, nobody hurt; it gives the act its
+  weight and pays off 3-1.
+- **The festival's results** (4-8): fixed (you win one, Cass wins one, a local wins one), or played for real with
+  any result accepted. Recommended: for real; the ending doesn't change, only the trophies.
+- **Out of the MVP and needed here:** weather and time of day changing the snow, surface lifts, combos, the replay
+  editor, water. Each is its own story; acts 3 and 4 can't ship before them.
+
 ## What the story needs that doesn't exist yet
 
 - A **game layer** that reads sim events after each step (missions, payouts, the story director). Bluebird's rule
