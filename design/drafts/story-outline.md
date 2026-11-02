@@ -127,6 +127,45 @@ the tone, not final.
 **Cass, the rival**, first appears in act 2, winning Dex's slopestyle with a run the player watches from the lift;
 act 1 only plants them through Mo's gossip ("There's a kid from Summit Peak who skis like the mountain owes them money").
 
+## Act 2, mission by mission
+
+Midwinter: the upper mountain opens. Act 1 used only what the game does today; act 2 is where the game must grow, so
+each mission says what it needs (**needs**) beyond today's riding. Same rules: a mission starts at a cast member's
+spot, can't be failed, and ends on the snow.
+
+| # | Mission | Giver, where | Objectives | Teaches | Opens or gives | Needs |
+|---|---|---|---|---|---|---|
+| 2-1 | Two Winters of Rust | Hank, at the Summit chair's bottom station | Ride the traverse under the shut chair, past each tower's marker, and call out the ones with ice on the cable (ride close to them) | Reading new terrain; ice | The night run | Tower markers on the mountain |
+| 2-2 | The Night Run (set piece) | June, Hank and Mo, at the Summit chair at dusk | Ride the Summit chair's first chair in two winters, under the lights; then the first run down the upper groomer by headlamp | The upper mountain | The headlamp; night runs (`gear-progression.md`) | A night lighting state; lit runs |
+| 2-3 | Steeper Than It Looks | Mo, at the top of the steeps | Ride the black groomer top to bottom with no crash, then again under a time | Speed control on the steeps: skid to slow, carve to go | Mo's steeps challenge | A steep run (the mountain tool) |
+| 2-4 | Gate Keeping | Ilse, at the race start | Run the upper course clean, then beat Ilse's line, shown as a ghost | Racing lines: where to carve, where to tuck | Ilse's first race (2-5) | Gates and timing; ghosts (replays drawn as riders) |
+| 2-5 | Ilse's Cup | Ilse, at the timing hut | A two-run race against three locals; any podium wins | Racing under pressure | A ski from the race track (`gear-progression.md`: Corduroy) | Bots (Bluebird's `bots.ts`) or recorded local runs |
+| 2-6 | Bigger Air | Dex, at the big line's top | Land a 360, then a flip, on the big kickers | Bigger air; spins and flips | Dex's Big Air (2-7) | A big-air jump line |
+| 2-7 | Big Air Night | Dex, at the big line, under the lights | Three jumps, best two scores count. **Cass** wins it; the player watches Cass's last jump from the lift | Scoring a run | Cass, and the rivalry | A run score over several tricks; Cass's run, recorded |
+| 2-8 | Line Linking | Tavi, at the park's top | Link three features without touching plain snow between them: a combo | Combos | Tavi's second clip | **Combos (out of the MVP: the next riding layer)** |
+| 2-9 | Black Glade | Wren, at the tree line under the summit | Follow Wren's ghost through the black glade; finish with Flow above three-quarters | Tight trees at speed | Wren's black glade challenge | A black glade (the tree kit and the mountain tool) |
+| 2-10 | Forecast | June, at the lodge | Bring the Pulse to its second mark; then the act's closing scene: the radio calls a three-day storm, and Hank says to come in early tomorrow | Why the season hangs on the storm | Act 3 (the Ridge T-bar) | (the radio) |
+
+**Sample lines:**
+
+- **Hank** (2-1): "Two winters shut. The cable remembers. Bowie doesn't like tower six."
+- **June** (2-2, on the chair, at night): "My father ran this chair by lantern once. We have better lanterns."
+- **Mo** (2-3): "Black runs are just blue runs that stopped being polite."
+- **Ilse** (2-4): "Don't watch my ghost. Watch the gates. The ghost is showing off."
+- **Dex** (2-6): "Big air is small air with ambition."
+- **Cass** (2-7, a text afterwards): "Nice hill. Cute lift. See you at the next one."
+- **Tavi** (2-8): "Rail, jump, rail. No snow in between. If you touch snow, the shot dies."
+- **Wren** (2-9): "Faster now. The trees don't mind."
+
+**Options for act 2** (choose any):
+
+- **Cass in 2-7:** watched from the lift (a scripted replay, cheapest), or ridden against as a ghost the player can
+  try to beat right after (recommended: the rivalry starts with a number the player can chase).
+- **Night riding** (2-2, 2-7): it needs a night lighting state and lights along two runs. Cut it, and 2-2 becomes a
+  sunrise ride and 2-7 a daytime event; the headlamp moves to act 3.
+- **Combos** (2-8): keep the mission and build combos as their own story first, or move it to the post-game until
+  combos exist.
+
 ## What the story needs that doesn't exist yet
 
 - A **game layer** that reads sim events after each step (missions, payouts, the story director). Bluebird's rule
