@@ -1,7 +1,7 @@
 # Story 018: Deformable snow near the rider
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: In Review
 > **Layer**: Presentation
 > **Type**: Visual/Feel (the snow in a build) + Logic (the mesh, height and profile math)
 > **Estimate**: L
@@ -70,7 +70,7 @@ assemblies, built in CI and ridden in the cloud build under Xvfb with Mesa's sof
 - **The add pass only where it adds** (49c1146): the mesh draws its slush pass only while slush lies under it
   (`SplatLayerBlocks`); nothing on screen changes.
 - **Settings:** depths on the Feel Lab's Light tab (`LightingSettings`: strength 1; groomed 0.02 m, powder 0.15, crud
-  0.08, ice 0, slush 0.06; raise 0.6; the floor's tint and its strength 0.55); the sink on the View tab
+  0.08, ice 0, slush 0.06; raise 0.6; the floor's tint and its strength 0.55); the sink on the Effects tab
   (`RiderViewSettings`: share of the depth 1, easing 0.08 s); sizes on the components (`SnowSkin`: 3 cm, 3 levels, 128
   cells, 0.5 m overlap, 3 m fade, 2 cm drop; `TrackGrooves`: 32 m, 2,048 texels, 5 cm rim).
 - **Tests:** `SnowSkinLayoutTests` (7), `SnowTrenchTests` (12), `SplatLayerBlocksTests` (6); the Core tests run
@@ -88,11 +88,13 @@ assemblies, built in CI and ridden in the cloud build under Xvfb with Mesa's sof
 - [x] The mesh and the terrain build in CI for Windows and Linux with no shader errors, and nothing is drawn magenta in
   the cloud build. *(Runs 41374948805 and 41477452195, the first and the last: the four new shaders compile for every
   graphics API with no shader error in either player's log; no magenta in any ride of these builds.)*
-- [ ] From the chase camera, retained in `production/qa/evidence/story-018-deformable-snow/`: a trench with raised snow
+- [x] From the chase camera, retained in `production/qa/evidence/story-018-deformable-snow/`: a trench with raised snow
   beside it and its own shadow in powder, a shallow cut on the groomer, none on ice; the skis sunk into powder; no seam
-  where the mesh meets the terrain; switched off, the snow looks as it did before.
+  where the mesh meets the terrain; switched off, the snow looks as it did before. *(Each in `evidence.md` there;
+  switched off, 0.1 levels of 255 from the build before.)*
 - [ ] The cloud ride's frame time is recorded against the build before. On the user's PC it should hold 60 frames a
-  second (the user's check).
+  second (the user's check). *(Recorded: `2026-11-02-frame-times.md`, about 2.2 times the frame in software rendering
+  with the add pass only where slush lies. Open: the user's 60 frames a second check on the PC.)*
 - [x] No change to the sim: `dotnet test sim/` passes and replays stay exact. *(No file under
   `Packages/com.firstchair.sim/` changed; `dotnet test sim/`: 435 passed, the replay tests among them.)*
 

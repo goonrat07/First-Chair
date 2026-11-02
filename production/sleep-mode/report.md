@@ -45,3 +45,19 @@ Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0
 - Decisions made for you: none; every choice is listed as a decision for you at the end of each draft.
 - Note: one bundled shell command (commit, push and reading a ride's log) was refused by auto mode; the same commit
   on its own went through. Commands are kept simpler since.
+
+## story-018-deformable-snow (In Review)
+- Changed: the snow mesh, its shaders, the terrain cut, the track map and ribbons, the skis' footprints and sink
+  (35d91b0, 063f657, 29c86a5, before this run); each terrain's own materials (0d62120); the add pass only where slush
+  lies (49c1146, this run); the As built section, criteria 1, 2, 3 and 5 ticked, the evidence folder (12 images, the
+  frame times, `evidence.md`, a stamp).
+- Tests: 25 EditMode tests for the mesh, the trench, the CPU depth and the slush blocks (268 Core tests pass locally);
+  CI's EditMode job passes; `dotnet test sim/`: 435 passed, no sim file changed.
+- Seen in the cloud builds: real trenches with raised rims in powder, the skis sunk to the boots; a 2 cm cut on the
+  groomer; on ice no cut, the tracks tinted only; switched off, 0.1 levels of 255 from the build before; no line where
+  the mesh meets the terrain.
+- Frame time (software rendering): about 3 times the frame with the add pass always on, about 2.2 times with it only
+  where slush lies.
+- Decisions made for you: the add pass is left out where no slush lies (no visible change); the cloud rides now wait
+  for counted frames, not seconds, so a slower build still pins the rider at the same sim time.
+- Not verified: the Unity Editor; the look in motion at a real GPU's frame rate; 60 frames a second on your PC.

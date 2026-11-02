@@ -11,12 +11,12 @@ in CI and ridden here; their sign-off and the Unity editor check stay the user's
 
 | # | Item | Skill | Status | Commits |
 |---|------|-------|--------|---------|
-| 1 | story-018-deformable-snow: ride the fixed build (CI run for 0d62120) on the test slope (groomer, ice, the mesh's edge, switched off against the build before), record the frame times, evidence, As built, criteria | story-done | running | |
+| 1 | story-018-deformable-snow: ride the fixed build (CI run for 0d62120) on the test slope (groomer, ice, the mesh's edge, switched off against the build before), record the frame times, evidence, As built, criteria | story-done | done (In Review; the look sign-off and the 60 fps check are the user's) | 951fd58, (this commit) |
 | 2 | story-007-first-art-pass: map each criterion to the story and evidence that met it (stories 012 to 018), for the user's sign-off | story-done | done (In Review; sign-off is the user's) | (this commit) |
 | 3 | Brainstorm: a more specific story outline for First Chair (from the Bluebird spec's Career and cast, and research), with options | (design draft) | done: `design/drafts/story-outline.md` | 4b91dbf |
 | 4 | Brainstorm: gear progression (skis, boots, poles, clothing; what gear changes in the sim and what is cosmetic), with options | (design draft) | done: `design/drafts/gear-progression.md` | 4686ed9 |
 | 5 | Brainstorm: a skill tree (abilities, points, respec; what goes through the sim), with options | (design draft) | done: `design/drafts/skill-tree.md` | 707cb35 |
-| 6 | Refill (story 018 follow-up): the snow mesh skips its slush add pass where no slush lies under it, which changes nothing on screen; frame time measured against the build before | dev-story | queued | |
+| 6 | Refill (story 018 follow-up): the snow mesh skips its slush add pass where no slush lies under it, which changes nothing on screen; frame time measured against the build before | dev-story | done: about 11% of the frame saved in software rendering where no slush lies | 49c1146 |
 | 7 | Refill: a PC playtest checklist for the twelve stories that wait on the user (003, 007 to 016, 018): where to get the build, what to ride and look for, which Feel Lab knobs, what each answers | (doc) | done: `production/qa/playtest-checklist-2026-11-02.md` | (this commit) |
 
 ## Left for the PC

@@ -14,3 +14,14 @@
 - **Options:** Approve (tick the sign-off row and the story closes) / Not yet: name what is off (the story stays open
   and what you name becomes its next work) (recommended: ride the latest build first)
 - **Waiting on it:** nothing; it only closes the story.
+
+## Story 018: sign off the deformable snow, and does it hold 60 frames a second?
+- **Item:** story-018-deformable-snow (In Review since 2026-11-02)
+- **Question:** On your PC, do the trenches, the raised snow and the skis' sink read as skis cutting into snow, and
+  does the game hold 60 frames a second with the snow mesh on? (In the cloud's software renderer it costs about 2.2
+  times the frame; a GPU should make far less of it, but only your PC can say.)
+- **Options:** Approve both (the story closes) / The look needs changes: say what (the depths, raise and tint are on the
+  Feel Lab's Light tab, the sink on its Effects tab) / Too slow: say the frame rate (the mesh's size and spacing are
+  fields on the SnowSkin object in the scene, and groove strength 0 switches it off)
+- **Waiting on it:** nothing; it closes the story. The playtest checklist covers it:
+  `production/qa/playtest-checklist-2026-11-02.md`.
