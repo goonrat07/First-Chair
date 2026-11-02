@@ -25,7 +25,8 @@ in CI and ridden here; their sign-off and the Unity editor check stay the user's
 | 12 | Brainstorm, more specific: the gear draft's skis measured in the sim (each bar alone and the eight skis), and the per-step shares fixed so a ski is felt | (design draft) | done | 04f4af9 |
 | 13 | Brainstorm, more specific: the story draft's act 2, mission by mission, with what each mission needs beyond today's riding | (design draft) | done | 99a9556 |
 | 14 | Brainstorm, more specific: the story draft's acts 3 and 4, mission by mission | (design draft) | done | 6a6fb0c |
-| 15 | Brainstorm, more specific: the skill tree's ranks measured in the sim at their top rank (2, 5 and 8% a step) | (design draft) | done | (this commit) |
+| 15 | Brainstorm, more specific: the skill tree's ranks measured in the sim at their top rank (2, 5 and 8% a step) | (design draft) | done | 335c3d0 |
+| 16 | Brainstorm, more specific: how missions read the riding (objectives from the sim's own events, spots and gates on the mountain, act 1 as data, tests from recordings) | (design draft) | done | (this commit) |
 
 ## Left for the PC
 - story-008, 009, 010, 011, 012, 013, 014, 015, 016: In Review, waiting on the user's playtest and sign-off.
