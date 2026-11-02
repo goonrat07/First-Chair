@@ -58,7 +58,7 @@ namespace FirstChair.Riding
             _lean.localRotation = Quaternion.Euler(0f, 0f, pose.RollDegrees * settings.LeanScale);
 
             // The tracks break across a reset or a new run, so no ribbon is drawn between the two spots.
-            bool onSnow = !pose.Airborne && !pose.Crashed && !driver.Paused;
+            bool onSnow = !pose.Airborne && !pose.Crashed && !driver.Session.Current.Grinding && !driver.Paused;
             bool jumped = driver.Session.SnappedThisFrame || driver.Session != _paintedSession;
             _paintedSession = driver.Session;
             Vector3 velocity = SimCoordinatesUnity.ToVector3(driver.Session.Current.Velocity);

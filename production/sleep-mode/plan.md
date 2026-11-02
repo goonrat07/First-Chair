@@ -18,6 +18,7 @@ in CI and ridden here; their sign-off and the Unity editor check stay the user's
 | 5 | Brainstorm: a skill tree (abilities, points, respec; what goes through the sim), with options | (design draft) | done: `design/drafts/skill-tree.md` | 707cb35 |
 | 6 | Refill (story 018 follow-up): the snow mesh skips its slush add pass where no slush lies under it, which changes nothing on screen; frame time measured against the build before | dev-story | done: about 11% of the frame saved in software rendering where no slush lies | 49c1146 |
 | 7 | Refill: a PC playtest checklist for the twelve stories that wait on the user (003, 007 to 016, 018): where to get the build, what to ride and look for, which Feel Lab knobs, what each answers | (doc) | done: `production/qa/playtest-checklist-2026-11-02.md` | (this commit) |
+| 8 | Refill (fix): no tracks, footprints, trenches or spray while grinding a rail or box (the views counted a grind as on the snow) | dev-story | done | (this commit) |
 
 ## Left for the PC
 - story-008, 009, 010, 011, 012, 013, 014, 015, 016: In Review, waiting on the user's playtest and sign-off.

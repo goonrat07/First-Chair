@@ -61,3 +61,10 @@ Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0
 - Decisions made for you: the add pass is left out where no slush lies (no visible change); the cloud rides now wait
   for counted frames, not seconds, so a slower build still pins the rider at the same sim time.
 - Not verified: the Unity Editor; the look in motion at a real GPU's frame rate; 60 frames a second on your PC.
+
+## Fix: nothing laid on the snow while grinding
+- Changed: `RiderContact.OnSnow` (new, Core): not in the air, crashed, grinding a rail or box, or on the lift. The skier
+  view's tracks (and with them story 018's footprints and trenches) and the spray use it; the placeholder rider view
+  adds the grind check. Before, a grind counted as on the snow, so the ribbon (and now a trench) ran under the rail.
+- Tests: 3 EditMode tests; the grinding one failed against the old rule first. 271 Core tests pass locally.
+- Not verified: in a build on a rail (the cloud rides don't reach the park's rails yet) and in the editor.

@@ -160,7 +160,7 @@ namespace FirstChair.Riding
             _procedural?.Apply(session, _shown, driver.Paused, Time.deltaTime, _sink);
 
             // The tracks break across a reset or a new run, so no ribbon is drawn between the two spots.
-            bool onSnow = !current.Airborne && !current.Crashed && !driver.Paused;
+            bool onSnow = RiderContact.OnSnow(current, driver.Paused);
             bool jumped = session.SnappedThisFrame || session != _paintedSession;
             _paintedSession = session;
             Vector3 velocity = SimCoordinatesUnity.ToVector3(current.Velocity);
