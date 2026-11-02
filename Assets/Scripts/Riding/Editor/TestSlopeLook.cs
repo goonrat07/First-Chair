@@ -201,16 +201,20 @@ namespace FirstChair.Riding.Editor
         /// <summary>
         /// The snow mesh's materials (Story 018): its first pass with the terrain's layers 0 to 3 and, with more than four
         /// layers, its add pass with layers 4 to 7, each set as Unity sets the terrain's own, so where no track is the mesh
-        /// draws the snow exactly as the terrain does. Saved in <see cref="Folder"/>, so the build keeps their shader variants.
+        /// draws the snow exactly as the terrain does. Saved in <see cref="Folder"/>, so the build keeps their shader variants,
+        /// under names of their own for each terrain: they hold its splat maps and its tiling, so a pair shared by two
+        /// scenes drew the one built first with the other's snow (the first cloud build, 2026-11-02: the test slope's mesh
+        /// had lost its corduroy, the test mountain's was right).
         /// </summary>
-        /// <param name="data">The terrain's data, painted (its splat maps are read).</param>
+        /// <param name="data">The terrain's data, painted (its splat maps are read); its name names the materials.</param>
         /// <param name="layers">The terrain's layers, from <see cref="SnowLayers"/>.</param>
         public static Material[] SnowSkinMaterials(TerrainData data, TerrainLayer[] layers)
         {
-            Material first = SnowSkinMaterial("SnowSkin", SnowSkinShader, data, layers, 0);
+            string terrainName = "_" + data.name;
+            Material first = SnowSkinMaterial("SnowSkin" + terrainName, SnowSkinShader, data, layers, 0);
             return layers.Length <= LayersPerPass
                 ? new[] { first }
-                : new[] { first, SnowSkinMaterial("SnowSkinAdd", SnowSkinAddShader, data, layers, LayersPerPass) };
+                : new[] { first, SnowSkinMaterial("SnowSkinAdd" + terrainName, SnowSkinAddShader, data, layers, LayersPerPass) };
         }
 
         // A terrain pass draws four layers, one per splat map channel.
