@@ -104,3 +104,18 @@ Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0
 - Decisions made for you: fix the sink rather than the trench (keeps powder's buried look, which the evidence had
   already shown working); the default cut the skis ride over is the groomer's depth.
 - Not verified: in the editor, and on a real GPU in motion.
+
+## Brainstorms, more specific: the skill ranks measured, missions, one clock
+- **Skill tree** (`design/drafts/skill-tree.md`): each rank family measured at its top rank in the sim at 2, 5 and
+  8% a step. The air ranks are right at the drafted 2% (Pop III: ollie 12% higher; Swing III: 6% more rotation); the
+  snow ranks are not felt at 2% and barely at 8%. The Float ranks now cut powder drag instead of raising the turn
+  factor (the gear probe showed that made skis slower through powder turns). A new decision: 8% snow ranks, or leave
+  grip and float to the skis.
+- **Missions** (`design/drafts/mission-system.md`, new): missions as lists of small checkers reading only what the
+  sim already reports (events, run score, rider state), in an engine-free game layer beside the sim; spots and gates
+  as two new records in the mountain file; the prologue and act 1 written as data; each mission provable by a
+  recorded run in `dotnet test`. The chairlift needs nothing new in the sim: getting off starts the next run at the top.
+- **Timeline** (`design/drafts/progression-timeline.md`, new): the three drafts on one clock. Act 2 is busy and act 4
+  thin on skis; the powder ski comes after the game's first powder; the skill tree's moves outrun the riding layer
+  that supplies them.
+- Decisions made for you: none; each draft lists its own.

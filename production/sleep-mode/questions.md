@@ -41,8 +41,9 @@
 ## The drafts: story, gear, skill tree, missions (your choices, no rush)
 - **Item:** the brainstorm drafts you asked for, in `design/drafts/`: `story-outline.md` (directions, then the
   prologue and acts 1 to 4 mission by mission), `gear-progression.md` (skis measured in the sim),
-  `skill-tree.md` (ranks measured in the sim), `mission-system.md` (how missions would read the riding).
-- **Question:** each draft ends with its own numbered decisions (6 to 7 each). Which directions do you want?
+  `skill-tree.md` (ranks measured in the sim), `mission-system.md` (how missions would read the riding),
+  `progression-timeline.md` (the three on one clock, act by act).
+- **Question:** each draft ends with its own numbered decisions (3 to 7 each). Which directions do you want?
 - **Options:** answer any of them in your own words; or pick the recommended option on each (marked in the drafts)
   and say so; or say which draft to turn into stories first (recommended: the prologue, P1 to P3, on the test
   mountain, which proves missions end to end).
