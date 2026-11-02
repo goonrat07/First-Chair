@@ -22,7 +22,7 @@ then tell me in your own words what works and what doesn't; when you tune someth
 
 | Story | Ride and look for | Knobs | It answers |
 |---|---|---|---|
-| 018 Deformable snow | Ride into powder: two real trenches with raised snow beside them, the skis sunk to the boots. On the groomer a shallow cut; on ice only scrape marks. No line where the near snow (about 15 m around you) meets the rest. **Does it hold 60 frames a second?** | Light tab: groove strength (0 switches it all off), the depth per snow type, raise, the floor's tint. Effects tab: the sink's share and easing | The look sign-off and the 60 fps check (`production/qa/evidence/story-018-deformable-snow/evidence.md`) |
+| 018 Deformable snow | Ride into powder: two real trenches with raised snow beside them, the skis sunk to the boots. On the groomer a shallow cut behind the skis, which ride on top of it at full width; on ice only scrape marks. No line where the near snow (about 15 m around you) meets the rest. **Does it hold 60 frames a second?** | Light tab: groove strength (0 switches it all off), the depth per snow type, raise, the floor's tint. Effects tab: the cut the skis ride over (0.02 m), the sink's share and easing | The look sign-off and the 60 fps check (`production/qa/evidence/story-018-deformable-snow/evidence.md`) |
 | 007 First art pass | The whole look: skier, trees, snow trails, light | none | Its sign-off (`production/qa/evidence/story-007-first-art-pass-evidence.md`) |
 | 009 GMA-style riding | Does the riding feel right: turning, speed, carving, the controls? | Riding tab | The open question in `production/sleep-mode/questions.md` |
 | 008 Turn styles and speed | Quick turns, drifts, the hockey stop, race carves; the speed down the fall line | Riding tab | Its feel |

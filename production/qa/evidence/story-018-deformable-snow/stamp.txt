@@ -1,14 +1,14 @@
 Reviewed-Content-Hash: Assets/Scripts/Riding/SnowSkin.cs b0b5525cc6a46baa224e8c8fd3a1123efed80298
 Reviewed-Content-Hash: Assets/Scripts/Riding/TrackGrooves.cs 0331bac0e4a7ade7ecd7f31c07a35a35369448f0
 Reviewed-Content-Hash: Assets/Scripts/Riding/GrooveFootprint.cs 5393d950c560b58c5c20075b9d8265b4182e1352
-Reviewed-Content-Hash: Assets/Scripts/Riding/SkierView.cs 32722e6aae143153ff5195c04fa5498288de7def
+Reviewed-Content-Hash: Assets/Scripts/Riding/SkierView.cs fe95f279f5a0de71c65b2e16a49680fe57da0c46
 Reviewed-Content-Hash: Assets/Scripts/Riding/SkiTrack.cs c9a36fc455636be4f2222a5fd80079fe356c63e6
 Reviewed-Content-Hash: Assets/Scripts/Riding/SkierProceduralPose.cs 963f4665b4d136baeea31a7d1befedd98e3166fc
 Reviewed-Content-Hash: Assets/Scripts/Riding/LightingSettings.cs 19cfa40aa7d8364d3df54823fe3a5c194ac314a3
 Reviewed-Content-Hash: Assets/Scripts/Riding/LightingRig.cs a043cf8df822f162e78b181e6ef7f803b252a209
-Reviewed-Content-Hash: Assets/Scripts/Riding/RiderViewSettings.cs b54534e54d22c5faba8ee35c376af345b524444c
+Reviewed-Content-Hash: Assets/Scripts/Riding/RiderViewSettings.cs 0424ec2033af32e94bb3bba90e215a21b07697d9
 Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SnowSkinLayout.cs ce55ce948d90f25aa77ac9087f2c87808fc0e93b
-Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SnowTrench.cs ce4331d9859238b0f890697bedc774c6bad46be2
+Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SnowTrench.cs e49bc5186b2176a379fd8145ceb72ad196d5f0d5
 Reviewed-Content-Hash: Assets/Scripts/Riding/Core/SplatLayerBlocks.cs b161c6084f8a683456aae392e3ee844ee1d2a0b8
 Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeLook.cs 1c91b0b3056f2378df1a6781a9735df01cb0e5cf
 Reviewed-Content-Hash: Assets/Scripts/Riding/Editor/TestSlopeSceneBuilder.cs c964ec94ee754514a6cb814f2a0c7382a1f78380
@@ -23,5 +23,5 @@ Reviewed-Content-Hash: Assets/Shaders/SnowTerrain/SH_Env_SnowTerrainForward.hlsl
 Reviewed-Content-Hash: Assets/Shaders/SnowTerrain/SH_Env_TrackGrooveBlur.shader bbddacd94560dc869739284cb96959c3bbdf021b
 Reviewed-Content-Hash: Assets/Shaders/SnowTerrain/SH_Env_TrackGrooveStamp.shader 83081d078b1bc5b7d9b85d49f4882155c990b4da
 Reviewed-Content-Hash: Assets/Shaders/Tracks/SH_Env_TrackRibbon.shader dbe8613df0313949634eb12c970f72e6e3948eca
-Reviewed-Content-Hash: production/qa/evidence/story-018-deformable-snow/evidence.md 6a6ec3faf1d660c00208dafea84fd99be65d5cd6
-Reviewed-Content-Hash: production/epics/first-chair/story-018-deformable-snow.md c319eeb77b26701daaf44375d2fe5656275e309c
+Reviewed-Content-Hash: production/qa/evidence/story-018-deformable-snow/evidence.md 8c78e57dc16e066389640828c800f19b5d6b82fd
+Reviewed-Content-Hash: production/epics/first-chair/story-018-deformable-snow.md 1409ffefeac37071ad2c91207d3ae128cd9eaafb

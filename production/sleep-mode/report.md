@@ -85,3 +85,22 @@ Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0
   so float matters.
 - **Skill tree**: a note that its 2% ranks on grip and drag would not be felt either.
 - Decisions made for you: none; each choice is listed in the drafts.
+
+## Fix (story 018): the skis ride on top of the groomer
+- Found: in the Pine Bowl ride of build 49c1146 the skis looked thin and half buried on the groomer. They sank the
+  cut's whole 2 cm, but a ski is under 2 cm thick and wider than the rounded trench it stamps, so the untouched snow
+  beside the trench covered its sides.
+- Changed: `SnowTrench.SkiSink` (Core): the skis sink only by the depth past a cut they ride over, a new setting
+  (`RiderViewSettings` "Snow sink rides over", 0.02 m, on the Feel Lab's Effects tab): on the groomer they stay on
+  top with their grooves behind them; powder still takes them down 13 cm (was 15), crud 6, slush 4. `SkierView` uses
+  it; the leg IK follows as before.
+- Tests: 4 EditMode tests, all seen failing against the old full-depth rule first; 275 Core tests locally; CI's
+  EditMode job 287 of 287 (run 41489906945); `dotnet test sim/` 435 passed (no sim change).
+- Ridden in the CI build: Pine Bowl's start and the test slope's start show the skis full width with their grooves
+  behind; set back to the old rule (rides over 0) the same build buries them again; in powder they are still sunk to
+  the boots. Evidence and story updated.
+- Seen, not caused here: with the mesh off and the rider standing still, a ribbon's first step lies over each ski's
+  tail; the build before story 018 shows it too, and with the mesh on it does not show. Left as is.
+- Decisions made for you: fix the sink rather than the trench (keeps powder's buried look, which the evidence had
+  already shown working); the default cut the skis ride over is the groomer's depth.
+- Not verified: in the editor, and on a real GPU in motion.

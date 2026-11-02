@@ -64,17 +64,20 @@ assemblies, built in CI and ridden in the cloud build under Xvfb with Mesa's sof
 - **Footprints and the sink** (29c86a5): a footprint under each ski (`GrooveFootprint`) is stamped like a track, so the
   trench runs under the skis; the skier is drawn down by the depth under the rider (`SnowSkin.DepthAt`, the shader's
   depth on the CPU through `SnowTrench.SplatDepth`), eased over 0.08 s and not in the air, on rails or on the lift;
-  the leg IK takes the same sink.
+  the leg IK takes the same sink. Since b92d0be only by the depth past a cut the skis ride over (`SnowTrench.SkiSink`,
+  2 cm): on the groomer they stay on top, their grooves behind them, and in powder they sink 13 cm. Sunk the groomer's
+  whole 2 cm they were buried along their sides, since a ski is under 2 cm thick and wider than its trench (Pine Bowl,
+  build 49c1146).
 - **Per-terrain materials** (0d62120): the first cloud build drew the test slope's mesh with the test mountain's snow
   (one material pair shared by every scene, rewritten by each scene's build); each terrain has its own now.
 - **The add pass only where it adds** (49c1146): the mesh draws its slush pass only while slush lies under it
   (`SplatLayerBlocks`); nothing on screen changes.
 - **Settings:** depths on the Feel Lab's Light tab (`LightingSettings`: strength 1; groomed 0.02 m, powder 0.15, crud
   0.08, ice 0, slush 0.06; raise 0.6; the floor's tint and its strength 0.55); the sink on the Effects tab
-  (`RiderViewSettings`: share of the depth 1, easing 0.08 s); sizes on the components (`SnowSkin`: 3 cm, 3 levels, 128
+  (`RiderViewSettings`: the cut the skis ride over 0.02 m, the share of the rest 1, easing 0.08 s); sizes on the components (`SnowSkin`: 3 cm, 3 levels, 128
   cells, 0.5 m overlap, 3 m fade, 2 cm drop; `TrackGrooves`: 32 m, 2,048 texels, 5 cm rim).
-- **Tests:** `SnowSkinLayoutTests` (7), `SnowTrenchTests` (12), `SplatLayerBlocksTests` (6); the Core tests run
-  locally under NUnit: 268 passed; CI's EditMode job passes.
+- **Tests:** `SnowSkinLayoutTests` (7), `SnowTrenchTests` (16), `SplatLayerBlocksTests` (6); the Core tests run
+  locally under NUnit: 275 passed; CI's EditMode job passes.
 - **Deviations:** design item 3's packed floor is darker and bluer but not smoother (no smoothness change); item 5's
   skirt is the overlap band dropped under the terrain; the mesh reaches 15.36 m, not 16.
 - **On the user's PC:** reset or delete `Assets/Data/Riding/LightingSettings.asset`, which keeps story 017's values
@@ -83,7 +86,7 @@ assemblies, built in CI and ridden in the cloud build under Xvfb with Mesa's sof
 ## Acceptance Criteria
 
 - [x] The mesh layout (rings, stitching, snapping), the terrain height and the trench and raised-snow profile are plain
-  C# with EditMode tests. *(`SnowSkinLayoutTests`, `SnowTrenchTests`, `SplatLayerBlocksTests`: 25 tests; the terrain
+  C# with EditMode tests. *(`SnowSkinLayoutTests`, `SnowTrenchTests`, `SplatLayerBlocksTests`: 29 tests; the terrain
   height is the shader's bilinear of the heightmap's own samples.)*
 - [x] The mesh and the terrain build in CI for Windows and Linux with no shader errors, and nothing is drawn magenta in
   the cloud build. *(Runs 41374948805 and 41477452195, the first and the last: the four new shaders compile for every
