@@ -16,7 +16,7 @@ namespace FirstChair.Riding
     /// <code>
     /// _procedural = new SkierProceduralPose(skier.transform, settings, poleLeft, poleRight, this);
     /// // each LateUpdate, after the clip blend:
-    /// _procedural.Apply(driver.Session, _shown, driver.Paused, Time.deltaTime);
+    /// _procedural.Apply(driver.Session, _shown, driver.Paused, Time.deltaTime, sink);
     /// </code>
     /// </example>
     internal sealed class SkierProceduralPose
@@ -43,6 +43,7 @@ namespace FirstChair.Riding
         private Vector3 _plantTip;
         private bool _plantFixed;
         private float _onSnow;
+        private float _sink;
         private Vector3 _lastPosition;
         private Vector3 _lastVelocity;
         private int _history;
@@ -79,8 +80,13 @@ namespace FirstChair.Riding
         /// <param name="shown">The clip weights shown this frame, in <see cref="SkierPose"/> order.</param>
         /// <param name="paused">True on the chairlift.</param>
         /// <param name="dt">The frame, seconds.</param>
-        public void Apply(RideSession session, float[] shown, bool paused, float dt)
+        /// <param name="sink">
+        /// How far the skier view has sunk the skier into the snow, metres (Story 018): the legs stand the skis that far
+        /// below the snow's surface, on the trench's floor, not back on top of the snow.
+        /// </param>
+        public void Apply(RideSession session, float[] shown, bool paused, float dt, float sink = 0f)
         {
+            _sink = sink;
             _model.localRotation = Quaternion.identity;
             if (session == null || !(dt > 0f))
             {
@@ -220,6 +226,7 @@ namespace FirstChair.Riding
 
         // 3. LEGS: where each ankle goes so its ski meets the real snow. The clips stood the skis on the plane through the
         // rider's point on the snow; the ankle moves up or down by how far the snow under the boot lies off that plane.
+        // Sunk into soft snow (Story 018), the snow under the boot is the trench's floor, the sink below its surface.
         // Read from the clip pose, before the lean moves the feet.
         private Vector3 FootTarget(Leg leg, Heightmap heightmap, Transform root)
         {
@@ -227,7 +234,7 @@ namespace FirstChair.Riding
             Vector3 point = root.position;
             Vector3 normal = root.up;
             float plane = normal.y > 0.2f ? point.y - (normal.x * (sole.x - point.x) + normal.z * (sole.z - point.z)) / normal.y : point.y;
-            float off = SnowHeight(heightmap, sole.x, sole.z) - plane;
+            float off = SnowHeight(heightmap, sole.x, sole.z) - _sink - plane;
             float shift = Mathf.Clamp(off, -_settings.FootMaxShift, _settings.FootMaxShift) * _settings.LegWeight * _onSnow;
             return leg.Foot.position + Vector3.up * shift;
         }

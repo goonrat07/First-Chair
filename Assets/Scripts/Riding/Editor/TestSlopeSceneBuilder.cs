@@ -146,9 +146,10 @@ namespace FirstChair.Riding.Editor
             slope.Heightmap.Sample(slope.Layout.StartX, slope.Layout.StartZ, out Fix64 startHeight, out _);
             rider.transform.position = SimCoordinatesUnity.ToVector3(new Vec3(slope.Layout.StartX, startHeight, slope.Layout.StartZ));
             var skierModel = AssetDatabase.LoadAssetAtPath<GameObject>(SkierModelPath);
+            SkierView skier = null;
             if (skierModel != null)
             {
-                var skier = rider.AddComponent<SkierView>();
+                skier = rider.AddComponent<SkierView>();
                 Set(skier, "driver", driver);
                 Set(skier, "settings", viewSettings);
                 Set(skier, "skierModel", skierModel);
@@ -196,6 +197,11 @@ namespace FirstChair.Riding.Editor
                 skin.GetComponent<MeshRenderer>().sharedMaterials = TestSlopeLook.SnowSkinMaterials(terrainData, snowLayers);
                 Set(skin, "terrain", terrain);
                 Set(skin, "follow", rider.transform);
+                if (skier != null)
+                {
+                    // The skis sink into the trench the snow mesh cuts under them.
+                    Set(skier, "snow", skin);
+                }
             }
             else
             {

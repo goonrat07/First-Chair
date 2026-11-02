@@ -5,13 +5,13 @@ namespace FirstChair.Riding
 {
     /// <summary>
     /// Stamps the ski tracks into a map of where the skis went (Story 017; Story 018's input). Every frame, each track
-    /// ribbon (<see cref="GrooveSource"/>) over a square window of snow around what it follows (<see cref="TrackGrooveWindow"/>)
-    /// is drawn from above into a render texture by the stamp shader (<see cref="StampShaderName"/>), which turns its
-    /// across-track coordinate into a rounded profile, the deeper kept where two cross; then the map is blurred, one axis
-    /// at a time (<see cref="BlurShaderName"/>). The snow mesh near the rider (<see cref="SnowSkin"/>) pushes the snow down
-    /// by the map and up where the blurred map reaches past it, as deep as <see cref="LightingSettings"/> sets for each
-    /// snow type. Runs after the rider and the camera move. Display only: the sim never reads it. Single-thread only
-    /// (Unity's main thread).
+    /// ribbon (<see cref="GrooveSource"/>) and each ski's footprint on the snow (<see cref="GrooveFootprint"/>) over a
+    /// square window of snow around what it follows (<see cref="TrackGrooveWindow"/>) is drawn from above into a render
+    /// texture by the stamp shader (<see cref="StampShaderName"/>), which turns its across-track coordinate into a rounded
+    /// profile, the deeper kept where two cross; then the map is blurred, one axis at a time (<see cref="BlurShaderName"/>).
+    /// The snow mesh near the rider (<see cref="SnowSkin"/>) pushes the snow down by the map and up where the blurred map
+    /// reaches past it, as deep as <see cref="LightingSettings"/> sets for each snow type. Runs after the rider and the
+    /// camera move. Display only: the sim never reads it. Single-thread only (Unity's main thread).
     /// </summary>
     /// <remarks>
     /// The maps are cleared and stamped whole every frame, so they hold no history and a camera cut needs nothing. Cost:
@@ -145,9 +145,8 @@ namespace FirstChair.Riding
 
                 // Only ribbons over the window; an emptied stretch has no extent and is skipped.
                 Bounds bounds = ribbon.bounds;
-                Vector3 min = bounds.min, max = bounds.max;
                 bool empty = bounds.extents.x <= 0f && bounds.extents.z <= 0f;
-                if (empty || max.x < minX || min.x > minX + size || max.z < minZ || min.z > minZ + size)
+                if (empty || Outside(bounds, minX, minZ, size))
                 {
                     continue;
                 }
@@ -155,10 +154,29 @@ namespace FirstChair.Riding
                 _commands.DrawRenderer(ribbon, _stamp, 0, 0);
             }
 
+            // The skis' own footprints (Story 018), so the trench runs under the skis as well as behind them; their
+            // meshes are in world space.
+            var footprints = GrooveFootprint.Down;
+            for (int i = 0; i < footprints.Count; i++)
+            {
+                Mesh footprint = footprints[i].Mesh;
+                if (footprint != null && !Outside(footprint.bounds, minX, minZ, size))
+                {
+                    _commands.DrawMesh(footprint, Matrix4x4.identity, _stamp, 0, 0);
+                }
+            }
+
             Blur(_target, _blurTemp, 1f, 0f);
             Blur(_blurTemp, _blur, 0f, 1f);
             Graphics.ExecuteCommandBuffer(_commands);
             Shader.SetGlobalVector(WindowId, new Vector4(minX, minZ, size, _window.TexelSize));
+        }
+
+        // Whether a box lies wholly off the window, seen from above.
+        private static bool Outside(Bounds bounds, float minX, float minZ, float size)
+        {
+            Vector3 min = bounds.min, max = bounds.max;
+            return max.x < minX || min.x > minX + size || max.z < minZ || min.z > minZ + size;
         }
 
         // One blur pass along (alongX, alongZ) in the map's texels, recorded into the command buffer. Taps step more than

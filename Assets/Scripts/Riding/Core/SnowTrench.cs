@@ -31,6 +31,71 @@ namespace FirstChair.Riding
         }
 
         /// <summary>
+        /// How deep a ski cuts the snow at a point of the terrain, metres, as the snow mesh's shader finds it
+        /// (<c>FCSnowSkinDepth</c>): each terrain layer's depth weighed by that layer's splat weight there, times the
+        /// strength. The weights are read between the four nearest texels, bilinearly, with the texel centres on the
+        /// terrain's corners and edges, as the terrain and the shader read their splat maps. For the skis' sink into the
+        /// trench they cut (<c>SkierView</c>). Allocates nothing.
+        /// </summary>
+        /// <param name="weights">
+        /// The splat weights, a byte (0 to 255) a layer a texel: layer <c>l</c> of the texel in column <c>c</c> and row
+        /// <c>r</c> at <c>(r * texels + c) * layers + l</c>, columns along X and rows along Z, as
+        /// <c>TerrainData.GetAlphamaps</c> orders them.
+        /// </param>
+        /// <param name="texels">Texels a side; at least 1.</param>
+        /// <param name="layers">Layers a texel; at least 1.</param>
+        /// <param name="u">The point across the terrain along X, 0 at its least X and 1 at its greatest; held to the terrain.</param>
+        /// <param name="v">The same along Z.</param>
+        /// <param name="layerDepths">Each layer's depth, metres; a layer past its end cuts nothing.</param>
+        /// <param name="strength">Scales every depth; 0 cuts nothing.</param>
+        /// <returns>The depth, metres.</returns>
+        /// <exception cref="ArgumentException">Weights that don't hold <paramref name="layers"/> for every texel.</exception>
+        /// <exception cref="ArgumentNullException">No depths.</exception>
+        /// <example>
+        /// <code>
+        /// // GetAlphamaps' [z, x, layer] floats, kept as bytes once:
+        /// float metres = SnowTrench.SplatDepth(weights, texels, layers, u, v, layerDepths, strength);
+        /// </code>
+        /// </example>
+        public static float SplatDepth(byte[] weights, int texels, int layers, float u, float v, float[] layerDepths, float strength)
+        {
+            if (texels < 1 || layers < 1 || weights == null || weights.Length != texels * texels * layers)
+            {
+                throw new ArgumentException("The weights must hold every layer of every texel.", nameof(weights));
+            }
+
+            if (layerDepths == null)
+            {
+                throw new ArgumentNullException(nameof(layerDepths));
+            }
+
+            // Texel space: the first texel's centre at 0 and the last's at texels - 1, so the corners are texel centres.
+            float last = texels - 1;
+            float x = Clamp01(u) * last, z = Clamp01(v) * last;
+            int column = Math.Min((int)x, Math.Max(texels - 2, 0)), row = Math.Min((int)z, Math.Max(texels - 2, 0));
+            int nextColumn = Math.Min(column + 1, texels - 1), nextRow = Math.Min(row + 1, texels - 1);
+            float fx = x - column, fz = z - row;
+            int at00 = (row * texels + column) * layers, at10 = (row * texels + nextColumn) * layers;
+            int at01 = (nextRow * texels + column) * layers, at11 = (nextRow * texels + nextColumn) * layers;
+
+            float depth = 0f;
+            int counted = Math.Min(layers, layerDepths.Length);
+            for (int layer = 0; layer < counted; layer++)
+            {
+                float near = weights[at00 + layer] + (weights[at10 + layer] - weights[at00 + layer]) * fx;
+                float far = weights[at01 + layer] + (weights[at11 + layer] - weights[at01 + layer]) * fx;
+                depth += (near + (far - near) * fz) * layerDepths[layer];
+            }
+
+            return depth / FullWeight * strength;
+        }
+
+        // A splat weight of 1, as a byte.
+        private const float FullWeight = 255f;
+
+        private static float Clamp01(float value) => value < 0f ? 0f : value > 1f ? 1f : value;
+
+        /// <summary>
         /// Fills <paramref name="weights"/> with a normalised Gaussian's taps, centre first: the centre and both sides of
         /// every other tap sum to 1, as a separable blur uses them.
         /// </summary>

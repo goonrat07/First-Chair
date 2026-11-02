@@ -62,6 +62,13 @@ namespace FirstChair.Riding
         [Tooltip("Lift above the ski base, metres, so the track doesn't flicker into the snow.")]
         [SerializeField, Min(0f)] private float trackLift = 0.015f;
 
+        [Header("Sinking into the snow (Story 018)")]
+        [Tooltip("How far the skis sink into the trench they cut, as a share of its depth (LightingSettings, per snow type): "
+            + "1 stands them on its floor, 0 on the untouched snow.")]
+        [SerializeField, Range(0f, 1.5f)] private float snowSinkWeight = 1f;
+        [Tooltip("How quickly the skis settle into the snow or rise out of it, seconds: landing in powder, riding onto a groomer.")]
+        [SerializeField, Range(0.01f, 1f)] private float snowSinkSmoothTime = 0.08f;
+
         [Header("Snow spray (Story 008)")]
         [Tooltip("Flakes per metre the skis slide sideways (quick turns and skids; a clean carve slides none).")]
         [SerializeField, Min(0f)] private float sprayPerSlideMetre = 80f;
@@ -246,6 +253,10 @@ namespace FirstChair.Riding
         public float TrackMinVertexDistance => trackMinVertexDistance;
         /// <summary>Track lift above the ski base, metres.</summary>
         public float TrackLift => trackLift;
+        /// <summary>How far the skis sink into the trench they cut, as a share of its depth.</summary>
+        public float SnowSinkWeight => snowSinkWeight;
+        /// <summary>How quickly the skis settle into the snow or rise out of it, seconds.</summary>
+        public float SnowSinkSmoothTime => snowSinkSmoothTime;
         /// <summary>Spray flakes per metre of sideways slide.</summary>
         public float SprayPerSlideMetre => sprayPerSlideMetre;
         /// <summary>Spray flakes per metre travelled while braking.</summary>

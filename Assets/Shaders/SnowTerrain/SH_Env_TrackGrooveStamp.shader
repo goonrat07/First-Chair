@@ -1,10 +1,11 @@
 // SH_Env_TrackGrooveStamp.shader
-// First Chair, written by Claude for Story 017 (production/epics/first-chair/story-017-ski-grooves.md).
-// Purpose: stamps the ski track ribbons into the groove texture from above. A ribbon's across-track coordinate (its u,
-// 0 at its left edge and 1 at its right) becomes a rounded groove, 1 on its centre line and 0 from 80 percent of the
-// way to its edges; where grooves cross, the deeper is kept (BlendOp Max). TrackGrooves draws every ribbon in its
-// window with this shader, and First Chair/Snow Terrain reads the result as relief (SH_Env_SnowEffects.hlsl,
-// SnowGrooves).
+// First Chair, written by Claude for Story 017 (production/epics/first-chair/story-017-ski-grooves.md); since Story 018
+// (story-018-deformable-snow.md) it also stamps the skis' footprints, and the snow mesh reads what it stamps.
+// Purpose: stamps the ski track ribbons and the skis' footprints into the groove texture from above. A ribbon's
+// across-track coordinate (its u, 0 at its left edge and 1 at its right) becomes a rounded groove, 1 on its centre line
+// and 0 from 80 percent of the way to its edges; where grooves cross, the deeper is kept (BlendOp Max). TrackGrooves
+// draws every ribbon and footprint in its window with this shader, and the snow mesh near the rider (SnowSkin,
+// SH_Env_SnowSkin.hlsl) pushes the snow down by the result: the rounded groove is its trench's floor.
 // Target: URP, every platform; drawn by a command buffer into an R8 render texture, outside the camera's passes.
 // Cost: a few ALU a texel of ribbon, no texture samples. Variants: none.
 Shader "Hidden/First Chair/Track Groove Stamp"

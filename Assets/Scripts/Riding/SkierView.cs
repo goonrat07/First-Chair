@@ -11,7 +11,9 @@ namespace FirstChair.Riding
     /// carves, tuck, crouch, air, brake, pole, crash) by weights from <see cref="SkierPoseWeights"/>, so the skier
     /// angulates into turns, tucks, loads a pop and falls. Procedural layers then lean it with the turn, spring it on
     /// landings and edge changes, stand its skis on the snow and plant its poles (<see cref="SkierProceduralPose"/>, Story
-    /// 013). It leaves ski tracks while on the snow. Read only: it never writes rider state.
+    /// 013). It leaves ski tracks while on the snow, and sinks into the trench its skis cut in soft snow (Story 018,
+    /// <see cref="SnowSkin.DepthAt"/>): the skier is drawn that far down, the tracks stay on the snow. Read only: it never
+    /// writes rider state.
     /// </summary>
     /// <remarks>
     /// The clips are played through a manual <see cref="PlayableGraph"/>: one <see cref="AnimationMixerPlayable"/> input
@@ -39,6 +41,12 @@ namespace FirstChair.Riding
         [Tooltip("Translucent, double-sided material for the ski tracks.")]
         [SerializeField] private Material trackMaterial;
 
+        [Tooltip("The snow mesh near the rider (Story 018): the skis sink into the trench it cuts. Empty: they ride on top.")]
+        [SerializeField] private SnowSkin snow;
+
+        // The shortest easing time the sink takes, seconds, so a zero setting can't divide by zero.
+        private const float MinSinkSmoothTime = 1e-3f;
+
         private readonly float[] _target = new float[SkierPoseWeights.Count];
         private readonly float[] _shown = new float[SkierPoseWeights.Count];
         private readonly AnimationClipPlayable[] _clips = new AnimationClipPlayable[SkierPoseWeights.Count];
@@ -51,6 +59,7 @@ namespace FirstChair.Riding
         private SkiTrack _trackRight;
         private RideSession _paintedSession;
         private float _clock;
+        private float _sink;
         private SkierProceduralPose _procedural;
 
         private void Awake()
@@ -115,11 +124,12 @@ namespace FirstChair.Riding
 
             RideSession session = driver.Session;
             RiderPose pose = driver.Pose;
+            RiderState current = session.Current;
             Vector3 normal = ViewHelpers.SnowNormal(session, driver.InterpolationAlpha);
             RiderPlacement.Place(pose, normal, settings.SlopeAlign, settings.FlipPivotHeight, out Vector3 position, out Quaternion rotation);
-            transform.SetPositionAndRotation(position, rotation);
+            _sink = Sink(current, position, session.SnappedThisFrame);
+            transform.SetPositionAndRotation(position + Vector3.down * _sink, rotation);
 
-            RiderState current = session.Current;
             Tuning tuning = session.Tuning;
             SkierPoseWeights.Target(current, tuning, _target);
             if (driver.Paused)
@@ -147,15 +157,34 @@ namespace FirstChair.Riding
             }
 
             // Story 013: lean, springs, legs on the snow and pole plants, over the pose the clips just wrote
-            _procedural?.Apply(session, _shown, driver.Paused, Time.deltaTime);
+            _procedural?.Apply(session, _shown, driver.Paused, Time.deltaTime, _sink);
 
             // The tracks break across a reset or a new run, so no ribbon is drawn between the two spots.
             bool onSnow = !current.Airborne && !current.Crashed && !driver.Paused;
             bool jumped = session.SnappedThisFrame || session != _paintedSession;
             _paintedSession = session;
             Vector3 velocity = SimCoordinatesUnity.ToVector3(current.Velocity);
-            Paint(_trackLeft, _skiLeft, velocity, position, normal, onSnow, jumped);
-            Paint(_trackRight, _skiRight, velocity, position, normal, onSnow, jumped);
+            // The tracks are laid from where the skis would be unsunk: the snow's plane runs through the unsunk rider, and a
+            // sunk ski moved onto it along a slope's normal would land beside its own trench.
+            Vector3 unsink = Vector3.up * _sink;
+            Paint(_trackLeft, _skiLeft, unsink, velocity, position, normal, onSnow, jumped);
+            Paint(_trackRight, _skiRight, unsink, velocity, position, normal, onSnow, jumped);
+        }
+
+        // How far the skier is drawn down into the snow this frame (Story 018): as deep as the snow mesh cuts under the
+        // rider, eased in and out (landing in powder, riding onto a groomer), at once across a reset, and not at all in the
+        // air, on a rail or on the chairlift. Crashed, the body settles into soft snow too.
+        private float Sink(in RiderState current, Vector3 position, bool snapped)
+        {
+            bool sinking = snow != null && !current.Airborne && !current.Grinding && !driver.Paused;
+            float target = sinking ? snow.DepthAt(position) * settings.SnowSinkWeight : 0f;
+            if (snapped)
+            {
+                return target;
+            }
+
+            float ease = 1f - Mathf.Exp(-Time.deltaTime / Mathf.Max(settings.SnowSinkSmoothTime, MinSinkSmoothTime));
+            return Mathf.Lerp(_sink, target, ease);
         }
 
         private void BuildGraph(Animator animator)
@@ -293,11 +322,11 @@ namespace FirstChair.Riding
         }
 
         private static void Paint(
-            SkiTrack track, Transform ski, Vector3 velocity, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
+            SkiTrack track, Transform ski, Vector3 unsink, Vector3 velocity, Vector3 snowPoint, Vector3 snowNormal, bool onSnow, bool jumped)
         {
             if (track != null && ski != null)
             {
-                track.Paint(ski.position, ski.forward, velocity, snowPoint, snowNormal, onSnow, jumped);
+                track.Paint(ski.position + unsink, ski.forward, velocity, snowPoint, snowNormal, onSnow, jumped);
             }
         }
 

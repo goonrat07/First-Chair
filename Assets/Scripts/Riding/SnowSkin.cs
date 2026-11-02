@@ -13,7 +13,9 @@ namespace FirstChair.Riding
     /// The mesh is built once and moved in steps of its coarsest spacing, so every vertex stays on its own grid. The
     /// terrain's heights and normals go to the GPU once, as textures, so the mesh lies exactly on the terrain where no
     /// track is. With the groove strength at 0 (<see cref="LightingSettings"/>) the mesh and the cut are off and the snow
-    /// draws as it did before the story. No allocation a frame.
+    /// draws as it did before the story. <see cref="DepthAt"/> tells the skier view how deep the snow is cut under the
+    /// rider, from the terrain's splat weights kept as bytes (about 5 MB at 1,024 texels and five layers). No allocation
+    /// a frame.
     /// </remarks>
     /// <example>
     /// <code>
@@ -22,6 +24,8 @@ namespace FirstChair.Riding
     /// Set(skin, "terrain", terrain);
     /// Set(skin, "follow", rider.transform);
     /// skin.GetComponent&lt;MeshRenderer&gt;().sharedMaterials = new[] { skinMaterial, skinAddMaterial };
+    /// // Each frame, in the skier view:
+    /// float sink = skin.DepthAt(rider.position);
     /// </code>
     /// </example>
     [DefaultExecutionOrder(210)] // after the skier view places the rider (50)
@@ -38,6 +42,19 @@ namespace FirstChair.Riding
         private static readonly int SkinEdgeId = Shader.PropertyToID("_FCSnowSkinEdge");
         private static readonly int ClipId = Shader.PropertyToID("_FCSnowSkinClipUV");
         private static readonly int GrooveId = Shader.PropertyToID("_FCSnowGroove");
+        private static readonly int GrooveLayers0Id = Shader.PropertyToID("_FCSnowGrooveLayers0");
+        private static readonly int GrooveLayers1Id = Shader.PropertyToID("_FCSnowGrooveLayers1");
+
+        // The shader's two splat maps hold four layers each (LightingRig's _FCSnowGrooveLayers0 and 1).
+        private const int LayersPerMap = 4;
+        private const int ShaderLayers = 2 * LayersPerMap;
+
+        // The splat weights are read from the terrain this many rows at a time, so the read never holds the whole map
+        // as floats (20 MB at 1,024 texels and five layers).
+        private const int SplatRowsPerRead = 64;
+
+        // A splat weight of 1, as a byte (the alphamap textures' 8 bits).
+        private const float FullWeight = 255f;
 
         [Tooltip("The terrain the snow lies on; found in the scene if left empty.")]
         [SerializeField] private Terrain terrain;
@@ -64,6 +81,10 @@ namespace FirstChair.Riding
         private Texture2D _normals;
         private Vector3 _terrainOrigin;
         private Vector3 _terrainSize;
+        private readonly float[] _layerDepths = new float[ShaderLayers];
+        private byte[] _splat;
+        private int _splatTexels;
+        private int _splatLayers;
 
         private void Awake()
         {
@@ -84,6 +105,39 @@ namespace FirstChair.Riding
             _mesh = BuildMesh();
             GetComponent<MeshFilter>().sharedMesh = _mesh;
             BuildTerrainTextures();
+            KeepSplatWeights(terrain.terrainData);
+        }
+
+        /// <summary>
+        /// How deep a ski cuts the snow at a point, metres: the snow mesh's trench depth there, from the terrain's snow
+        /// types and the depths and strength the lighting rig set (<see cref="SnowTrench.SplatDepth"/>, as the shader's
+        /// <c>FCSnowSkinDepth</c>). 0 with the snow mesh off. Allocates nothing.
+        /// </summary>
+        /// <param name="position">The point, world space; only its X and Z count.</param>
+        /// <returns>The depth, metres.</returns>
+        /// <example>
+        /// <code>
+        /// float sink = skin.DepthAt(rider.position);   // 0.15 in powder at the default depths, 0.02 on the groomer
+        /// </code>
+        /// </example>
+        public float DepthAt(Vector3 position)
+        {
+            Vector4 groove = Shader.GetGlobalVector(GrooveId);
+            if (_splat == null || !isActiveAndEnabled || !(groove.x > 0f))
+            {
+                return 0f;
+            }
+
+            Vector4 first = Shader.GetGlobalVector(GrooveLayers0Id), second = Shader.GetGlobalVector(GrooveLayers1Id);
+            for (int i = 0; i < LayersPerMap; i++)
+            {
+                _layerDepths[i] = first[i];
+                _layerDepths[LayersPerMap + i] = second[i];
+            }
+
+            float u = (position.x - _terrainOrigin.x) / _terrainSize.x;
+            float v = (position.z - _terrainOrigin.z) / _terrainSize.z;
+            return SnowTrench.SplatDepth(_splat, _splatTexels, _splatLayers, u, v, _layerDepths, groove.x);
         }
 
         private void OnDisable()
@@ -206,6 +260,39 @@ namespace FirstChair.Riding
             Shader.SetGlobalVector(TerrainId, new Vector4(_terrainOrigin.x, _terrainOrigin.z, _terrainSize.x, _terrainSize.z));
             Shader.SetGlobalVector(HeightmapId, new Vector4(res, data.alphamapResolution, 0f, 0f));
             Shader.SetGlobalVector(SkinEdgeId, new Vector4(overlapDrop, 0f, 0f, 0f));
+        }
+
+        // The terrain's splat weights as the GPU reads them (8 bits a layer), kept for DepthAt: a byte a layer a texel,
+        // rows along Z, as TerrainData.GetAlphamaps orders them.
+        private void KeepSplatWeights(TerrainData data)
+        {
+            int texels = data.alphamapResolution, layers = data.alphamapLayers;
+            if (texels < 1 || layers < 1)
+            {
+                return;
+            }
+
+            var weights = new byte[texels * texels * layers];
+            for (int first = 0; first < texels; first += SplatRowsPerRead)
+            {
+                int rows = Mathf.Min(SplatRowsPerRead, texels - first);
+                float[,,] block = data.GetAlphamaps(0, first, texels, rows);
+                for (int row = 0; row < rows; row++)
+                {
+                    for (int column = 0; column < texels; column++)
+                    {
+                        int at = ((first + row) * texels + column) * layers;
+                        for (int layer = 0; layer < layers; layer++)
+                        {
+                            weights[at + layer] = (byte)Mathf.Clamp(Mathf.RoundToInt(block[row, column, layer] * FullWeight), 0, byte.MaxValue);
+                        }
+                    }
+                }
+            }
+
+            _splat = weights;
+            _splatTexels = texels;
+            _splatLayers = layers;
         }
 
         private static byte Encode(float component) => (byte)Mathf.Clamp(Mathf.RoundToInt((component * 0.5f + 0.5f) * 255f), 0, 255);

@@ -17,8 +17,9 @@ namespace FirstChair.Riding
     /// meshes sit under one scene object of their own, not under the ski, so they stay where they were laid. The ribbon
     /// runs up to the ski's trailing end (<see cref="SkiTrailingEnd"/>), its tail riding forward and its tip riding
     /// switch: it sits a little off the snow, above most of the ski's thickness, so laid from under the boot it showed
-    /// through the back half of the ski. Each stretch is also a <see cref="GrooveSource"/>, so near the camera the snow
-    /// under it is cut into a groove (Story 017, <see cref="TrackGrooves"/>).
+    /// through the back half of the ski. Each stretch is also a <see cref="GrooveSource"/>, and the ski has a
+    /// <see cref="GrooveFootprint"/> from its trailing end to its leading end while it is on the snow, so near the rider
+    /// the snow mesh cuts the trench under the ski and on behind it (Story 018, <see cref="TrackGrooves"/>).
     /// </remarks>
     /// <example>
     /// <code>
@@ -51,6 +52,7 @@ namespace FirstChair.Riding
         private readonly List<Vector2> _uvList = new List<Vector2>(StretchPoints * 2);
         private readonly float _tailBehind;
         private readonly float _tipAhead;
+        private readonly GrooveFootprint _footprint;
         private SkiTrailingEnd _end;
         private Mesh _live;
 
@@ -67,6 +69,7 @@ namespace FirstChair.Riding
             _tailBehind = Mathf.Max(0f, tailBehind);
             _tipAhead = Mathf.Max(0f, tipAhead);
             _root = new GameObject(name).transform;
+            _footprint = new GrooveFootprint(name + " footprint");
             _live = NewStretch();
         }
 
@@ -98,14 +101,23 @@ namespace FirstChair.Riding
 
             if (!onSnow)
             {
+                _footprint.Lift();
                 return;
             }
 
             _ribbon.Width = _settings.TrackWidth;
             _ribbon.MinStep = _settings.TrackMinVertexDistance;
             _ribbon.Lift = _settings.TrackLift;
-            Vector3 trailing = skiBase + tipDirection.normalized * (float)_end.Offset(_tailBehind, _tipAhead);
-            Vector3 onPlane = trailing - snowNormal * Vector3.Dot(trailing - snowPoint, snowNormal);
+            Vector3 along = tipDirection.normalized;
+            Vector3 trailing = skiBase + along * (float)_end.Offset(_tailBehind, _tipAhead);
+            Vector3 onPlane = OnSnow(trailing, snowPoint, snowNormal);
+
+            // The footprint runs from the ski's leading end back past its trailing end by a ribbon step, since the
+            // ribbon's newest point can lag that far behind the ski: the trench never breaks between the two.
+            Vector3 back = along * (_end.TipTrails ? _settings.TrackMinVertexDistance : -_settings.TrackMinVertexDistance);
+            Vector3 leading = skiBase + along * (_end.TipTrails ? -_tailBehind : _tipAhead);
+            _footprint.Place(
+                OnSnow(trailing + back, snowPoint, snowNormal), OnSnow(leading, snowPoint, snowNormal), snowNormal, _settings.TrackWidth);
             if (!_ribbon.TryAdd(onPlane.x, onPlane.y, onPlane.z, snowNormal.x, snowNormal.y, snowNormal.z))
             {
                 return;
@@ -123,9 +135,10 @@ namespace FirstChair.Riding
             }
         }
 
-        /// <summary>Destroys the track's meshes and its scene object.</summary>
+        /// <summary>Destroys the track's meshes, its footprint and its scene object.</summary>
         public void Dispose()
         {
+            _footprint.Dispose();
             foreach (Mesh mesh in _meshes)
             {
                 UnityEngine.Object.Destroy(mesh);
@@ -138,6 +151,11 @@ namespace FirstChair.Riding
                 UnityEngine.Object.Destroy(_root.gameObject);
             }
         }
+
+        // A point moved along the snow's normal onto the plane through the rider's point on the snow, since the pose can lift
+        // the ski off it.
+        private static Vector3 OnSnow(Vector3 point, Vector3 snowPoint, Vector3 snowNormal) =>
+            point - snowNormal * Vector3.Dot(point - snowPoint, snowNormal);
 
         private Mesh NewStretch()
         {
