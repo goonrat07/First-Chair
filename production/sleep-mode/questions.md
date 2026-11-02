@@ -48,3 +48,6 @@
   and say so; or say which draft to turn into stories first (recommended: the prologue, P1 to P3, on the test
   mountain, which proves missions end to end).
 - **Waiting on it:** any story-mode, gear or skill work. Nothing in the current game waits on it.
+- **Partly answered (2026-11-02, in conversation):** the premise, the day clock, the loadout, the bag, stamina,
+  huts, sponsors, perks and other skiers are settled in `design/drafts/season-loop.md`, which lists what is still
+  open.

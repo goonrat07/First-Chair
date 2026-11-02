@@ -4,6 +4,10 @@
 > specific outline of the story"). Nothing here is decided. The game brief keeps Career and story out of the MVP;
 > this is for after riding feels right. Companion drafts: `gear-progression.md`, `skill-tree.md`.
 
+> **Changed 2026-11-02 (`season-loop.md`):** the user chose a different premise. You are a regular at the
+> mountain who knows all the staff and rents a cabin beside a beginner run with Mo, not the new liftie. The cast,
+> acts and missions below stay as material until they are rewritten for that premise and the season calendar.
+
 ## What it starts from
 
 - **The brief's pitch:** "A warm, sunlit skiing game where you carve, jump and thread the trees of a small family-run

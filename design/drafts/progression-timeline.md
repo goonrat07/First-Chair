@@ -5,6 +5,9 @@
 > (`gear-progression.md`) and the skill tree (`skill-tree.md`). Hours are estimates for a player who rides a bit of
 > everything; nothing here is decided.
 
+> **Replaced 2026-11-02 (`season-loop.md`):** the season is now laid out in days on a calendar, not in acts. Kept
+> for its reasoning about pacing.
+
 ## The timeline
 
 | Act | Ends around | Missions | Skis by the end | Gear by the end | Skill points by the end | What riding feels new |

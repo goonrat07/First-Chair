@@ -4,6 +4,10 @@
 > `story-outline.md`: what a mission is made of, using only what the sim already reports, so the first story-mode
 > work could start from it. Nothing here is decided or built.
 
+> **Changed 2026-11-02 (`season-loop.md`):** still the basis for missions. Objectives gain time windows ("land a
+> backflip during golden hour"), time trials and freestyle challenges are always-open start gates, and other
+> skiers are solid, so near misses with them count as the trees' do.
+
 ## Ground rules (from the project, not new)
 
 - **Missions read the ride; they never change it.** The sim (`Packages/com.firstchair.sim/`) knows nothing of

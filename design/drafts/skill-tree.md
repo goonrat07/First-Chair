@@ -3,6 +3,9 @@
 > **Status:** Draft for the user to choose from (sleep mode, 2026-11-02, at the user's request: "brainstorming ...
 > skill tree"). Nothing here is decided. Companion drafts: `story-outline.md`, `gear-progression.md`.
 
+> **Changed 2026-11-02 (`season-loop.md`):** the tree gains a bag-space node, which raises the bag's weight
+> limit a little for every bag. Warming-hut quests may add XP toward the points.
+
 ## Ground rules (from the project, not new)
 
 - **Anything that changes a ride goes through the sim.** A rider's ranks and unlocked moves are copied into the run's

@@ -3,6 +3,12 @@
 > **Status:** Draft for the user to choose from (sleep mode, 2026-11-02, at the user's request: "brainstorming ...
 > gear progression"). Nothing here is decided. Companion drafts: `story-outline.md`, `skill-tree.md`.
 
+> **Changed 2026-11-02 (`season-loop.md`):** the user chose a fuller loadout: skis, boot flex, the bindings'
+> release setting and mount point, wax and edge tune, picked each morning, with clothes and goggles cosmetic only.
+> Gear is gated by crew level and won through challenges, events and clashing sponsors. The five bars and the
+> measurements below carry over as the skis' stats, with bigger differences, since gear should change how riding
+> feels.
+
 ## Ground rules (from the project, not new)
 
 - **Anything that changes a ride goes through the sim** (Bluebird's principle 2; `.claude/rules/sim-code.md`). A
