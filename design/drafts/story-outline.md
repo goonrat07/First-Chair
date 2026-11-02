@@ -94,6 +94,39 @@ when the rider stops, mission markers at the cast's hangouts, an optional radio.
 **How it gates** (Bluebird D1, kept): an act opens when its main missions are done and the player has enough
 progress on any mix of tracks (crew tiers in Bluebird), so a park rider and a powder rider reach act 2 together.
 
+## The prologue and act 1, mission by mission
+
+A closer look at the first two hours, if direction B is picked, using only what the game can already do (carve,
+tuck, jumps and grabs, rails and boxes, trees and Flow, the chairlift, five snow types). Each mission starts at a
+cast member's spot, can't be failed (a miss restarts the objective), and ends back on the snow. Lines are samples of
+the tone, not final.
+
+| # | Mission | Giver, where | Objectives | Teaches | Opens or gives |
+|---|---|---|---|---|---|
+| P1 | First Chair | June, at the Express in the blue before dawn | Load the first chair with June; ride up as the sun comes over the ridge (a short scene) | The lift | The opening groomer |
+| P2 | Opening Run | June, at the top | Ride the groomer to the base without a crash; carve at least three turns | Carving, the chase camera | Mo, and the lift shack |
+| P3 | Shift Change | Mo, at the lift shack | Ride the Express (with the public now); tuck the run-out under 40 seconds | Tucking for speed | The bunny hill's markers; your nickname on the shack's board |
+| 1-1 | Shovel Duty | Dex, at the park's top | Ride the small park: land any two jumps, then any grab | Pop, jumps, grabs | The small park's rail line |
+| 1-2 | Rails Are Just Thin Snow | Dex, at the rail line | Grind a box end to end, then a rail | Rails and boxes | Dex's first park challenge |
+| 1-3 | Listen With Your Knees | Wren, at the fire pit by the first glade | Follow Wren's ghost through the green glade; finish with Flow above half | Trees, near misses, Flow | The green glade's challenge |
+| 1-4 | Splits | Ilse, at the timing hut | Run the gates on the race course; beat her old "liftie record" | Clean race lines | Ilse's first race; the timing lights |
+| 1-5 | Snacks First | Hank, at the patrol room | Find Bowie's lost ball off the groomer's edge (a short powder dip) | Powder, edges between snow types | Hank's message for act 3 |
+| 1-6 | Shot List | Tavi, at the base | Ride past Tavi's camera spots: a carve, a jump, a tree line | The helmet camera, clips | Clips and the filmer track |
+| 1-7 | The Lift Line | June, at the lodge | Bring the Pulse to its first mark (any mix of the above); then the act's closing scene: the first real crowd in the lift line | Why it all matters | Act 2's opening (the Summit chair) |
+
+**Sample lines** (warm, short, never at the player's expense):
+
+- **June** (P1, on the chair): "Sixty-one years this lift's run. Don't you dare be the one who breaks it."
+- **Mo** (P3): "Rule one of lifties: never race the public. Rule two: obviously race the public."
+- **Dex** (1-2): "A rail is just snow that went to the gym."
+- **Wren** (1-3): "Don't look at the trees. Look at the gaps."
+- **Ilse** (1-4): "You were fast. You were also wrong twice. Again."
+- **Hank** (1-5): "Bowie's ball. He's very serious about it. So am I."
+- **Tavi** (1-6): "Okay, okay: the light at four o'clock, you, going fast. That's the whole film."
+
+**Cass, the rival**, first appears in act 2, winning Dex's slopestyle with a run the player watches from the lift;
+act 1 only plants them through Mo's gossip ("There's a kid from Summit Peak who skis like the mountain owes them money").
+
 ## What the story needs that doesn't exist yet
 
 - A **game layer** that reads sim events after each step (missions, payouts, the story director). Bluebird's rule
