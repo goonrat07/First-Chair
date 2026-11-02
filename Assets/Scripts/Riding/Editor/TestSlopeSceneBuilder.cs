@@ -182,15 +182,25 @@ namespace FirstChair.Riding.Editor
             Set(follow, "settings", cameraSettings);
             TestSlopeLook.PostProcessing(camera);
 
-            // Story 017: the ski tracks cut into the snow as grooves, stamped in a window ahead of the camera.
+            // Story 017's map of where the skis went, around the rider, and Story 018's snow mesh, pushed down by it.
             Shader grooveStamp = Shader.Find(TrackGrooves.StampShaderName);
-            if (grooveStamp != null)
+            Shader grooveBlur = Shader.Find(TrackGrooves.BlurShaderName);
+            if (grooveStamp != null && grooveBlur != null)
             {
-                Set(camera.gameObject.AddComponent<TrackGrooves>(), "stampShader", grooveStamp);
+                var grooves = camera.gameObject.AddComponent<TrackGrooves>();
+                Set(grooves, "stampShader", grooveStamp);
+                Set(grooves, "blurShader", grooveBlur);
+                Set(grooves, "follow", rider.transform);
+
+                var skin = new GameObject("SnowSkin").AddComponent<SnowSkin>();
+                skin.GetComponent<MeshRenderer>().sharedMaterials = TestSlopeLook.SnowSkinMaterials(terrainData, snowLayers);
+                Set(skin, "terrain", terrain);
+                Set(skin, "follow", rider.transform);
             }
             else
             {
-                Debug.LogWarning("TestSlopeSceneBuilder: no shader " + TrackGrooves.StampShaderName + "; the tracks stay ribbons only.");
+                Debug.LogWarning("TestSlopeSceneBuilder: no shader " + TrackGrooves.StampShaderName + " or " + TrackGrooves.BlurShaderName
+                    + "; the tracks stay ribbons only.");
             }
 
             var hud = new GameObject("HUD").AddComponent<RiderHud>();

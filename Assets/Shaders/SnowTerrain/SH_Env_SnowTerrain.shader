@@ -3,8 +3,9 @@
 // Purpose: the snow terrain. URP 17.3's "Universal Render Pipeline/Terrain/Lit" (Unity's Graphics repository, branch
 // 6000.3/staging, Shaders/Terrain/TerrainLit.shader, under the Unity Companion License) with its forward pass
 // drawing First Chair's snow (SH_Env_SnowTerrainForward.hlsl): wind ripples, a soft terminator, blue shade and sun
-// glints, and since Story 017 the ski grooves TrackGrooves stamps, tuned live from LightingSettings. Every other pass,
-// and the base-map shaders, are URP's own.
+// glints, tuned live from LightingSettings. Story 018: under the snow mesh near the rider (SnowSkin) this terrain cuts
+// itself away in its colour, shadow and depth passes (SH_Env_SnowSkinCommon.hlsl, SH_Env_SnowTerrainCut.hlsl), and the
+// mesh draws the snow there with its trenches. Every other pass, and the base-map shaders, are URP's own.
 // Target: URP Forward and Forward+, desktop (Windows, Linux). Keywords and variants: URP's, none added.
 // Deferred: URP's GBuffer pass is left out; First Chair's renderer is Forward (FirstChair_Renderer.asset).
 // Fallback: with every LightingSettings snow weight at 0 it draws exactly as URP's stock terrain.
@@ -133,7 +134,7 @@ Shader "First Chair/Snow Terrain"
             #pragma target 2.0
 
             #pragma vertex ShadowPassVertex
-            #pragma fragment ShadowPassFragment
+            #pragma fragment FCTerrainShadowFragment
 
             #pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
@@ -146,6 +147,7 @@ Shader "First Chair/Snow Terrain"
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "Assets/Shaders/SnowTerrain/SH_Env_SnowTerrainCut.hlsl"
             ENDHLSL
         }
 
@@ -160,14 +162,15 @@ Shader "First Chair/Snow Terrain"
             HLSLPROGRAM
             #pragma target 2.0
 
-            #pragma vertex DepthOnlyVertex
-            #pragma fragment DepthOnlyFragment
+            #pragma vertex FCTerrainDepthOnlyVertex
+            #pragma fragment FCTerrainDepthOnlyFragment
 
             #pragma multi_compile_instancing
             #pragma instancing_options assumeuniformscaling nomatrices nolightprobe nolightmap
 
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitInput.hlsl"
             #include "Packages/com.unity.render-pipelines.universal/Shaders/Terrain/TerrainLitPasses.hlsl"
+            #include "Assets/Shaders/SnowTerrain/SH_Env_SnowTerrainCut.hlsl"
             ENDHLSL
         }
 

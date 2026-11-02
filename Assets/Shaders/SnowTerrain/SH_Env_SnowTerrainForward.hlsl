@@ -3,8 +3,10 @@
 // Purpose: the snow terrain's forward fragment. Everything else comes unchanged from URP 17.3's own terrain passes,
 // included below; only SplatmapFragment is replaced, by URP's own forward fragment (Unity's Graphics repository,
 // branch 6000.3/staging, Shaders/Terrain/TerrainLitPasses.hlsl, under the Unity Companion License) with the snow terms
-// of SH_Env_SnowEffects.hlsl added: the ripples and the ski grooves (Story 017) before the lighting reads the normal,
-// the rest after URP's lighting and before the layer weight and fog, so the first pass and the add pass weigh them alike.
+// of SH_Env_SnowEffects.hlsl added: the ripples before the lighting reads the normal, the rest after URP's lighting and
+// before the layer weight and fog, so the first pass and the add pass weigh them alike. Story 018: the terrain discards
+// its pixels under the snow mesh near the rider (SH_Env_SnowSkinCommon.hlsl); the mesh draws with this same fragment,
+// FC_SNOW_SKIN defined, adding its trenches' slope and tint (SH_Env_SnowSkin.hlsl).
 // Target: URP Forward and Forward+, desktop. The fork has no deferred (GBuffer) pass; the renderer is Forward.
 #ifndef FIRST_CHAIR_SNOW_TERRAIN_FORWARD_INCLUDED
 #define FIRST_CHAIR_SNOW_TERRAIN_FORWARD_INCLUDED
@@ -15,6 +17,10 @@
 #undef SplatmapFragment
 
 #include "Assets/Shaders/SnowTerrain/SH_Env_SnowEffects.hlsl"
+#include "Assets/Shaders/SnowTerrain/SH_Env_SnowSkinCommon.hlsl"
+#ifdef FC_SNOW_SKIN
+#include "Assets/Shaders/SnowTerrain/SH_Env_SnowSkin.hlsl"
+#endif
 
 void SplatmapFragment(
     Varyings IN
@@ -27,6 +33,10 @@ void SplatmapFragment(
     UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(IN);
 #ifdef _ALPHATEST_ON
     ClipHoles(IN.uvMainAndLM.xy);
+#endif
+#ifndef FC_SNOW_SKIN
+    // First Chair: under the snow mesh near the rider, the mesh draws the snow (Story 018).
+    FCClipUnderSnowSkin(IN.uvMainAndLM.xy);
 #endif
 
     half3 normalTS = half3(0.0h, 0.0h, 1.0h);
@@ -71,10 +81,12 @@ void SplatmapFragment(
     InitializeInputData(IN, normalTS, inputData);
     SetupTerrainDebugTextureData(inputData, IN.uvMainAndLM.xy);
 
-    // First Chair: the wind ripples and the ski grooves (Story 017) bend the normal before anything lights it, and a
-    // groove's floor darkens.
+    // First Chair: the wind ripples bend the normal before anything lights it; on the snow mesh, so do its trenches,
+    // and their packed floors take the tint (Story 018).
     inputData.normalWS = SnowRipples(inputData.normalWS, inputData.positionWS, splatControl);
-    inputData.normalWS = SnowGrooves(inputData.normalWS, inputData.positionWS, splatControl, albedo);
+#ifdef FC_SNOW_SKIN
+    FCSnowSkinShade(inputData.positionWS, IN.uvMainAndLM.xy, FCFootprint(inputData.positionWS), inputData.normalWS, albedo);
+#endif
 
 #if defined(_DBUFFER)
     half3 specular = half3(0.0h, 0.0h, 0.0h);

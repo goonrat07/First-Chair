@@ -161,9 +161,18 @@ namespace FirstChair.Riding.Editor
             return material;
         }
 
+        /// <summary>The track ribbons' shader (Story 018): URP Lit's translucent look, faded out near the rider, where the snow
+        /// mesh cuts the tracks into the snow.</summary>
+        public const string RibbonShader = "First Chair/Track Ribbon";
+
+        /// <summary>The snow mesh's first pass (Story 018), terrain layers 0 to 3.</summary>
+        public const string SnowSkinShader = "First Chair/Snow Skin";
+
+        /// <summary>The snow mesh's add pass (Story 018), terrain layers 4 to 7.</summary>
+        public const string SnowSkinAddShader = "Hidden/First Chair/Snow Skin (Add Pass)";
+
         /// <summary>The ski track material: a groove in shade, a little bluer and darker than the snow, translucent and double-sided.</summary>
-        public static Material TrackMaterial() =>
-            Translucent(LitMaterial("SkiTrack", "Universal Render Pipeline/Lit", TrackColour, 0f, true));
+        public static Material TrackMaterial() => RibbonMaterial("SkiTrack", TrackColour, true);
 
         // Tracks are translucent (story 007, the user's "tracks should build up as in GMA2"): where tracks cross or ride over
         // each other they darken, so a well-ridden line reads as worn in. One layer over white snow comes out about as the
@@ -171,24 +180,97 @@ namespace FirstChair.Riding.Editor
         private static readonly Color TrackColour = new Color(0.55f, 0.65f, 0.86f, 0.55f);
         private static readonly Color OldTrackColour = new Color(0.58f, 0.66f, 0.87f, 0.50f);
 
-        // URP Lit as an alpha-blended transparent surface, set the way URP's own material editor sets it.
-        private static Material Translucent(Material material)
+        // A track ribbon's material (First Chair/Track Ribbon), its shader set even on an asset made before Story 018.
+        private static Material RibbonMaterial(string name, Color colour, bool doubleSided)
         {
-            material.SetFloat("_Surface", 1f);
-            material.SetFloat("_Blend", 0f);
-            material.SetFloat("_AlphaClip", 0f);
-            material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
-            material.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
-            material.SetFloat("_SrcBlendAlpha", (float)BlendMode.One);
-            material.SetFloat("_DstBlendAlpha", (float)BlendMode.OneMinusSrcAlpha);
-            material.SetFloat("_ZWrite", 0f);
-            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            material.DisableKeyword("_ALPHATEST_ON");
-            material.SetOverrideTag("RenderType", "Transparent");
+            Material material = LitMaterial(name, RibbonShader, colour, 0f, doubleSided);
+            Shader shader = Shader.Find(RibbonShader);
+            if (shader != null && material.shader != shader)
+            {
+                material.shader = shader;
+            }
+
+            material.SetColor("_BaseColor", colour);
+            material.SetFloat("_Cull", (float)(doubleSided ? CullMode.Off : CullMode.Back));
             material.renderQueue = (int)RenderQueue.Transparent;
             EditorUtility.SetDirty(material);
             AssetDatabase.SaveAssets();
             return material;
+        }
+
+        /// <summary>
+        /// The snow mesh's materials (Story 018): its first pass with the terrain's layers 0 to 3 and, with more than four
+        /// layers, its add pass with layers 4 to 7, each set as Unity sets the terrain's own, so where no track is the mesh
+        /// draws the snow exactly as the terrain does. Saved in <see cref="Folder"/>, so the build keeps their shader variants.
+        /// </summary>
+        /// <param name="data">The terrain's data, painted (its splat maps are read).</param>
+        /// <param name="layers">The terrain's layers, from <see cref="SnowLayers"/>.</param>
+        public static Material[] SnowSkinMaterials(TerrainData data, TerrainLayer[] layers)
+        {
+            Material first = SnowSkinMaterial("SnowSkin", SnowSkinShader, data, layers, 0);
+            return layers.Length <= LayersPerPass
+                ? new[] { first }
+                : new[] { first, SnowSkinMaterial("SnowSkinAdd", SnowSkinAddShader, data, layers, LayersPerPass) };
+        }
+
+        // A terrain pass draws four layers, one per splat map channel.
+        private const int LayersPerPass = 4;
+
+        private static Material SnowSkinMaterial(string name, string shaderName, TerrainData data, TerrainLayer[] layers, int firstLayer)
+        {
+            Material material = LitMaterial(name, shaderName, Color.white, 0f, false);
+            Shader shader = Shader.Find(shaderName);
+            if (shader != null && material.shader != shader)
+            {
+                material.shader = shader;
+            }
+
+            Texture2D[] controls = data.alphamapTextures;
+            material.SetTexture("_Control", controls[firstLayer / LayersPerPass]);
+            material.SetFloat("_NumLayersCount", layers.Length);
+            bool normals = false, masks = false;
+            for (int slot = 0; slot < LayersPerPass; slot++)
+            {
+                int index = firstLayer + slot;
+                TerrainLayer layer = index < layers.Length ? layers[index] : null;
+                string n = slot.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                Vector2 tile = layer != null ? layer.tileSize : Vector2.one;
+                Vector2 offset = layer != null ? layer.tileOffset : Vector2.zero;
+                material.SetTexture("_Splat" + n, layer != null ? layer.diffuseTexture : null);
+                material.SetTexture("_Normal" + n, layer != null ? layer.normalMapTexture : null);
+                material.SetTexture("_Mask" + n, layer != null ? layer.maskMapTexture : null);
+                material.SetTextureScale("_Splat" + n, new Vector2(data.size.x / tile.x, data.size.z / tile.y));
+                material.SetTextureOffset("_Splat" + n, new Vector2(offset.x / tile.x, offset.y / tile.y));
+                material.SetFloat("_NormalScale" + n, layer != null ? layer.normalScale : 1f);
+                material.SetFloat("_Metallic" + n, layer != null ? layer.metallic : 0f);
+                // Unity passes a layer whose smoothness comes from its albedo's alpha a smoothness of 1, so the alpha is it.
+                bool alphaSmoothness = layer != null && layer.smoothnessSource == TerrainLayerSmoothnessSource.DiffuseAlphaChannel;
+                material.SetFloat("_Smoothness" + n, alphaSmoothness ? 1f : layer != null ? layer.smoothness : 0f);
+                material.SetVector("_DiffuseRemapScale" + n, layer != null ? layer.diffuseRemapMax : Vector4.one);
+                material.SetVector("_MaskMapRemapOffset" + n, layer != null ? layer.maskMapRemapMin : Vector4.zero);
+                material.SetVector("_MaskMapRemapScale" + n, layer != null ? layer.maskMapRemapMax - layer.maskMapRemapMin : Vector4.one);
+                material.SetFloat("_LayerHasMask" + n, layer != null && layer.maskMapTexture != null ? 1f : 0f);
+                normals |= layer != null && layer.normalMapTexture != null;
+                masks |= layer != null && layer.maskMapTexture != null;
+            }
+
+            SetKeyword(material, "_NORMALMAP", normals);
+            SetKeyword(material, "_MASKMAP", masks);
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
+
+        private static void SetKeyword(Material material, string keyword, bool on)
+        {
+            if (on)
+            {
+                material.EnableKeyword(keyword);
+            }
+            else
+            {
+                material.DisableKeyword(keyword);
+            }
         }
 
         /// <summary>
@@ -551,7 +633,7 @@ namespace FirstChair.Riding.Editor
         public static void OldTracks(Transform parent, TestSlopeData slope)
         {
             // Fainter than the live track (TrackMaterial), so old tracks read as older; translucent, so crossings build up.
-            Material material = Translucent(LitMaterial("OldTrack", "Universal Render Pipeline/Lit", OldTrackColour, 0f, false));
+            Material material = RibbonMaterial("OldTrack", OldTrackColour, false);
             for (int z = 0; z < OldTrackZones.Length; z++)
             {
                 if (!slope.Layout.TryGetZone(OldTrackZones[z], out SlopeZone zone))

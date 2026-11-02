@@ -8,8 +8,9 @@ namespace FirstChair.Riding
     /// <summary>
     /// Applies <see cref="LightingSettings"/> to the scene every frame (story 007's lighting pass): the sun's direction,
     /// intensity, colour and shadows, the ambient light scaled from the colours the scene was built with, a colour
-    /// adjustment on the global post-processing volume, and the snow terrain shader's globals (story 014 and story 017's
-    /// grooves, <c>Assets/Shaders/SnowTerrain/SH_Env_SnowEffects.hlsl</c>). Lives on the sun. Presentation only.
+    /// adjustment on the global post-processing volume, and the snow shaders' globals (story 014's snow terms,
+    /// <c>Assets/Shaders/SnowTerrain/SH_Env_SnowEffects.hlsl</c>, and story 018's tracks, <c>SH_Env_SnowSkin.hlsl</c>).
+    /// Lives on the sun. Presentation only.
     /// </summary>
     [RequireComponent(typeof(Light))]
     public sealed class LightingRig : MonoBehaviour
@@ -30,6 +31,7 @@ namespace FirstChair.Riding
         private static readonly int SnowGrooveId = Shader.PropertyToID("_FCSnowGroove");
         private static readonly int SnowGrooveLayers0Id = Shader.PropertyToID("_FCSnowGrooveLayers0");
         private static readonly int SnowGrooveLayers1Id = Shader.PropertyToID("_FCSnowGrooveLayers1");
+        private static readonly int SnowGrooveTintId = Shader.PropertyToID("_FCSnowGrooveTint");
 
         // Per terrain layer, 8 for the two passes. Terrain layer i is SnowType i (TestSlopeLook.SnowLayers).
         private readonly float[] _glintByLayer = new float[8];
@@ -85,8 +87,8 @@ namespace FirstChair.Riding
         }
 
         // The snow terrain's globals. The terrain draws layers 0 to 3 in its first pass and 4 to 7 in its add pass, so
-        // each per-layer amount goes out as two vectors. Ripples are the powder's alone. The grooves' window and texture
-        // are TrackGrooves' to set; their depth per layer is here.
+        // each per-layer amount goes out as two vectors. Ripples are the powder's alone. The tracks' depth per layer,
+        // rim and tint are here for the snow mesh (SnowSkin, story 018); its track map is TrackGrooves' to set.
         private void PushSnow()
         {
             for (int i = 0; i < _glintByLayer.Length; i++)
@@ -110,7 +112,9 @@ namespace FirstChair.Riding
             Shader.SetGlobalVector(SnowRippleLayers0Id, Layers(_rippleByLayer, 0));
             Shader.SetGlobalVector(SnowRippleLayers1Id, Layers(_rippleByLayer, 4));
             Shader.SetGlobalVector(SnowGrooveId, new Vector4(
-                settings.SnowGrooveStrength, settings.SnowGrooveDarkening, settings.SnowGrooveFadeMetres, 0f));
+                settings.SnowGrooveStrength, settings.SnowGrooveRaise, settings.SnowGrooveTintStrength, 0f));
+            Color grooveTint = settings.SnowGrooveTint;
+            Shader.SetGlobalVector(SnowGrooveTintId, new Vector4(grooveTint.r, grooveTint.g, grooveTint.b, 0f));
             Shader.SetGlobalVector(SnowGrooveLayers0Id, Layers(_grooveByLayer, 0));
             Shader.SetGlobalVector(SnowGrooveLayers1Id, Layers(_grooveByLayer, 4));
         }

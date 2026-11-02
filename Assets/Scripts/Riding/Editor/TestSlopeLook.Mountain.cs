@@ -213,7 +213,7 @@ namespace FirstChair.Riding.Editor
         /// <param name="slope">The slope.</param>
         public static void RunOldTracks(Transform parent, TestSlopeData slope)
         {
-            Material material = Translucent(LitMaterial("OldTrack", "Universal Render Pipeline/Lit", OldTrackColour, 0f, false));
+            Material material = RibbonMaterial("OldTrack", OldTrackColour, false);
             for (int r = 0; r < slope.Layout.Runs.Count; r++)
             {
                 SlopeRun run = slope.Layout.Runs[r];
