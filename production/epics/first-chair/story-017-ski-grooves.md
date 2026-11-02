@@ -1,12 +1,20 @@
 # Story 017: Ski grooves in the snow
 
 > **Epic**: First Chair MVP (base skiing system)
-> **Status**: In Progress
+> **Status**: Superseded: folded into story 018 (2026-11-02)
 > **Layer**: Presentation
 > **Type**: Visual/Feel (the grooves in a build) + Logic (the stamp window)
 > **Estimate**: M
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: 2026-10-27
+> **Last Updated**: 2026-11-02
+
+## Superseded (2026-11-02)
+
+The user, seeing the grooves in the first cloud ride: the snow should have real depth, as in GMA2 and Steep, with the
+ski displacing and packing the snow into a 3D track rather than a line. Grooves drawn in the shading can't give that,
+so this story stops here and folds into story 018 (`story-018-deformable-snow.md`), which keeps its track map
+(`TrackGrooveWindow`, `TrackGrooves`, the stamp shader) as the input for a truly displaced snow mesh. What was built
+and measured is recorded in the sleep mode report (`production/sleep-mode/report.md`) and the evidence folder.
 
 ## Context
 

@@ -38,4 +38,5 @@ mountain with one chairlift on 2026-10-26 (story 010); the full mountain stays o
 | 014 | [A procedural snow shader](story-014-procedural-snow-shader.md) | Visual/Feel | In Review | N/A (minimal) |
 | 015 | [A mountain design tool](story-015-mountain-design-tool.md) | Logic + Visual/Feel | In Review | N/A (minimal) |
 | 016 | [A varied forest](story-016-varied-forest.md) | Visual/Feel + Logic | In Review | N/A (minimal) |
-| 017 | [Ski grooves in the snow](story-017-ski-grooves.md) | Visual/Feel + Logic | In Progress | N/A (minimal) |
+| 017 | [Ski grooves in the snow](story-017-ski-grooves.md) | Visual/Feel + Logic | Superseded: folded into 018 | N/A (minimal) |
+| 018 | [Deformable snow near the rider](story-018-deformable-snow.md) | Visual/Feel + Logic | In Progress | N/A (minimal) |
