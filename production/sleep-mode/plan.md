@@ -16,6 +16,7 @@ in CI and ridden here; their sign-off and the Unity editor check stay the user's
 | 3 | Brainstorm: a more specific story outline for First Chair (from the Bluebird spec's Career and cast, and research), with options | (design draft) | done: `design/drafts/story-outline.md` | 4b91dbf |
 | 4 | Brainstorm: gear progression (skis, boots, poles, clothing; what gear changes in the sim and what is cosmetic), with options | (design draft) | done: `design/drafts/gear-progression.md` | 4686ed9 |
 | 5 | Brainstorm: a skill tree (abilities, points, respec; what goes through the sim), with options | (design draft) | done: `design/drafts/skill-tree.md` | 707cb35 |
+| 6 | Refill (story 018 follow-up): the snow mesh skips its slush add pass where no slush lies under it, which changes nothing on screen; frame time measured against the build before | dev-story | queued | |
 
 ## Left for the PC
 - story-008, 009, 010, 011, 012, 013, 014, 015, 016: In Review, waiting on the user's playtest and sign-off.

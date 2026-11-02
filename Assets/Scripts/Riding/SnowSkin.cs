@@ -14,8 +14,9 @@ namespace FirstChair.Riding
     /// terrain's heights and normals go to the GPU once, as textures, so the mesh lies exactly on the terrain where no
     /// track is. With the groove strength at 0 (<see cref="LightingSettings"/>) the mesh and the cut are off and the snow
     /// draws as it did before the story. <see cref="DepthAt"/> tells the skier view how deep the snow is cut under the
-    /// rider, from the terrain's splat weights kept as bytes (about 5 MB at 1,024 texels and five layers). No allocation
-    /// a frame.
+    /// rider, from the terrain's splat weights kept as bytes (about 5 MB at 1,024 texels and five layers). Where none of
+    /// the terrain's layers 4 to 7 lies under the mesh, it draws without its add pass, which would add nothing there
+    /// (<see cref="SplatLayerBlocks"/>). No allocation a frame.
     /// </remarks>
     /// <example>
     /// <code>
@@ -56,6 +57,11 @@ namespace FirstChair.Riding
         // A splat weight of 1, as a byte (the alphamap textures' 8 bits).
         private const float FullWeight = 255f;
 
+        // The add pass draws the terrain's layers 4 to 7 (on the test slope, slush) over the whole mesh again; where
+        // none of them lies under the mesh it would add nothing, so the mesh draws without it. The splat map is checked
+        // in blocks of this many texels a side.
+        private const int AddPassBlockTexels = 32;
+
         [Tooltip("The terrain the snow lies on; found in the scene if left empty.")]
         [SerializeField] private Terrain terrain;
         [Tooltip("What the mesh follows: the rider.")]
@@ -77,6 +83,10 @@ namespace FirstChair.Riding
         private SnowSkinLayout _layout;
         private Mesh _mesh;
         private MeshRenderer _renderer;
+        private Material[] _allPasses;
+        private Material[] _firstPassOnly;
+        private SplatLayerBlocks _addPassLayers;
+        private bool _addPassShown = true;
         private Texture2D _heights;
         private Texture2D _normals;
         private Vector3 _terrainOrigin;
@@ -106,6 +116,7 @@ namespace FirstChair.Riding
             GetComponent<MeshFilter>().sharedMesh = _mesh;
             BuildTerrainTextures();
             KeepSplatWeights(terrain.terrainData);
+            KeepAddPassLayers();
         }
 
         /// <summary>
@@ -173,6 +184,7 @@ namespace FirstChair.Riding
             Vector3 at = follow.position;
             _layout.SnapOrigin(at.x, at.z, out float x, out float z);
             transform.position = new Vector3(x, 0f, z);
+            ShowAddPassWhereNeeded(x, z);
             float cut = _layout.HalfSize - overlapMetres;
             float fadeFrom = Mathf.Max(0f, cut - fadeMetres);
             Shader.SetGlobalVector(SkinId, new Vector4(x, z, cut, fadeFrom));
@@ -260,6 +272,40 @@ namespace FirstChair.Riding
             Shader.SetGlobalVector(TerrainId, new Vector4(_terrainOrigin.x, _terrainOrigin.z, _terrainSize.x, _terrainSize.z));
             Shader.SetGlobalVector(HeightmapId, new Vector4(res, data.alphamapResolution, 0f, 0f));
             Shader.SetGlobalVector(SkinEdgeId, new Vector4(overlapDrop, 0f, 0f, 0f));
+        }
+
+        // The materials with and without the add pass, and where the add pass's layers lie, for ShowAddPassWhereNeeded.
+        // Only a mesh with an add pass (more than four terrain layers) has any of it.
+        private void KeepAddPassLayers()
+        {
+            _allPasses = _renderer.sharedMaterials;
+            if (_allPasses.Length < 2 || _splat == null || _splatLayers <= LayersPerMap)
+            {
+                return;
+            }
+
+            _firstPassOnly = new[] { _allPasses[0] };
+            _addPassLayers = new SplatLayerBlocks(_splat, _splatTexels, _splatLayers, LayersPerMap, AddPassBlockTexels);
+        }
+
+        // Draws the add pass only while any of its layers lies under the mesh centred at (x, z). Both material arrays
+        // are made once, so a switch allocates nothing.
+        private void ShowAddPassWhereNeeded(float x, float z)
+        {
+            if (_addPassLayers == null)
+            {
+                return;
+            }
+
+            float half = _layout.HalfSize;
+            bool needed = _addPassLayers.AnyIn(
+                (x - half - _terrainOrigin.x) / _terrainSize.x, (z - half - _terrainOrigin.z) / _terrainSize.z,
+                (x + half - _terrainOrigin.x) / _terrainSize.x, (z + half - _terrainOrigin.z) / _terrainSize.z);
+            if (needed != _addPassShown)
+            {
+                _renderer.sharedMaterials = needed ? _allPasses : _firstPassOnly;
+                _addPassShown = needed;
+            }
         }
 
         // The terrain's splat weights as the GPU reads them (8 bits a layer), kept for DepthAt: a byte a layer a texel,
