@@ -70,7 +70,7 @@ Started 2026-11-02T15:46:48Z · Ended (running) · Reason (running) · Commits 0
 - Not verified: in a build on a rail (the cloud rides don't reach the park's rails yet) and in the editor.
 
 ## Brainstorms, more specific: the story's acts 1 to 4, and the gear measured in the sim
-- **Story** (`design/drafts/story-outline.md`): the prologue and acts 1 to 4 mission by mission (37 missions), each
+- **Story** (`design/drafts/story-outline.md`): the prologue and acts 1 to 4 mission by mission (38 missions), each
   with its giver, objectives, what it teaches and opens, sample lines in the cast's voices, and, from act 2 on, what it
   needs beyond today's riding (gates and timing, ghosts, bots or recorded runs, a run score, night lighting, weather
   and time of day changing the snow, surface lifts, combos, the replay editor, water). New options: Cass watched or
