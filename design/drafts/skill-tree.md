@@ -52,6 +52,11 @@ branch's nodes. A park rider grows the park branch without grinding races.
 **Ranks** (marked R) are small: three steps of about 2 percent above today's tuning, tuned in the Feel Lab so the top
 step still feels right. **Moves** (marked M) are new; the sim gates each one on a bit in `RunSetup`.
 
+> **Measured since (2026-11-02, `gear-progression.md`, "Measured in the sim"):** steps of a few percent on grip and
+> drag move the pace by under 2%, too little to feel; only the air values (pop, spin) are felt at 4%. So the ranks on
+> grip, drag and speed below would need steps of about 8 to 15% to be noticed, or be folded into moves. The air ranks
+> can stay small.
+
 ### Carving (from carving, racing and speed)
 
 | Node | Kind | What it does | Sim values or rule |

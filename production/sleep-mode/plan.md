@@ -21,6 +21,8 @@ in CI and ridden here; their sign-off and the Unity editor check stay the user's
 | 8 | Refill (fix): no tracks, footprints, trenches or spray while grinding a rail or box (the views counted a grind as on the snow) | dev-story | done | (this commit) |
 | 9 | Brainstorm, more specific: the story draft's prologue and act 1, mission by mission | (design draft) | done | 3ee15b8 |
 | 10 | Proposal: rocks and props (from the brief's ideas); it changes the mountain format and the sim, so it waits on the user | (question) | skipped: question in `questions.md` | |
+| 11 | Refill (fix, story 018): the skis were thin and half buried on the groomer (Pine Bowl, build 49c1146); they now ride on top of a cut 2 cm deep or less and sink by the rest of a deeper one | dev-story | running: code b92d0be, CI build and ride next | b92d0be |
+| 12 | Brainstorm, more specific: the gear draft's skis measured in the sim (each bar alone and the eight skis), and the per-step shares fixed so a ski is felt | (design draft) | done | (this commit) |
 
 ## Left for the PC
 - story-008, 009, 010, 011, 012, 013, 014, 015, 016: In Review, waiting on the user's playtest and sign-off.
