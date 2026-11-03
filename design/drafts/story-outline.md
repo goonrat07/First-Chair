@@ -28,9 +28,14 @@
 10. Cass is also a light romantic interest: a flirty comment or a moment of shyness here and there, as part of her
     competitive nature, never getting in the way of the riding. The story ends with photos of you and Cass hoisting
     the trophy with the whole cast celebrating behind you; in one, the two of you are hugging.
-11. The rider is not silent: he has lines. He is a set character with his own name and look, not customisable; what
-    you choose is his outfits and gear.
+11. The rider is Finn Calder, called "First Chair" by the locals: a set character with his own look and lines, not
+    customisable; what you choose is his outfits and gear.
 12. The romance is the same scripted moments for every player, and a little more flirty than first drafted.
+13. Most people call him Finn, and "First Chair" only now and then, since it's a mouthful. One person calls him only
+    "First Chair" or "Calder", never Finn: Tavi, the filmer.
+14. Finn has a really nice mustache, and people bring it up, Mo and Cass especially.
+15. Cass is a tsundere: almost too competitive to be openly affectionate, not very good at hiding it, and always
+    teasing.
 
 ## The premise
 
@@ -49,16 +54,31 @@
 
 | Who | Now | Changed from the first version |
 |---|---|---|
-| You | A regular, many seasons on the mountain. **Decided:** a set character with his own name, look and lines; you choose his outfits and gear. *Proposed:* his name and look in open question 2 | No longer the new liftie, or silent |
+| Finn Calder, "First Chair" | **Decided:** the rider. A regular, many seasons on the mountain; a set character with his own look and lines, and you choose his outfits and gear. A really nice mustache that people bring up. *Proposed:* late 20s, shaggy brown hair, a permanent goggle tan; "First Chair" because he has been first in line every opening day for twelve seasons | No longer the new liftie, silent or customisable |
 | Mo Patel | Your cabin-mate; works the lifts, so knows the news first; hand warmers in every pocket | Was your shift partner |
 | June Alder | The owner, 60s, dry; has known you for years | Hired you in the first version |
 | Dex Moreau | Leads the Freestyle crew; builds the park | |
 | Ilse Brandt | Leads the Race crew; ex-World Cup racer, runs the timing hut | |
 | Wren Ostrova | Leads the Freeride crew; 70s, few words, knows every stash | |
 | Hank Lindqvist and Bowie | Ski patrol, with the avalanche dog; opens the backcountry. Summit's cuts land on Hank first | |
-| Tavi Reyes | Filmer; your clips grow your following | |
-| Cass Vale | Summit's sponsored rider: competitive by nature, not for money. *Proposed:* Summit's kit, worn because it gets her into the biggest events, not because she cares about the logo. **Decided:** a light romantic interest, sure of herself on the course and a little shy off it | Was a rival to the end, never turned (Bluebird) |
+| Tavi Reyes | Filmer; your clips grow your following. **Decided:** the one person who never calls him Finn: only "First Chair" or "Calder" | |
+| Cass Vale | Summit's sponsored rider: competitive by nature, not for money. *Proposed:* Summit's kit, worn because it gets her into the biggest events, not because she cares about the logo. **Decided:** a light romantic interest, sure of herself on the course and a little shy off it. **Decided:** a tsundere: almost too competitive to be openly affectionate, bad at hiding it, always teasing | Was a rival to the end, never turned (Bluebird) |
 | Graham Pell | Summit's acquisitions VP. *Proposed:* polite and cold, never raises his voice, does every cruel thing by memo: the patrol cuts, the lift, the eviction notices | Was comic in Bluebird |
+
+## Finn Calder
+
+- **Decided:** most people call him Finn, and "First Chair" now and then. Tavi calls him only "First Chair" or
+  "Calder", never Finn.
+- *Proposed:* Pell never uses his name at all ("your friend", "the local"), which says all you need to know about
+  Pell. Event announcers give the whole thing: Finn "First Chair" Calder.
+- *Proposed:* his voice: easygoing, dry, generous; he lets his skiing do the bragging. Lines stay short.
+- **Decided:** the mustache, a really nice one, and people bring it up. *Proposed* lines:
+  - **Mo:** "Twelve seasons, and the mustache still gets more fan mail than you do."
+  - **Mo**, later in the season: "She looked at the mustache. Twice. I counted."
+  - **Cass:** "Is that mustache even legal on a race course? It's distracting. For the other racers, I mean."
+  - **Tavi:** "Calder. Mustache to camera. The light's perfect."
+  - **Dex:** "Tell me the mustache is aerodynamic. Tell me you've tested it."
+  - **June:** "Shave that and I'll have to check your season pass photo."
 
 ## The season in four chapters
 
@@ -80,29 +100,32 @@ moments:
 |---|---|---|
 | About 13 | A freezing morning in the lift line. Mo hands Cass a pair of hand warmers without a word. She keeps them | Mo, later: "Summit's rider. Cold hands, same as anyone." |
 | About 22 | Pell calls Dex's jam "off-brand" and tells her to skip it. She goes anyway, late, and lands the best trick of the night | Cass: "I don't ride for logos. I ride for whoever's best." |
-| About 31 | She watches Hank and Bowie bring an injured skier out of the trees, two patrollers short | Cass: "They do that for what they get paid?" You: "Less, now." |
+| About 31 | She watches Hank and Bowie bring an injured skier out of the trees, two patrollers short | Cass: "They do that for what they get paid?" Finn: "Less, now." |
 | About 37 | At last chair she challenges you to a race down the old run. No logos, no clock but your own. She laughs for the first time | Cass: "Again. Tomorrow. Don't tell Pell." |
 | About 44 | Pell tells her the Classic is "a formality". She asks what happens to the cabins after. He doesn't answer | Pell: "That's not your department, Ms Vale." |
 
 ## A light romance
 
-**Decided:** a flirty comment or a moment of shyness here and there, folded into her competitiveness and a little
-more flirty than first drafted; the same scripted moments for every player; never a system, never in the way of the
-riding. *Proposed:* it lives only where the story already speaks (scenes when the rider stops, phone texts), with
-no affection meter, and he flirts back.
+**Decided:** a flirty comment or a moment of shyness here and there, a little more flirty than first drafted, the
+same scripted moments for every player, never a system and never in the way of the riding. Cass is a tsundere:
+almost too competitive to be openly affectionate, not very good at hiding it, and always teasing. *Proposed:* the
+pattern is that she says something kind by accident, then covers it with a jab or a denial, and the cast notices
+before she does. It lives only where the story already speaks (scenes when the rider stops, phone texts), with no
+affection meter, and Finn flirts back.
 
 *Proposed* touches, on the season's moments:
 
 | Day | Touch | Lines |
 |---|---|---|
-| About 13 | She catches him watching her warm-up run | Cass: "Taking notes? Good. You'll need them." You: "I was watching your line." Cass: "Sure you were." |
-| About 22 | After her best trick at Dex's jam she looks over to see if he saw it, and looks away fast when he did | Dex: "Did Summit's rider just blush?" Cass: "It's cold. Shut up." |
-| About 29 | She beats him in a time trial by a tenth and leans on his shoulder to read the board | Cass: "A tenth. I'd rub it in, but you're cute when you lose." |
-| About 37 | The last-chair race turns into a standing bet | Cass: "Loser buys the hot chocolate. Winner picks the table." You: "And if we tie?" Cass: "Then we share one." |
-| About 44 | A text that night, after Pell's non-answer | Cass: "Your cabin's the one with the crooked chimney? Asking for no reason." You: "Planning a visit?" Cass: "Planning to beat you there. Night." |
-| Blizzard eve | By the fire she gives him one of Mo's hand warmers, kept since day 13, and falls asleep against his shoulder | Cass: "Kept them. Don't make it weird." You: "Too late." |
-| The Classic | At the start, in the mountain's colours | Cass: "Don't you dare slow down for me." You: "Wasn't planning to." Cass: "Good. I like you at full speed." |
-| The trophy | Holding the cup between them, the tie on the board | Cass: "A tie. Guess we're sharing." (the hot chocolate bet, paid) |
+| About 13 | She catches Finn watching her warm-up run | Cass: "Taking notes? Good. You'll need them." Finn: "I was watching your line." Cass: "Obviously. What else would you be watching." |
+| About 18 | The mustache, in the lift line | Cass: "Is that mustache even legal on a race course? It's distracting. For the other racers, I mean." |
+| About 22 | After her best trick at Dex's jam she looks over to see if Finn saw it, and looks away fast when he did | Dex: "Did Summit's rider just blush?" Cass: "It's cold. And I wasn't looking at him." |
+| About 29 | She beats him in a time trial by a tenth and leans on his shoulder to read the board, then steps away fast | Cass: "A tenth. Don't read into the leaning. I needed to see the board." |
+| About 37 | The last-chair race turns into a standing bet | Cass: "Loser buys the hot chocolate. Winner picks the table." Finn: "And if we tie?" Cass: "Then we share one. Not because I want to. Rules are rules." |
+| About 44 | A text that night, after Pell's non-answer | Cass: "Your cabin's the one with the crooked chimney? Not that I looked." Finn: "Planning a visit?" Cass: "Planning to beat you there. Go to sleep, Finn." |
+| Blizzard eve | By the fire she gives him one of Mo's hand warmers, kept since day 13, and falls asleep against his shoulder | Cass: "Kept them. Don't make it weird." Finn: "Too late." Cass, waking: "I wasn't asleep. Your shoulder's just the warmest thing in here." |
+| The Classic | At the start, in the mountain's colours | Cass: "Don't you dare slow down for me, Finn." Finn: "Wasn't planning to." Cass: "Good. I like you at full speed. As a rival." |
+| The trophy | The tie on the board. She hugs him, then pulls away | Cass: "That was for the photo." Tavi: "Calder, the photo was ten seconds ago." |
 
 ## The blizzard eve (about day 47)
 
@@ -122,7 +145,7 @@ no affection meter, and he flirts back.
 *Proposed* sample lines:
 
 - **Cass**, dug out: "Don't. Say. Anything."
-- **Hank**, on the radio: "Two more out there. I've got half a patrol. Can you go?"
+- **Hank**, on the radio: "Two more out there, Finn. I've got half a patrol. Can you go?"
 - **Cass**, later, by the fire: "Summit would have closed the lodge at four and sent a bill."
 
 ## The Winter Classic (about day 48)
@@ -165,20 +188,11 @@ no affection meter, and he flirts back.
 1. **Names.**
    - a) Keep Bluebird's: Kettle Peak, Cass Vale, Graham Pell and the rest. *Recommended:* they're written and fit.
    - b) New ones.
-2. **His name and look.** (Decided: a set character with lines; you choose his outfits and gear.)
-   - a) Finn Calder, called "First Chair" by everyone: twelve seasons first in line on opening day. *Recommended:* the
-     title becomes his nickname, and it says "regular" before he says a word.
-   - b) Rowan Hale.
-   - c) Eli Brooks.
-   - d) A name you pick.
-
-   *Proposed* look: late 20s, the build of the skier model the game already has, shaggy brown hair and a permanent
-   goggle tan.
-3. **After the Classic.**
+2. **After the Classic.**
    - a) The Last Chair on days 49 and 50, then the photos and credits as you ride down. *Recommended:* it ends the
      season where the title starts it.
    - b) Straight from the trophy to the photos.
-4. **Where Cass is trapped.**
+3. **Where Cass is trapped.**
    - a) A tree well. *Recommended:* real, quick to understand, and she can't get out alone.
    - b) A small slide in the bowl.
    - c) Her snowmobile, stuck and buried on Summit's private road.

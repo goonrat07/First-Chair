@@ -19,8 +19,8 @@
 
 - **Decided:** you are a regular at the mountain. You have skied here for many seasons and know all the staff. You
   rent a small cabin beside a short beginner run with Mo.
-- **Decided:** the rider is a set character with his own name, look and lines, not customisable; what you choose is
-  his outfits and gear (`story-outline.md`).
+- **Decided:** the rider is Finn Calder, "First Chair" to the locals: a set character with his own look and lines,
+  not customisable; what you choose is his outfits and gear (`story-outline.md`).
 - **Decided:** Mo works the lifts, so Mo has the inside news each morning (which lift opens first, how busy it will
   be, who is in town), and you see each other at the bottom of the lift through the day.
 - *Proposed:* the story is the season you go from local legend to a known name, as sponsors start to notice you.
