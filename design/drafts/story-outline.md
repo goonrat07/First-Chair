@@ -28,6 +28,9 @@
 10. Cass is also a light romantic interest: a flirty comment or a moment of shyness here and there, as part of her
     competitive nature, never getting in the way of the riding. The story ends with photos of you and Cass hoisting
     the trophy with the whole cast celebrating behind you; in one, the two of you are hugging.
+11. The rider is not silent: he has lines. He is a set character with his own name and look, not customisable; what
+    you choose is his outfits and gear.
+12. The romance is the same scripted moments for every player, and a little more flirty than first drafted.
 
 ## The premise
 
@@ -46,7 +49,7 @@
 
 | Who | Now | Changed from the first version |
 |---|---|---|
-| You | A regular, many seasons on the mountain. *Proposed:* silent, called by a nickname everyone uses | No longer the new liftie |
+| You | A regular, many seasons on the mountain. **Decided:** a set character with his own name, look and lines; you choose his outfits and gear. *Proposed:* his name and look in open question 2 | No longer the new liftie, or silent |
 | Mo Patel | Your cabin-mate; works the lifts, so knows the news first; hand warmers in every pocket | Was your shift partner |
 | June Alder | The owner, 60s, dry; has known you for years | Hired you in the first version |
 | Dex Moreau | Leads the Freestyle crew; builds the park | |
@@ -77,26 +80,29 @@ moments:
 |---|---|---|
 | About 13 | A freezing morning in the lift line. Mo hands Cass a pair of hand warmers without a word. She keeps them | Mo, later: "Summit's rider. Cold hands, same as anyone." |
 | About 22 | Pell calls Dex's jam "off-brand" and tells her to skip it. She goes anyway, late, and lands the best trick of the night | Cass: "I don't ride for logos. I ride for whoever's best." |
-| About 31 | She watches Hank and Bowie bring an injured skier out of the trees, two patrollers short | Cass: "They do that for what they get paid?" Hank, passing: "Less, now." |
+| About 31 | She watches Hank and Bowie bring an injured skier out of the trees, two patrollers short | Cass: "They do that for what they get paid?" You: "Less, now." |
 | About 37 | At last chair she challenges you to a race down the old run. No logos, no clock but your own. She laughs for the first time | Cass: "Again. Tomorrow. Don't tell Pell." |
 | About 44 | Pell tells her the Classic is "a formality". She asks what happens to the cabins after. He doesn't answer | Pell: "That's not your department, Ms Vale." |
 
 ## A light romance
 
-**Decided:** a flirty comment or a moment of shyness here and there, folded into her competitiveness; never a
-system, never in the way of the riding. *Proposed:* it lives only where the story already speaks (scenes when the
-rider stops, phone texts), with no affection meter, and every line works whoever your rider is.
+**Decided:** a flirty comment or a moment of shyness here and there, folded into her competitiveness and a little
+more flirty than first drafted; the same scripted moments for every player; never a system, never in the way of the
+riding. *Proposed:* it lives only where the story already speaks (scenes when the rider stops, phone texts), with
+no affection meter, and he flirts back.
 
-*Proposed* touches, on the moments above:
+*Proposed* touches, on the season's moments:
 
-| Day | Touch | Sample line |
+| Day | Touch | Lines |
 |---|---|---|
-| About 13 | She catches you watching her warm-up run | Cass: "Taking notes? Good. You'll need them." |
-| About 22 | After her best trick at Dex's jam she looks over to see if you saw it, and looks away fast when you did | Dex: "Did Summit's rider just blush?" |
-| About 37 | The last-chair race turns into a standing bet | Cass: "Loser buys the hot chocolate. Winner picks the table." |
-| About 44 | A text that night, after Pell's non-answer | Cass: "Your cabin's the one with the crooked chimney? Asking for no reason." |
-| Blizzard eve | By the fire she gives you one of Mo's hand warmers, kept since day 13 | Cass: "Kept them. Don't make it weird." |
-| The Classic | At the start, in the mountain's colours | Cass: "Don't you dare slow down for me." |
+| About 13 | She catches him watching her warm-up run | Cass: "Taking notes? Good. You'll need them." You: "I was watching your line." Cass: "Sure you were." |
+| About 22 | After her best trick at Dex's jam she looks over to see if he saw it, and looks away fast when he did | Dex: "Did Summit's rider just blush?" Cass: "It's cold. Shut up." |
+| About 29 | She beats him in a time trial by a tenth and leans on his shoulder to read the board | Cass: "A tenth. I'd rub it in, but you're cute when you lose." |
+| About 37 | The last-chair race turns into a standing bet | Cass: "Loser buys the hot chocolate. Winner picks the table." You: "And if we tie?" Cass: "Then we share one." |
+| About 44 | A text that night, after Pell's non-answer | Cass: "Your cabin's the one with the crooked chimney? Asking for no reason." You: "Planning a visit?" Cass: "Planning to beat you there. Night." |
+| Blizzard eve | By the fire she gives him one of Mo's hand warmers, kept since day 13, and falls asleep against his shoulder | Cass: "Kept them. Don't make it weird." You: "Too late." |
+| The Classic | At the start, in the mountain's colours | Cass: "Don't you dare slow down for me." You: "Wasn't planning to." Cass: "Good. I like you at full speed." |
+| The trophy | Holding the cup between them, the tie on the board | Cass: "A tie. Guess we're sharing." (the hot chocolate bet, paid) |
 
 ## The blizzard eve (about day 47)
 
@@ -151,17 +157,23 @@ rider stops, phone texts), with no affection meter, and every line works whoever
 - Other skiers as solid riders in the sim, some of them people to rescue.
 - Cass and Summit's racers as recorded runs for the events, and the Classic's scripted tie.
 - The blizzard in the view: heavy snowfall, wind, low light.
-- The cast as models (the character pipeline that built the skier), Pell included.
+- The cast as models (the character pipeline that built the skier), Pell included, and the rider himself with a face
+  and hair for the scenes.
 
 ## Open questions
 
 1. **Names.**
    - a) Keep Bluebird's: Kettle Peak, Cass Vale, Graham Pell and the rest. *Recommended:* they're written and fit.
    - b) New ones.
-2. **The player.**
-   - a) Silent, called by a nickname everyone uses. *Recommended:* the cast talks to you, and you never say anything
-     that isn't yours.
-   - b) A named character with lines.
+2. **His name and look.** (Decided: a set character with lines; you choose his outfits and gear.)
+   - a) Finn Calder, called "First Chair" by everyone: twelve seasons first in line on opening day. *Recommended:* the
+     title becomes his nickname, and it says "regular" before he says a word.
+   - b) Rowan Hale.
+   - c) Eli Brooks.
+   - d) A name you pick.
+
+   *Proposed* look: late 20s, the build of the skier model the game already has, shaggy brown hair and a permanent
+   goggle tan.
 3. **After the Classic.**
    - a) The Last Chair on days 49 and 50, then the photos and credits as you ride down. *Recommended:* it ends the
      season where the title starts it.
@@ -170,11 +182,6 @@ rider stops, phone texts), with no affection meter, and every line works whoever
    - a) A tree well. *Recommended:* real, quick to understand, and she can't get out alone.
    - b) A small slide in the bowl.
    - c) Her snowmobile, stuck and buried on Summit's private road.
-5. **Does the player have a say in the romance?**
-   - a) No: the same light, scripted moments for everyone. *Recommended:* "just something light", with nothing new to
-     build.
-   - b) Two small choices (by the fire, at the trophy): warm or friendly, and the last photo follows the choice.
-   - c) Scripted, with a setting to turn the romantic lines off.
 
 ---
 
