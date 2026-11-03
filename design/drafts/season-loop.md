@@ -24,9 +24,9 @@
 - *Proposed:* the story is the season you go from local legend to a known name, as sponsors start to notice you.
   Cass is the season's new face and your rival.
 - **Decided:** Cass rides for Summit Corp, the resort company trying to buy the mountain. Summit Corp is cruel and
-  evil; Cass is not: she is competitive by nature and not in it for money. The user's idea for her arc and the
-  finale (a blizzard the day before the Winter Classic, where you save her; she then skis the Classic for the
-  mountain) is being worked into the story draft.
+  evil; Cass is not: she is competitive by nature and not in it for money. Her arc and the finale (a blizzard the
+  day before the Winter Classic, where you save her; she then skis the Classic for the mountain) are in
+  `story-outline.md`.
 - *Proposed:* the cabin is home base. Mornings: the forecast on the radio, Mo's gossip, the loadout, the bag, then
   ski down the beginner run to the lifts. Evenings: the day's results, sponsor packages, the shop, planning
   tomorrow. It shows your progress: the gear wall, trophies, and sponsor perks such as the drink fridge.

@@ -1,14 +1,161 @@
-# Draft: First Chair's story, a more specific outline
+# Draft: First Chair's story
 
-> **Status:** Draft for the user to choose from (sleep mode, 2026-11-02, at the user's request: "brainstorming a more
-> specific outline of the story"). Nothing here is decided. The game brief keeps Career and story out of the MVP;
-> this is for after riding feels right. Companion drafts: `gear-progression.md`, `skill-tree.md`.
+> **Status:** Rewritten on 2026-11-03 from the user's decisions in conversation. **Decided** marks what the user
+> chose; *Proposed* marks Claude's suggestions, open until the user confirms them. Lines are samples of the tone,
+> not final. The season's systems (the clock, loadout, stamina, crews, sponsors) are in `season-loop.md`. The game
+> brief keeps Career and story out of the MVP; this is for after the base skiing system feels right. The first
+> version (the liftie premise, three directions, act-by-act missions) is kept at the end as material.
 
-> **Changed 2026-11-02 (`season-loop.md`):** the user chose a different premise. You are a regular at the
-> mountain who knows all the staff and rents a cabin beside a beginner run with Mo, not the new liftie. The cast,
-> acts and missions below stay as material until they are rewritten for that premise and the season calendar.
+## Decided so far (the user, 2026-11-02 and 2026-11-03)
 
-## What it starts from
+1. You are a regular at the mountain: many seasons there, you know all the staff, and you rent a small cabin beside
+   a short beginner run with Mo, who works the lifts.
+2. Summit Corp, the resort company trying to buy the mountain, is cruel and evil. (This overrides the Bluebird
+   spec, where Summit's people are "ridiculous rather than evil".)
+3. Cass is Summit's sponsored rider, the season's new face and your rival. She is competitive by nature, not in it
+   for money.
+4. Her change of heart is planted earlier, in small moments through the season.
+5. A massive blizzard comes out of nowhere the day before the Winter Classic. It is pure nature; Summit's cruelty
+   shows elsewhere, such as cuts to the patrol that make the rescue harder.
+6. You save Cass from being trapped in the snow. She tags along to help dig out others, you almost bond, and she
+   sees what the mountain's community is.
+7. The Winter Classic runs in the storm's high winds: the hardest race yet. Cass skis for the mountain instead of
+   Summit.
+8. Scripted: whatever time you get, Cass ties it exactly, and you hoist the gold trophy together. Everyone lives
+   happily ever after.
+9. The whole season saves the mountain. The crowds and following you built pay the debt Summit was counting on; the
+   Classic is Summit's public defeat, made worse when its star rider switches sides.
+
+## The premise
+
+- **The mountain:** Kettle Peak (Bluebird's name, kept as the working name), small and family-run, owned by June
+  Alder. You have skied it for years; everyone here knows you.
+- **The threat** (*Proposed* details of decision 9): after a bad winter the mountain owes the bank. Summit Corp
+  buys the loan to force a sale: if the season doesn't pay it down by spring, Summit takes the mountain. As the
+  lender, Summit sets terms: costs cut, the patrol's budget halved, repairs to Mo's old lift refused.
+- **How the season pays** (decision 9): the crowds and your following. *Proposed:* Bluebird's Mountain Pulse
+  measures it. Your following, your results and the events you bring crowds to raise it, and June keeps the debt
+  as a line chalked on her office wall that the Pulse climbs toward.
+- **Personal stakes** (*Proposed*): Summit's plan for the base area bulldozes the beginner run, with your cabin on
+  it.
+
+## The cast
+
+| Who | Now | Changed from the first version |
+|---|---|---|
+| You | A regular, many seasons on the mountain. *Proposed:* silent, called by a nickname everyone uses | No longer the new liftie |
+| Mo Patel | Your cabin-mate; works the lifts, so knows the news first; hand warmers in every pocket | Was your shift partner |
+| June Alder | The owner, 60s, dry; has known you for years | Hired you in the first version |
+| Dex Moreau | Leads the Freestyle crew; builds the park | |
+| Ilse Brandt | Leads the Race crew; ex-World Cup racer, runs the timing hut | |
+| Wren Ostrova | Leads the Freeride crew; 70s, few words, knows every stash | |
+| Hank Lindqvist and Bowie | Ski patrol, with the avalanche dog; opens the backcountry. Summit's cuts land on Hank first | |
+| Tavi Reyes | Filmer; your clips grow your following | |
+| Cass Vale | Summit's sponsored rider: competitive by nature, not for money. *Proposed:* Summit's kit, worn because it gets her into the biggest events, not because she cares about the logo | Was a rival to the end, never turned (Bluebird) |
+| Graham Pell | Summit's acquisitions VP. *Proposed:* polite and cold, never raises his voice, does every cruel thing by memo: the patrol cuts, the lift, the eviction notices | Was comic in Bluebird |
+
+## The season in four chapters
+
+The season's 50 days (`season-loop.md`) fall into four chapters. *Proposed:* the day numbers.
+
+| Chapter | Days | The mountain | Summit | Cass | Opens |
+|---|---|---|---|---|---|
+| 1. Opening Day | 1 to 10 | Thin early snow; the Express and the lower runs | Day 10: June shows you Summit's letter. It has bought the mountain's debt and wants the mountain by spring | Only in Mo's gossip: "Summit's signed some rider. Supposed to be the real thing." | The lower mountain, the small park, the first glade |
+| 2. Summit Comes Calling | 11 to 25 | Midwinter; the upper mountain opens | Pell arrives with the lender's terms: the patrol's budget halved, Mo's old lift "not worth fixing" | Arrives and wins Dex's Big Air for Summit. Two small moments | The upper mountain, the race course, the full park |
+| 3. Storm Cycle | 26 to 40 | Deep winter: storm cycles, powder days, the backcountry gates | *Proposed:* eviction notices for the cabins on the beginner run; Hank's patrol stretched thin | Two more small moments | The bowls, the couloir, the backcountry after Hank's beacon training |
+| 4. The Winter Classic | 41 to 50 | Late season, toward spring | Promotes the Classic as its showcase, sure Cass will win it for Summit | One last small moment, then the blizzard eve and the Classic | *Proposed:* the Last Chair, days 49 and 50 |
+
+## Planting Cass's change
+
+**Decided:** small moments through the season, so the blizzard is the last push, not the only reason. *Proposed*
+moments:
+
+| Day | Moment | Sample line |
+|---|---|---|
+| About 13 | A freezing morning in the lift line. Mo hands Cass a pair of hand warmers without a word. She keeps them | Mo, later: "Summit's rider. Cold hands, same as anyone." |
+| About 22 | Pell calls Dex's jam "off-brand" and tells her to skip it. She goes anyway, late, and lands the best trick of the night | Cass: "I don't ride for logos. I ride for whoever's best." |
+| About 31 | She watches Hank and Bowie bring an injured skier out of the trees, two patrollers short | Cass: "They do that for what they get paid?" You: "Less, now." |
+| About 37 | At last chair she challenges you to a race down the old run. No logos, no clock but your own. She laughs for the first time | Cass: "Again. Tomorrow. Don't tell Pell." |
+| About 44 | Pell tells her the Classic is "a formality". She asks what happens to the cabins after. He doesn't answer | Pell: "That's not your department, Ms Vale." |
+
+## The blizzard eve (about day 47)
+
+**Decided** beats, with a *Proposed* mission shape:
+
+1. The forecast says clear. By noon a massive blizzard comes out of nowhere. The wind closes the upper lifts.
+2. Patrol radios: skiers are caught out on the upper mountain, and Hank is short-handed after Summit's cuts. You go
+   out with what Hank taught you (beacon, probe, shovel), skinning up where the lifts are closed.
+3. You find Cass trapped in the snow and dig her out. *Proposed:* in a tree well off the bowl, a real danger in
+   deep snow.
+4. She tags along. Together you search for the others: beacon searches, probing, digging, your stamina draining and
+   the light going.
+5. *Proposed:* everyone is found in time; nobody dies.
+6. That night, the mountain's people (Mo, June, the crews, the patrol) feed everyone soup in the lodge. Cass sees
+   what the mountain is.
+
+*Proposed* sample lines:
+
+- **Cass**, dug out: "Don't. Say. Anything."
+- **Hank**, on the radio: "Two more out there. I've got half a patrol. Can you go?"
+- **Cass**, later, by the fire: "Summit would have closed the lodge at four and sent a bill."
+
+## The Winter Classic (about day 48)
+
+1. **Decided:** the storm's tail. High winds and drifting snow make it the hardest race yet. *Proposed:* your
+   morning loadout matters more than on any other day (edges sharp for wind-scoured ice, wax for the cold).
+2. **Decided:** at the start, Cass appears in the mountain's colours, not Summit's. *Proposed:* Pell watches from the
+   finish, and for once has nothing to say.
+3. *Proposed:* your run still matters. To win for the mountain you have to beat Summit's best racer; retries are
+   allowed, as nothing fails.
+4. **Decided:** whatever time you get, Cass ties it exactly. You hoist the gold trophy together.
+5. **Decided:** the Classic's crowd and broadcast, with the following you built all season, carry the Pulse past
+   June's chalk line. The debt is paid, and Summit's defeat is public, with its star rider on the other side.
+6. *Proposed:* the Last Chair (days 49 and 50). The season's final ride up at sunset, the whole cast on the chairs
+   behind you, Cass among them. The credits roll as you ride down: the title's first chair and its last.
+
+*Proposed* sample lines:
+
+- **Cass**, at the start, in the mountain's colours: "Figured I'd ride for the side that digs."
+- **June**, at the trophy: "Two names on one cup. My grandfather would have hated the engraving bill."
+
+## What the story needs that doesn't exist yet
+
+- The season's systems (`season-loop.md`): the clock and calendar, the forecast and weather, wind holds, stamina,
+  crews, following, sponsors, and the Pulse.
+- The game layer that reads the ride (`mission-system.md`).
+- A beacon search, probing and digging (Hank's training, the blizzard).
+- Other skiers as solid riders in the sim, some of them people to rescue.
+- Cass and Summit's racers as recorded runs for the events, and the Classic's scripted tie.
+- The blizzard in the view: heavy snowfall, wind, low light.
+- The cast as models (the character pipeline that built the skier), Pell included.
+
+## Open questions
+
+1. **Names.**
+   - a) Keep Bluebird's: Kettle Peak, Cass Vale, Graham Pell and the rest. *Recommended:* they're written and fit.
+   - b) New ones.
+2. **The player.**
+   - a) Silent, called by a nickname everyone uses. *Recommended:* the cast talks to you, and you never say anything
+     that isn't yours.
+   - b) A named character with lines.
+3. **After the Classic.**
+   - a) The Last Chair: days 49 and 50, with the credits on the final run. *Recommended:* it ends the season where
+     the title starts it.
+   - b) The game ends on the trophy.
+4. **Where Cass is trapped.**
+   - a) A tree well. *Recommended:* real, quick to understand, and she can't get out alone.
+   - b) A small slide in the bowl.
+   - c) Her snowmobile, stuck and buried on Summit's private road.
+
+---
+
+## Appendix: the first version (2026-11-02), kept as material
+
+Superseded by the sections above where they differ: the liftie premise, the cosy no-villain direction, Cass as a
+rival who never turns, and the act-by-act missions written for the liftie. The research, the cast's voices and many
+missions still apply.
+
+### What it starts from
 
 - **The brief's pitch:** "A warm, sunlit skiing game where you carve, jump and thread the trees of a small family-run
   mountain, and every run you ride can be replayed exactly." Players who want it warm and forgiving, where a crash
@@ -23,7 +170,7 @@
   trees, and a second mountain (Pine Bowl) from the mountain tool; carving, tucks, jumps, grabs, spins, flips, rails,
   trees and Flow; a Steep-style chase camera; snow that holds real tracks.
 
-## What other snow games show
+### What other snow games show
 
 | Game | Story and structure | What to take or avoid |
 |---|---|---|
@@ -37,9 +184,9 @@
 between the player and the snow: no cutscenes, scenes only when the rider stops, every mission started where the
 player already rides.
 
-## Three directions
+### Three directions
 
-### A. The Last Season (Bluebird's story, trimmed for skis first)
+#### A. The Last Season (Bluebird's story, trimmed for skis first)
 
 The mountain is about to be sold; you help win it back by spring. Keep the four acts, June, the crews, Cass and the
 Kettle Classic. Trim for First Chair's scale: one sport until the snowboard lands (Cass skis), Mountain Ops and Heat
@@ -49,7 +196,7 @@ later or never, the road trip as post-game.
 - **Against:** the corporate villain and the chases are a lot of systems (Heat, pursuers, After Hours) before the
   core is proven; "save the mountain from developers" is a familiar plot.
 
-### B. First Chair (new, cosier, no villain)
+#### B. First Chair (new, cosier, no villain)
 
 You're the new liftie at a family hill. Every morning you run first chair, and the season's story is the mountain
 waking up: each act opens a lift, and its first chair is the act's opening scene. The tension comes from the
@@ -59,7 +206,7 @@ company. The finale is the season's last day: the Last Chair party and race.
 - **For:** the title becomes the structure; fewer systems (no pursuers); fits "warm and forgiving" exactly.
 - **Against:** softer stakes. The drama has to come from places, people and weather, which takes good writing.
 
-### C. Ski-bum road trip
+#### C. Ski-bum road trip
 
 A season spent on several small mountains (each made with the mountain tool), each a short arc with its own local
 crew and one event; the thread is a filmer cutting your season's video part.
@@ -71,7 +218,7 @@ crew and one event; the thread is a filmer cutting your season's video part.
 Bowie, Tavi and a rival; drop the corporate antagonist (or keep Summit as a one-act comic subplot, decision 2 below);
 after the finale, road trips to other mountains. The rest of this file outlines that.
 
-## Outline of the recommended direction
+### Outline of the recommended direction
 
 **Premise.** Juniper Ridge (working name; Kettle Peak is free to keep) is a small family-run hill reopening after a
 bad winter. June Alder hires you to run the chairlift. If the hill has a good season, it stays open; how good is the
@@ -98,7 +245,7 @@ when the rider stops, mission markers at the cast's hangouts, an optional radio.
 **How it gates** (Bluebird D1, kept): an act opens when its main missions are done and the player has enough
 progress on any mix of tracks (crew tiers in Bluebird), so a park rider and a powder rider reach act 2 together.
 
-## The prologue and act 1, mission by mission
+### The prologue and act 1, mission by mission
 
 A closer look at the first two hours, if direction B is picked, using only what the game can already do (carve,
 tuck, jumps and grabs, rails and boxes, trees and Flow, the chairlift, five snow types). Each mission starts at a
@@ -131,7 +278,7 @@ the tone, not final.
 **Cass, the rival**, first appears in act 2, winning Dex's slopestyle with a run the player watches from the lift;
 act 1 only plants them through Mo's gossip ("There's a kid from Summit Peak who skis like the mountain owes them money").
 
-## Act 2, mission by mission
+### Act 2, mission by mission
 
 Midwinter: the upper mountain opens. Act 1 used only what the game does today; act 2 is where the game must grow, so
 each mission says what it needs (**needs**) beyond today's riding. Same rules: a mission starts at a cast member's
@@ -170,9 +317,9 @@ spot, can't be failed, and ends on the snow.
 - **Combos** (2-8): keep the mission and build combos as their own story first, or move it to the post-game until
   combos exist.
 
-## Acts 3 and 4, mission by mission
+### Acts 3 and 4, mission by mission
 
-### Act 3: Storm Cycle (deep winter)
+#### Act 3: Storm Cycle (deep winter)
 
 A three-day storm buries the mountain. The act is the game's most serious stretch: the burial in 3-6 is played
 straight (short, urgent, everyone found in time), and the rest of the act is the joy of the powder after it.
@@ -197,7 +344,7 @@ straight (short, urgent, everyone found in time), and the rest of the act is the
 - **Hank** (3-6, after): "You did it right. That's the whole job."
 - **Cass** (3-7): "I came to beat you. I stayed to dig. Weird week."
 
-### Act 4: Last Chair (spring)
+#### Act 4: Last Chair (spring)
 
 Every lift runs. The snow is ice in the morning and slush by afternoon. The act ends the story at the festival and the
 season's last chair.
@@ -231,7 +378,7 @@ season's last chair.
 - **Out of the MVP and needed here:** weather and time of day changing the snow, surface lifts, combos, the replay
   editor, water. Each is its own story; acts 3 and 4 can't ship before them.
 
-## What the story needs that doesn't exist yet
+### What the story needs that doesn't exist yet
 
 - A **game layer** that reads sim events after each step (missions, payouts, the story director). Bluebird's rule
   stays: menus, rewards and story never touch the sim.
@@ -240,7 +387,7 @@ season's last chair.
 - **People**: the cast as models (the character pipeline that built CH_Skier), standing at hangouts.
 - **A save**, and the Mountain Pulse computed from it.
 
-## Decisions for the user
+### Decisions for the user
 
 1. Which direction: A, B, C, or the recommended B with A's people and C as the post-game?
 2. A villain or not: keep Summit Corp (comic, act 2 only, or the whole arc), or no company at all?
