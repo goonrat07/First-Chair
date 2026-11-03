@@ -40,6 +40,7 @@ then tell me in your own words what works and what doesn't; when you tune someth
 
 ## Also waiting on you
 
-- **Nothing in the design drafts.** The story (`design/drafts/story-outline.md`) and the season loop
-  (`design/drafts/season-loop.md`) hold what you decided on 2026-11-02 and 2026-11-03. Their *Proposed* parts are
-  there to change whenever you like.
+- **The design drafts, when you want them.** The story (`design/drafts/story-outline.md`) and the season loop
+  (`design/drafts/season-loop.md`) hold what you decided on 2026-11-02 and 2026-11-03, with their *Proposed* parts
+  open to change. The skill tree (`skill-tree.md`) and the mission system (`mission-system.md`) still end with
+  decisions of their own.
