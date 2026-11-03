@@ -22,7 +22,11 @@
 - **Decided:** Mo works the lifts, so Mo has the inside news each morning (which lift opens first, how busy it will
   be, who is in town), and you see each other at the bottom of the lift through the day.
 - *Proposed:* the story is the season you go from local legend to a known name, as sponsors start to notice you.
-  Cass is the season's new face and your rival; who she rides for is the open question at the end.
+  Cass is the season's new face and your rival.
+- **Decided:** Cass rides for Summit Corp, the resort company trying to buy the mountain. Summit Corp is cruel and
+  evil; Cass is not: she is competitive by nature and not in it for money. The user's idea for her arc and the
+  finale (a blizzard the day before the Winter Classic, where you save her; she then skis the Classic for the
+  mountain) is being worked into the story draft.
 - *Proposed:* the cabin is home base. Mornings: the forecast on the radio, Mo's gossip, the loadout, the bag, then
   ski down the beginner run to the lifts. Evenings: the day's results, sponsor packages, the shop, planning
   tomorrow. It shows your progress: the gear wall, trophies, and sponsor perks such as the drink fridge.
@@ -216,11 +220,5 @@ miss fills Flow as a tree's does.
 
 ## Open questions
 
-1. **Who is Cass?** (Answered on 2026-11-03: the crews, the season's length, Mo's job, how other skiers steer, and
-   what a collision costs.)
-   - a) Summit Corp's sponsored rider. Summit Corp is the resort company trying to buy the mountain (Bluebird's
-     story), played comic rather than cruel. Every sponsor you sign is also a side you take, since Summit's brands
-     clash with the mountain's own. *Recommended.*
-   - b) Summit Corp is the threat, but Cass is independent: a rival chasing the same sponsors, who turns Summit down
-     at the end.
-   - c) No company: Cass is the new face chasing the same sponsors, and the season's stakes are your own.
+None left here (answered on 2026-11-03: who Cass rides for, the crews, the season's length, Mo's job, how other
+skiers steer and what a collision costs). The story's beats continue in `story-outline.md`.
