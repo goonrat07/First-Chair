@@ -1,6 +1,6 @@
 # Draft: the season loop
 
-> **Status:** Worked out with the user in conversation on 2026-11-02. **Decided** marks what the user chose;
+> **Status:** Worked out with the user in conversation on 2026-11-02 and 2026-11-03. **Decided** marks what the user chose;
 > *Proposed* marks Claude's suggestions, open until the user confirms them. Numbers marked *Proposed* are starting
 > points to tune in the Feel Lab, not balance. This is the game after the base skiing system: the brief's rule stands
 > that everything else waits until riding works and feels right. It replaces parts of the earlier drafts; see "What
@@ -19,10 +19,10 @@
 
 - **Decided:** you are a regular at the mountain. You have skied here for many seasons and know all the staff. You
   rent a small cabin beside a short beginner run with Mo.
-- *Proposed:* Mo works the lifts, so Mo has the inside news each morning (which lift opens first, how busy it will
-  be, who is in town).
+- **Decided:** Mo works the lifts, so Mo has the inside news each morning (which lift opens first, how busy it will
+  be, who is in town), and you see each other at the bottom of the lift through the day.
 - *Proposed:* the story is the season you go from local legend to a known name, as sponsors start to notice you.
-  Cass is the season's new face from the big resort, chasing the same sponsors.
+  Cass is the season's new face and your rival; who she rides for is the open question at the end.
 - *Proposed:* the cabin is home base. Mornings: the forecast on the radio, Mo's gossip, the loadout, the bag, then
   ski down the beginner run to the lifts. Evenings: the day's results, sponsor packages, the shop, planning
   tomorrow. It shows your progress: the gear wall, trophies, and sponsor perks such as the drink fridge.
@@ -40,8 +40,10 @@
 - **Decided:** filming depends on the time of day, and the light counts a little toward a clip's originality.
   *Proposed:* originality from trick novelty (not a trick you posted lately), spot novelty (somewhere new) and
   conditions (golden hour, fresh snow, storm light), with time of day a small part of it.
+- **Decided:** a season is 50 days of about 20 real minutes each, roughly 17 hours, and you can skip a day (bad
+  weather, a rest). *Proposed:* a 30-day season as the first version, to test the loop.
 - *Proposed:* lifts run from 9:00 to 16:00. In-game time runs about 20 times real time while riding, and a lift
-  ride costs its own fixed time. A day comes to about 20 to 25 real minutes, roughly 8 to 12 runs.
+  ride costs its own fixed time, so a day holds roughly 8 to 12 runs.
 - *Proposed:* weekdays are quiet and powder lasts; weekends bring crowds, faster track-out and the bigger events.
 - *Proposed:* on windy days the top lifts close (wind holds), so the forecast can change the plan.
 
@@ -126,8 +128,10 @@ and events, so the same inputs always give the same stamina.
 - **Decided:** gear is restricted by crew (faction) level: you must reach a level in the freestyle crew to buy its
   park skis, and so on.
 - **Decided:** challenges and races are quite rewarding for gear, so there is a real reason to do them.
-- *Proposed:* three crews, Freestyle (park, Dex), Race (Ilse) and Freeride (powder, trees and steeps, Wren; Hank's
-  patrol opens the backcountry), with filming growing your following rather than a crew of its own.
+- **Decided:** three crews: Freestyle (park), Race and Freeride (powder, trees and steeps). Filming is not a crew:
+  you film in every style, and it grows your following, which is what sponsors look at.
+- *Proposed:* Dex leads Freestyle, Ilse Race and Wren Freeride, and Hank's patrol opens the backcountry. Camera gear
+  such as the drone unlocks by following rather than by crew level.
 
 ## Following and sponsors
 
@@ -180,9 +184,15 @@ misses count.
 6. **The same every time.** Everything comes from the day's seed and the clock. The sim reads the snow as it stands
    at the start of each run, never mid-run.
 
-*Proposed* for solid skiers: the skiers near you are sim obstacles that move along their generated lines, the same
-on every replay. They don't swerve for you, at least at first. A near miss fills Flow as a tree's does; a collision
-is a crash and costs stamina.
+**Decided:** other skiers follow the skier's code. Skiers below you hold their line, and avoiding them is your job.
+Skiers above you steer around you, so nobody hits you from behind, where the chase camera can't see.
+
+**Decided:** what a collision costs depends on speed. A bump at low speed is a stumble; a hit at speed is a full
+crash with a chunk of stamina, and the other skier falls too.
+
+*Proposed:* the skiers near you are sim obstacles moving along their generated lines, and the steering of skiers
+above you is a sim rule too, so replays stay exact. Holding their lines comes first; the steering comes next. A near
+miss fills Flow as a tree's does.
 
 ## What this changes in the earlier drafts
 
@@ -206,8 +216,11 @@ is a crash and costs stamina.
 
 ## Open questions
 
-1. Crews: Freestyle, Race and Freeride, with filming feeding following? Or is Film a crew of its own?
-2. How long is a season (in days), and a day (in real minutes)?
-3. Does Mo work the lifts? Is Cass the new face chasing the same sponsors?
-4. Should other skiers ever swerve to avoid you, or always hold their line?
-5. What does a collision with a skier cost: a crash and a chunk of stamina, or more?
+1. **Who is Cass?** (Answered on 2026-11-03: the crews, the season's length, Mo's job, how other skiers steer, and
+   what a collision costs.)
+   - a) Summit Corp's sponsored rider. Summit Corp is the resort company trying to buy the mountain (Bluebird's
+     story), played comic rather than cruel. Every sponsor you sign is also a side you take, since Summit's brands
+     clash with the mountain's own. *Recommended.*
+   - b) Summit Corp is the threat, but Cass is independent: a rival chasing the same sponsors, who turns Summit down
+     at the end.
+   - c) No company: Cass is the new face chasing the same sponsors, and the season's stakes are your own.
