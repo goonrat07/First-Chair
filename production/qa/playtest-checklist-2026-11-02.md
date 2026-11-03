@@ -7,8 +7,11 @@ then tell me in your own words what works and what doesn't; when you tune someth
 
 ## Get set up
 
-1. **The build.** The newest Windows player is CI run 41477452195 (commit 49c1146):
-   https://github.com/goonrat07/First-Chair/actions/runs/41477452195, artifact **FirstChair-StandaloneWindows64**.
+1. **The build.** The newest Windows player is CI run 41489906945 (commit b92d0be, the skis riding on top of the
+   groomer): https://github.com/goonrat07/First-Chair/actions/runs/41489906945, artifact
+   **FirstChair-StandaloneWindows64** (direct download, signed in to GitHub:
+   https://github.com/goonrat07/First-Chair/actions/runs/41489906945/artifacts/13163009691). Unzip it and run
+   `FirstChair.exe`.
    In the Unity Editor instead: pull, then **First Chair > Build Test Slope Scene** and **First Chair > Build Mountain
    Scenes**.
 2. **In the Editor only:** delete `Assets/Data/Riding/LightingSettings.asset` before building the scenes. The scene
@@ -37,5 +40,6 @@ then tell me in your own words what works and what doesn't; when you tune someth
 
 ## Also waiting on you
 
-- **The brainstorms:** `design/drafts/story-outline.md`, `gear-progression.md` and `skill-tree.md`. Each ends with the
-  decisions that are yours.
+- **Nothing in the design drafts.** The story (`design/drafts/story-outline.md`) and the season loop
+  (`design/drafts/season-loop.md`) hold what you decided on 2026-11-02 and 2026-11-03. Their *Proposed* parts are
+  there to change whenever you like.
