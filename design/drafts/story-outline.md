@@ -25,6 +25,9 @@
    happily ever after.
 9. The whole season saves the mountain. The crowds and following you built pay the debt Summit was counting on; the
    Classic is Summit's public defeat, made worse when its star rider switches sides.
+10. Cass is also a light romantic interest: a flirty comment or a moment of shyness here and there, as part of her
+    competitive nature, never getting in the way of the riding. The story ends with photos of you and Cass hoisting
+    the trophy with the whole cast celebrating behind you; in one, the two of you are hugging.
 
 ## The premise
 
@@ -51,7 +54,7 @@
 | Wren Ostrova | Leads the Freeride crew; 70s, few words, knows every stash | |
 | Hank Lindqvist and Bowie | Ski patrol, with the avalanche dog; opens the backcountry. Summit's cuts land on Hank first | |
 | Tavi Reyes | Filmer; your clips grow your following | |
-| Cass Vale | Summit's sponsored rider: competitive by nature, not for money. *Proposed:* Summit's kit, worn because it gets her into the biggest events, not because she cares about the logo | Was a rival to the end, never turned (Bluebird) |
+| Cass Vale | Summit's sponsored rider: competitive by nature, not for money. *Proposed:* Summit's kit, worn because it gets her into the biggest events, not because she cares about the logo. **Decided:** a light romantic interest, sure of herself on the course and a little shy off it | Was a rival to the end, never turned (Bluebird) |
 | Graham Pell | Summit's acquisitions VP. *Proposed:* polite and cold, never raises his voice, does every cruel thing by memo: the patrol cuts, the lift, the eviction notices | Was comic in Bluebird |
 
 ## The season in four chapters
@@ -74,9 +77,26 @@ moments:
 |---|---|---|
 | About 13 | A freezing morning in the lift line. Mo hands Cass a pair of hand warmers without a word. She keeps them | Mo, later: "Summit's rider. Cold hands, same as anyone." |
 | About 22 | Pell calls Dex's jam "off-brand" and tells her to skip it. She goes anyway, late, and lands the best trick of the night | Cass: "I don't ride for logos. I ride for whoever's best." |
-| About 31 | She watches Hank and Bowie bring an injured skier out of the trees, two patrollers short | Cass: "They do that for what they get paid?" You: "Less, now." |
+| About 31 | She watches Hank and Bowie bring an injured skier out of the trees, two patrollers short | Cass: "They do that for what they get paid?" Hank, passing: "Less, now." |
 | About 37 | At last chair she challenges you to a race down the old run. No logos, no clock but your own. She laughs for the first time | Cass: "Again. Tomorrow. Don't tell Pell." |
 | About 44 | Pell tells her the Classic is "a formality". She asks what happens to the cabins after. He doesn't answer | Pell: "That's not your department, Ms Vale." |
+
+## A light romance
+
+**Decided:** a flirty comment or a moment of shyness here and there, folded into her competitiveness; never a
+system, never in the way of the riding. *Proposed:* it lives only where the story already speaks (scenes when the
+rider stops, phone texts), with no affection meter, and every line works whoever your rider is.
+
+*Proposed* touches, on the moments above:
+
+| Day | Touch | Sample line |
+|---|---|---|
+| About 13 | She catches you watching her warm-up run | Cass: "Taking notes? Good. You'll need them." |
+| About 22 | After her best trick at Dex's jam she looks over to see if you saw it, and looks away fast when you did | Dex: "Did Summit's rider just blush?" |
+| About 37 | The last-chair race turns into a standing bet | Cass: "Loser buys the hot chocolate. Winner picks the table." |
+| About 44 | A text that night, after Pell's non-answer | Cass: "Your cabin's the one with the crooked chimney? Asking for no reason." |
+| Blizzard eve | By the fire she gives you one of Mo's hand warmers, kept since day 13 | Cass: "Kept them. Don't make it weird." |
+| The Classic | At the start, in the mountain's colours | Cass: "Don't you dare slow down for me." |
 
 ## The blizzard eve (about day 47)
 
@@ -110,8 +130,12 @@ moments:
 4. **Decided:** whatever time you get, Cass ties it exactly. You hoist the gold trophy together.
 5. **Decided:** the Classic's crowd and broadcast, with the following you built all season, carry the Pulse past
    June's chalk line. The debt is paid, and Summit's defeat is public, with its star rider on the other side.
-6. *Proposed:* the Last Chair (days 49 and 50). The season's final ride up at sunset, the whole cast on the chairs
-   behind you, Cass among them. The credits roll as you ride down: the title's first chair and its last.
+6. **Decided:** the story ends with photos: you and Cass hoisting the trophy with the whole cast celebrating behind
+   you, and one of the two of you hugging. *Proposed:* Tavi took them; they play with the credits, and afterwards
+   they hang on the cabin wall.
+7. *Proposed:* before the photos, the Last Chair (days 49 and 50): the season's final ride up at sunset, the whole
+   cast on the chairs behind you and Cass beside you. The photos and credits play as you ride down: the title's
+   first chair and its last.
 
 *Proposed* sample lines:
 
@@ -139,13 +163,18 @@ moments:
      that isn't yours.
    - b) A named character with lines.
 3. **After the Classic.**
-   - a) The Last Chair: days 49 and 50, with the credits on the final run. *Recommended:* it ends the season where
-     the title starts it.
-   - b) The game ends on the trophy.
+   - a) The Last Chair on days 49 and 50, then the photos and credits as you ride down. *Recommended:* it ends the
+     season where the title starts it.
+   - b) Straight from the trophy to the photos.
 4. **Where Cass is trapped.**
    - a) A tree well. *Recommended:* real, quick to understand, and she can't get out alone.
    - b) A small slide in the bowl.
    - c) Her snowmobile, stuck and buried on Summit's private road.
+5. **Does the player have a say in the romance?**
+   - a) No: the same light, scripted moments for everyone. *Recommended:* "just something light", with nothing new to
+     build.
+   - b) Two small choices (by the fire, at the trophy): warm or friendly, and the last photo follows the choice.
+   - c) Scripted, with a setting to turn the romantic lines off.
 
 ---
 
