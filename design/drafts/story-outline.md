@@ -36,10 +36,15 @@
 14. Finn has a really nice mustache, and people bring it up, Mo and Cass especially.
 15. Cass is a tsundere: almost too competitive to be openly affectionate, not very good at hiding it, and always
     teasing.
+16. The names stay as Bluebird wrote them: Kettle Peak, Cass Vale, Graham Pell and the rest. The race is the Winter
+    Classic.
+17. After the Classic comes the Last Chair (days 49 and 50): the season's final ride up at sunset with the whole cast,
+    then the photos and credits as Finn rides down.
+18. In the blizzard, Cass is trapped in a tree well.
 
 ## The premise
 
-- **The mountain:** Kettle Peak (Bluebird's name, kept as the working name), small and family-run, owned by June
+- **The mountain:** Kettle Peak (Bluebird's name, kept), small and family-run, owned by June
   Alder. You have skied it for years; everyone here knows you.
 - **The threat** (*Proposed* details of decision 9): after a bad winter the mountain owes the bank. Summit Corp
   buys the loan to force a sale: if the season doesn't pay it down by spring, Summit takes the mountain. As the
@@ -89,7 +94,7 @@ The season's 50 days (`season-loop.md`) fall into four chapters. *Proposed:* the
 | 1. Opening Day | 1 to 10 | Thin early snow; the Express and the lower runs | Day 10: June shows you Summit's letter. It has bought the mountain's debt and wants the mountain by spring | Only in Mo's gossip: "Summit's signed some rider. Supposed to be the real thing." | The lower mountain, the small park, the first glade |
 | 2. Summit Comes Calling | 11 to 25 | Midwinter; the upper mountain opens | Pell arrives with the lender's terms: the patrol's budget halved, Mo's old lift "not worth fixing" | Arrives and wins Dex's Big Air for Summit. Two small moments | The upper mountain, the race course, the full park |
 | 3. Storm Cycle | 26 to 40 | Deep winter: storm cycles, powder days, the backcountry gates | *Proposed:* eviction notices for the cabins on the beginner run; Hank's patrol stretched thin | Two more small moments | The bowls, the couloir, the backcountry after Hank's beacon training |
-| 4. The Winter Classic | 41 to 50 | Late season, toward spring | Promotes the Classic as its showcase, sure Cass will win it for Summit | One last small moment, then the blizzard eve and the Classic | *Proposed:* the Last Chair, days 49 and 50 |
+| 4. The Winter Classic | 41 to 50 | Late season, toward spring | Promotes the Classic as its showcase, sure Cass will win it for Summit | One last small moment, then the blizzard eve and the Classic | The Last Chair, days 49 and 50 |
 
 ## Planting Cass's change
 
@@ -134,7 +139,7 @@ affection meter, and Finn flirts back.
 1. The forecast says clear. By noon a massive blizzard comes out of nowhere. The wind closes the upper lifts.
 2. Patrol radios: skiers are caught out on the upper mountain, and Hank is short-handed after Summit's cuts. You go
    out with what Hank taught you (beacon, probe, shovel), skinning up where the lifts are closed.
-3. You find Cass trapped in the snow and dig her out. *Proposed:* in a tree well off the bowl, a real danger in
+3. You find Cass trapped in the snow and dig her out. **Decided:** in a tree well off the bowl, a real danger in
    deep snow.
 4. She tags along. Together you search for the others: beacon searches, probing, digging, your stamina draining and
    the light going.
@@ -162,7 +167,7 @@ affection meter, and Finn flirts back.
 6. **Decided:** the story ends with photos: you and Cass hoisting the trophy with the whole cast celebrating behind
    you, and one of the two of you hugging. *Proposed:* Tavi took them; they play with the credits, and afterwards
    they hang on the cabin wall.
-7. *Proposed:* before the photos, the Last Chair (days 49 and 50): the season's final ride up at sunset, the whole
+7. **Decided:** before the photos, the Last Chair (days 49 and 50): the season's final ride up at sunset, the whole
    cast on the chairs behind you and Cass beside you. The photos and credits play as you ride down: the title's
    first chair and its last.
 
@@ -185,17 +190,8 @@ affection meter, and Finn flirts back.
 
 ## Open questions
 
-1. **Names.**
-   - a) Keep Bluebird's: Kettle Peak, Cass Vale, Graham Pell and the rest. *Recommended:* they're written and fit.
-   - b) New ones.
-2. **After the Classic.**
-   - a) The Last Chair on days 49 and 50, then the photos and credits as you ride down. *Recommended:* it ends the
-     season where the title starts it.
-   - b) Straight from the trophy to the photos.
-3. **Where Cass is trapped.**
-   - a) A tree well. *Recommended:* real, quick to understand, and she can't get out alone.
-   - b) A small slide in the bowl.
-   - c) Her snowmobile, stuck and buried on Summit's private road.
+None left (answered on 2026-11-03: the names, the Last Chair epilogue and the tree well). Everything marked
+*Proposed* above is still open to change.
 
 ---
 
